@@ -7,6 +7,7 @@ import path = require('path');
 import {exec} from 'child_process';
 
 import cliPackageJson = require('../package.json');
+import { registerAppCommands } from '../app-commands';
 const dashboardPackageJson = JSON.parse(
   readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
 );
@@ -199,4 +200,9 @@ program
     });
   });
 
+/** === APP === */
+
+registerAppCommands(program);
+
+// Run the program and parse the cli
 program.parse();
