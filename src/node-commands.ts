@@ -16,7 +16,7 @@ export function registerNodeCommands(program: Command) {
           console.error(err);
           return pm2.disconnect();
         }
-        if (descriptions.length == 0) {
+        if (descriptions.length === 0) {
           console.log('validator not running!');
           return pm2.disconnect();
         }
@@ -120,7 +120,7 @@ export function registerNodeCommands(program: Command) {
       console.log('Run the ./update.sh script in the installer root directory');
     });
 
-  let setCommand = program
+  const setCommand = program
     .command('set')
     .description('command to set various config parameters');
 

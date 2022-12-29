@@ -18,7 +18,7 @@ export function registerGuiCommands(program: Command) {
           console.error(err);
           return pm2.disconnect();
         }
-        if (descriptions.length == 0) {
+        if (descriptions.length === 0) {
           console.log('operator gui not running!');
           return pm2.disconnect();
         }
