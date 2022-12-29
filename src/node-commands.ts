@@ -1,3 +1,4 @@
+import {ProcessStatus, statusFromPM2} from './pm2';
 import * as pm2 from 'pm2';
 import {Command} from 'commander';
 import path = require('path');

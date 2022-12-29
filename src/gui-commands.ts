@@ -1,6 +1,7 @@
 import * as pm2 from 'pm2';
 import {Command} from 'commander';
 import path = require('path');
+import {ProcessStatus, statusFromPM2} from './pm2';
 
 export function registerGuiCommands(program: Command) {
   const guiPort = process.env.GUI_PORT || '8080';
