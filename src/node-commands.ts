@@ -1,8 +1,42 @@
 import {ProcessStatus, statusFromPM2} from './pm2';
-import * as pm2 from 'pm2';
+import pm2 from 'pm2';
 import {Command} from 'commander';
 import path = require('path');
 import {exec} from 'child_process';
+import merge from 'deepmerge';
+
+const config = {
+  ip: {
+    externalIp: '127.0.0.1',
+    externalPort: 9001,
+    internalIp: '127.0.0.1',
+    internalPort: 10001,
+  },
+};
+
+if (process.env.APP_IN_PORT) {
+  config = merge(
+    config,
+    {
+      ip: {
+        internalPort: parseInt(process.env.APP_IN_PORT),
+      },
+    },
+    {arrayMerge: (target, source) => source}
+  );
+}
+
+if (process.env.APP_EX_PORT) {
+  config = merge(
+    config,
+    {
+      ip: {
+        externalPort: parseInt(process.env.APP_EX_PORT),
+      },
+    },
+    {arrayMerge: (target, source) => source}
+  );
+}
 
 export function registerNodeCommands(program: Command) {
   program
@@ -48,6 +82,7 @@ export function registerNodeCommands(program: Command) {
                   '../../../server/dist/src/index.js'
                 )}`,
                 name: 'validator',
+                output: './validator-logs.txt',
               },
               err => {
                 if (err) console.error(err);

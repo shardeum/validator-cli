@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "commander": "^9.4.1",
+    "deepmerge": "^4.2.2",
     "dotenv": "^16.0.3",
     "pm2": "^5.2.2"
   }
