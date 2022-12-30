@@ -33,7 +33,7 @@ export function registerNodeCommands(program: Command) {
     .action(() => {
       // Run the validators clean script
       exec(
-        `node ${path.join(__dirname, '../../../validator/scripts/clean.js')}`,
+        `node ${path.join(__dirname, '../../../server/scripts/clean.js')}`,
         () => {
           // Exec PM2 to start the shardeum validator
           pm2.connect(err => {
@@ -45,7 +45,7 @@ export function registerNodeCommands(program: Command) {
               {
                 script: `${path.join(
                   __dirname,
-                  '../../../validator/dist/src/index.js'
+                  '../../../server/dist/src/index.js'
                 )}`,
                 name: 'validator',
               },
