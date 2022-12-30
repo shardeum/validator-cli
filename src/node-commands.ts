@@ -7,6 +7,7 @@ import merge from 'deepmerge';
 import axios from 'axios';
 import defaultConfig from '../config.json';
 import fs from 'fs';
+import {ethers} from 'ethers';
 
 let config = defaultConfig;
 
@@ -141,6 +142,74 @@ export function registerNodeCommands(program: Command) {
           return pm2.disconnect();
         });
       });
+    });
+
+  program
+    .command('send_stake')
+    .description(
+      'Stake the set amount of SHM at the stake address. Rewards will be sent to set reward address.'
+    )
+    .action(async () => {
+      if (staking.stakeAmount === 0) {
+        console.log('Stake amount set to 0');
+        return;
+      }
+      if (!process.env.PRIV_KEY) {
+        console.log('Please set private key as PRIV_KEY environment variable');
+        return;
+      }
+
+      try {
+        const provider = new ethers.providers.JsonRpcProvider(
+          'http://localhost:8080'
+        );
+
+        const walletWithProvider = new ethers.Wallet(
+          process.env.PRIV_KEY,
+          provider
+        );
+
+        const [gasPrice, from, nonce] = await Promise.all([
+          walletWithProvider.getGasPrice(),
+          walletWithProvider.getAddress(),
+          walletWithProvider.getTransactionCount(),
+        ]);
+
+        const stakeData = {
+          isInternalTx: true,
+          internalTXType: 6,
+          nominator: staking.rewardAddress,
+          timestamp: Date.now(),
+          nominee: staking.stakeAddress,
+          stake: ethers.utils
+            .parseEther(String(staking.stakeAmount))
+            .toString(),
+        };
+        const value = ethers.BigNumber.from(stakeData.stake);
+        console.log(stakeData);
+
+        const txDetails = {
+          from,
+          to: '0x0000000000000000000000000000000000000001',
+          gasPrice,
+          gasLimit: 30000000,
+          value,
+          data: ethers.utils.hexlify(
+            ethers.utils.toUtf8Bytes(JSON.stringify(stakeData))
+          ),
+          nonce,
+        };
+
+        const {hash, data, wait} = await walletWithProvider.sendTransaction(
+          txDetails
+        );
+
+        console.log('TX RECEIPT: ', {hash, data});
+        const txConfirmation = await wait();
+        console.log('TX CONFRIMED: ', txConfirmation);
+      } catch (error) {
+        console.log(error);
+      }
     });
 
   program

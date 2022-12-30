@@ -12,9 +12,9 @@
     },
     "ip": {
       "externalIp": "127.0.0.1",
-      "externalPort": 9001,
+      "externalPort": 9004,
       "internalIp": "127.0.0.1",
-      "internalPort": 10001
+      "internalPort": 10004
     },
     "reporting": {
       "report": true,
