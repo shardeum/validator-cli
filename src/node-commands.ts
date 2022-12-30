@@ -212,12 +212,12 @@ export function registerNodeCommands(program: Command) {
       }
     });
 
-  program
-    .command('joined')
-    .description('Check the validator state standby/syncing/active')
-    .action(() => {
-      //TODO interact with node
-    });
+  // program
+  //   .command('joined')
+  //   .description('Check the validator state standby/syncing/active')
+  //   .action(() => {
+  //     //TODO interact with node
+  //   });
 
   program
     .command('reward_address')
@@ -240,12 +240,12 @@ export function registerNodeCommands(program: Command) {
       console.log(staking.stakeAddress);
     });
 
-  program
-    .command('version')
-    .description('Shows my version, latest version and minimum version')
-    .action(() => {
-      //TODO interact with node
-    });
+  // program
+  //   .command('version')
+  //   .description('Shows my version, latest version and minimum version')
+  //   .action(() => {
+  //     //TODO interact with node
+  //   });
 
   program
     .command('update')
@@ -285,13 +285,13 @@ export function registerNodeCommands(program: Command) {
       //TODO: Send TX
     });
 
-  setCommand
-    .command('archiver')
-    .arguments('<URL>')
-    .description('Set the URL for the archiver')
-    .action(url => {
-      //TODO interact with node
-    });
+  // setCommand
+  //   .command('archiver')
+  //   .arguments('<URL>')
+  //   .description('Set the URL for the archiver')
+  //   .action(url => {
+  //     //TODO interact with node
+  //   });
 
   setCommand
     .command('stake_address')
