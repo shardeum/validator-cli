@@ -6,8 +6,24 @@ import {exec} from 'child_process';
 import merge from 'deepmerge';
 import axios from 'axios';
 import defaultConfig from '../config.json';
+import fs from 'fs';
 
 let config = defaultConfig;
+
+let staking = {
+  rewardAddress: '',
+  stakeAddress: '',
+  stakeAmount: 0,
+};
+
+if (fs.existsSync(path.join(__dirname, '../stake.json'))) {
+  const stakeConfig = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '../stake.json')).toString()
+  );
+  staking = merge(staking, stakeConfig, {
+    arrayMerge: (target, source) => source,
+  });
+}
 
 if (process.env.APP_IN_PORT) {
   config = merge(
@@ -137,14 +153,21 @@ export function registerNodeCommands(program: Command) {
     .command('reward_address')
     .description('Query the validator reward address')
     .action(() => {
-      //TODO interact with node
+      console.log(staking.rewardAddress);
+    });
+
+  program
+    .command('stake_amount')
+    .description('Query the set stake amount')
+    .action(() => {
+      console.log(staking.stakeAmount);
     });
 
   program
     .command('stake_address')
     .description('Query the validator stake address')
     .action(() => {
-      //TODO interact with node
+      console.log(staking.stakeAddress);
     });
 
   program
@@ -167,17 +190,29 @@ export function registerNodeCommands(program: Command) {
 
   setCommand
     .command('port')
+    .arguments('<port>')
     .description('Set the port for the validator')
-    .action(() => {
-      //TODO interact with node
+    .action(port => {
+      config.server.ip.externalPort = parseInt(port);
+      fs.writeFile('config.json', JSON.stringify(config, undefined, 2), err => {
+        if (err) console.log(err);
+      });
     });
 
   setCommand
-    .command('reward')
+    .command('reward_address')
     .arguments('<address>')
-    .description('Set the port for the validator')
+    .description('Set the reward address for the validator')
     .action(address => {
-      //TODO interact with node
+      staking.rewardAddress = address;
+      fs.writeFile(
+        path.join(__dirname, '../stake.json'),
+        JSON.stringify(staking, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+      //TODO: Send TX
     });
 
   setCommand
@@ -189,10 +224,34 @@ export function registerNodeCommands(program: Command) {
     });
 
   setCommand
-    .command('stake')
+    .command('stake_address')
     .arguments('<address>')
     .description('Set the stake address')
-    .action(url => {
-      //TODO interact with node
+    .action(address => {
+      staking.stakeAddress = address;
+      fs.writeFile(
+        path.join(__dirname, '../stake.json'),
+        JSON.stringify(staking, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+      //TODO: Send TX
+    });
+
+  setCommand
+    .command('stake_amount')
+    .arguments('<amount>')
+    .description('Set the stake amount')
+    .action(amount => {
+      staking.stakeAmount = parseInt(amount); //Add checks for all parseInts
+      fs.writeFile(
+        path.join(__dirname, '../stake.json'),
+        JSON.stringify(staking, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+      //TODO: Send TX
     });
 }
