@@ -88,6 +88,7 @@ export function registerNodeCommands(program: Command) {
     .description('Starts the validator')
     .action(() => {
       // Run the validators clean script
+      //TODO: Inject port numbers from config as env vars into pm2
       exec(
         `node ${path.join(__dirname, '../../../server/scripts/clean.js')}`,
         () => {
