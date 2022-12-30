@@ -5,22 +5,18 @@ import path from 'path';
 import {exec} from 'child_process';
 import merge from 'deepmerge';
 import axios from 'axios';
+import defaultConfig from '../config.json';
 
-let config = {
-  ip: {
-    externalIp: '127.0.0.1',
-    externalPort: 9001,
-    internalIp: '127.0.0.1',
-    internalPort: 10001,
-  },
-};
+let config = defaultConfig;
 
 if (process.env.APP_IN_PORT) {
   config = merge(
     config,
     {
-      ip: {
-        internalPort: parseInt(process.env.APP_IN_PORT),
+      server: {
+        ip: {
+          internalPort: parseInt(process.env.APP_IN_PORT),
+        },
       },
     },
     {arrayMerge: (target, source) => source}
@@ -31,8 +27,10 @@ if (process.env.APP_EX_PORT) {
   config = merge(
     config,
     {
-      ip: {
-        externalPort: parseInt(process.env.APP_EX_PORT),
+      server: {
+        ip: {
+          externalPort: parseInt(process.env.APP_EX_PORT),
+        },
       },
     },
     {arrayMerge: (target, source) => source}
@@ -59,7 +57,7 @@ export function registerNodeCommands(program: Command) {
         const status: ProcessStatus = statusFromPM2(description);
         const nodeInfo = await axios
           .get(
-            `http://${config.ip.externalIp}:${config.ip.externalPort}/nodeinfo`
+            `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/nodeinfo`
           )
           .then(res => res.data)
           .catch(err => console.log(err));
