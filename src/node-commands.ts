@@ -1,11 +1,12 @@
 import {ProcessStatus, statusFromPM2} from './pm2';
 import pm2 from 'pm2';
 import {Command} from 'commander';
-import path = require('path');
+import path from 'path';
 import {exec} from 'child_process';
 import merge from 'deepmerge';
+import axios from 'axios';
 
-const config = {
+let config = {
   ip: {
     externalIp: '127.0.0.1',
     externalPort: 9001,
@@ -45,7 +46,7 @@ export function registerNodeCommands(program: Command) {
       'Show if validator is running or not; also the port and URL to connect to it'
     )
     .action(() => {
-      pm2.describe('validator', (err, descriptions) => {
+      pm2.describe('validator', async (err, descriptions) => {
         if (err) {
           console.error(err);
           return pm2.disconnect();
@@ -56,7 +57,14 @@ export function registerNodeCommands(program: Command) {
         }
         const description = descriptions[0];
         const status: ProcessStatus = statusFromPM2(description);
-        console.log(status);
+        const nodeInfo = await axios
+          .get(
+            `http://${config.ip.externalIp}:${config.ip.externalPort}/nodeinfo`
+          )
+          .then(res => res.data)
+          .catch(err => console.log(err));
+
+        console.log(merge(status, nodeInfo));
         return pm2.disconnect();
       });
     });
