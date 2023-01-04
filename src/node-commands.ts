@@ -15,6 +15,7 @@ let staking = {
   rewardAddress: '',
   stakeAddress: '',
   stakeAmount: 0,
+  isStaked: false,
 };
 
 if (fs.existsSync(path.join(__dirname, '../stake.json'))) {
@@ -201,6 +202,84 @@ export function registerNodeCommands(program: Command) {
         console.log('TX RECEIPT: ', {hash, data});
         const txConfirmation = await wait();
         console.log('TX CONFRIMED: ', txConfirmation);
+        staking.isStaked = true;
+        fs.writeFile(
+          path.join(__dirname, '../stake.json'),
+          JSON.stringify(staking, undefined, 2),
+          err => {
+            if (err) console.log(err);
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+  program
+    .command('remove_stake')
+    .description('Remove staked SHM')
+    .action(async () => {
+      if (!staking.isStaked) {
+        console.log('No SHM staked');
+        return;
+      }
+
+      if (!process.env.PRIV_KEY) {
+        console.log('Please set private key as PRIV_KEY environment variable');
+        return;
+      }
+
+      try {
+        const provider = new ethers.providers.JsonRpcProvider(
+          'http://localhost:8080'
+        );
+
+        const walletWithProvider = new ethers.Wallet(
+          process.env.PRIV_KEY,
+          provider
+        );
+
+        const [gasPrice, from, nonce] = await Promise.all([
+          walletWithProvider.getGasPrice(),
+          walletWithProvider.getAddress(),
+          walletWithProvider.getTransactionCount(),
+        ]);
+
+        const unstakeData = {
+          isInternalTx: true,
+          internalTXType: 7,
+          nominator: staking.rewardAddress,
+          timestamp: Date.now(),
+          nominee: staking.stakeAddress,
+        };
+        console.log(unstakeData);
+
+        const txDetails = {
+          from,
+          to: '0x0000000000000000000000000000000000000001',
+          gasPrice,
+          gasLimit: 30000000,
+          data: ethers.utils.hexlify(
+            ethers.utils.toUtf8Bytes(JSON.stringify(unstakeData))
+          ),
+          nonce,
+        };
+
+        const {hash, data, wait} = await walletWithProvider.sendTransaction(
+          txDetails
+        );
+
+        console.log('TX RECEIPT: ', {hash, data});
+        const txConfirmation = await wait();
+        console.log('TX CONFRIMED: ', txConfirmation);
+        staking.isStaked = false;
+        fs.writeFile(
+          path.join(__dirname, '../stake.json'),
+          JSON.stringify(staking, undefined, 2),
+          err => {
+            if (err) console.log(err);
+          }
+        );
       } catch (error) {
         console.log(error);
       }
