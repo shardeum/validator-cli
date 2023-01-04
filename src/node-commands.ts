@@ -90,32 +90,26 @@ export function registerNodeCommands(program: Command) {
     .action(() => {
       // Run the validators clean script
       //TODO: Inject port numbers from config as env vars into pm2
-      exec(
-        `node ${path.join(__dirname, '../../../server/scripts/clean.js')}`,
-        () => {
-          // Exec PM2 to start the shardeum validator
-          pm2.connect(err => {
-            if (err) {
-              console.error(err);
-              throw 'Unable to connect to PM2';
+      exec(`node ${path.join(__dirname, '../../../scripts/clean.js')}`, () => {
+        // Exec PM2 to start the shardeum validator
+        pm2.connect(err => {
+          if (err) {
+            console.error(err);
+            throw 'Unable to connect to PM2';
+          }
+          pm2.start(
+            {
+              script: `${path.join(__dirname, '../../../dist/src/index.js')}`,
+              name: 'validator',
+              output: './validator-logs.txt',
+            },
+            err => {
+              if (err) console.error(err);
+              return pm2.disconnect();
             }
-            pm2.start(
-              {
-                script: `${path.join(
-                  __dirname,
-                  '../../../server/dist/src/index.js'
-                )}`,
-                name: 'validator',
-                output: './validator-logs.txt',
-              },
-              err => {
-                if (err) console.error(err);
-                return pm2.disconnect();
-              }
-            );
-          });
-        }
-      );
+          );
+        });
+      });
     });
 
   program
