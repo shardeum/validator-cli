@@ -8,6 +8,7 @@ import axios from 'axios';
 import defaultConfig from '../config.json';
 import fs from 'fs';
 import {ethers} from 'ethers';
+const yaml = require('js-yaml');
 
 let config = defaultConfig;
 
@@ -80,7 +81,21 @@ export function registerNodeCommands(program: Command) {
           .then(res => res.data)
           .catch(err => console.log(err));
 
-        console.log(merge(status, nodeInfo));
+        console.log(
+          yaml.dump({
+            state: status.status == 'online' ? 'active' : 'inactive', // TODO standby/syncing/active and fill empty values
+            totalTimeValidating: status.uptimeInSeconds,
+            lastActive: '',
+            stakeAmount: staking.stakeAmount,
+            stakeRequirement: '',
+            stakeAddress: staking.stakeAddress,
+            earnings: '',
+            lastPayout: '',
+            lifetimeEarnings: '',
+            cpuUsagePercent: status.cpuUsagePercent,
+            memUsedInBytes: status.memUsedInBytes,
+          })
+        );
         return pm2.disconnect();
       });
     });
@@ -145,12 +160,16 @@ export function registerNodeCommands(program: Command) {
       'Stake the set amount of SHM at the stake address. Rewards will be sent to set reward address.'
     )
     .action(async () => {
+      //TODO should we handle consecutive stakes?
+
       if (staking.stakeAmount === 0) {
-        console.log('Stake amount set to 0');
+        console.error('Stake amount set to 0');
         return;
       }
       if (!process.env.PRIV_KEY) {
-        console.log('Please set private key as PRIV_KEY environment variable');
+        console.error(
+          'Please set private key as PRIV_KEY environment variable'
+        );
         return;
       }
 
@@ -219,13 +238,17 @@ export function registerNodeCommands(program: Command) {
     .command('unstake')
     .description('Remove staked SHM')
     .action(async () => {
+      //TODO should we handle partial unstakes?
+
       if (!staking.isStaked) {
-        console.log('No SHM staked');
+        console.error('No SHM staked');
         return;
       }
 
       if (!process.env.PRIV_KEY) {
-        console.log('Please set private key as PRIV_KEY environment variable');
+        console.error(
+          'Please set private key as PRIV_KEY environment variable'
+        );
         return;
       }
 
