@@ -140,7 +140,7 @@ export function registerNodeCommands(program: Command) {
     });
 
   program
-    .command('send_stake')
+    .command('stake')
     .description(
       'Stake the set amount of SHM at the stake address. Rewards will be sent to set reward address.'
     )
@@ -216,7 +216,7 @@ export function registerNodeCommands(program: Command) {
     });
 
   program
-    .command('remove_stake')
+    .command('unstake')
     .description('Remove staked SHM')
     .action(async () => {
       if (!staking.isStaked) {
