@@ -4,7 +4,6 @@ import {Command} from 'commander';
 
 import cliPackageJson = require('../package.json');
 import dotenv = require('dotenv');
-import {registerAppCommands} from './app-commands';
 import {registerGuiCommands} from './gui-commands';
 import {registerDashboardCommands} from './dashboard-commands';
 import {registerNodeCommands} from './node-commands';
@@ -27,8 +26,6 @@ registerDashboardCommands(program);
 /** === GUI === */
 registerGuiCommands(program);
 
-/** === APP === */
-registerAppCommands(program);
 
 // Run the program and parse the cli
 program.parse();

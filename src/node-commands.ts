@@ -69,17 +69,24 @@ export function registerNodeCommands(program: Command) {
           return pm2.disconnect();
         }
         if (descriptions.length === 0) {
-          console.log('validator not running!');
+          console.log(
+            yaml.dump({
+              state: 'inactive',
+            })
+          );
           return pm2.disconnect();
         }
         const description = descriptions[0];
         const status: ProcessStatus = statusFromPM2(description);
-        const nodeInfo = await axios
-          .get(
-            `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/nodeinfo`
-          )
-          .then(res => res.data)
-          .catch(err => console.log(err));
+
+        if (status.status !== 'stopped') {
+          const nodeInfo = await axios
+            .get(
+              `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/nodeinfo`
+            )
+            .then(res => res.data)
+            .catch(err => console.error(err));
+        }
 
         console.log(
           yaml.dump({
