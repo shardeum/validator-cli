@@ -5,3 +5,4 @@ logs
 statistics.tsv
 validator-logs.txt
 config.json
+gui-config.json

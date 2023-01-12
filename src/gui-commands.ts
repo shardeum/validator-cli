@@ -2,9 +2,25 @@ import pm2 from 'pm2';
 import {Command} from 'commander';
 import path = require('path');
 import {ProcessStatus, statusFromPM2} from './pm2';
+import merge from 'deepmerge';
+import {defaultGuiConfig} from './config/default-gui-config';
+import fs from 'fs';
+import * as crypto from '@shardus/crypto-utils'
+
+
+let config = defaultGuiConfig;
+
+crypto.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347')
+
+if (fs.existsSync(path.join(process.cwd(), 'gui-config.json'))) {
+  const fileConfig = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), 'gui-config.json')).toString()
+  );
+  config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
+}
+
 
 export function registerGuiCommands(program: Command) {
-  const guiPort = process.env.GUI_PORT || '8080';
   const gui = program.command('gui').description('GUI related commands');
 
   gui
@@ -24,7 +40,7 @@ export function registerGuiCommands(program: Command) {
         }
         const description = descriptions[0];
         const status: ProcessStatus = statusFromPM2(description);
-        status.link = `http://localhost:${guiPort}/`;
+        status.link = `http://localhost:${config.gui.port}/`;
         console.log(status);
         return pm2.disconnect();
       });
@@ -42,12 +58,13 @@ export function registerGuiCommands(program: Command) {
         }
         pm2.start(
           {
-            script: `${path.join(
+            cwd:`${path.join(
               __dirname,
-              '../../../gui/backend/build/src/index.js'
+              '../../../gui/'
             )}`,
+            script: `npm start`,
             name: 'operator-gui',
-            env: {PORT: `${guiPort}`},
+            env: {PORT: `${config.gui.port}`},
           },
           err => {
             if (err) console.error(err);
@@ -79,14 +96,39 @@ export function registerGuiCommands(program: Command) {
     .arguments('<port>')
     .description('Set the GUI server port')
     .action(port => {
-      // TODO write to the config file
+      config.gui.port = parseInt(port);
+      fs.writeFile(
+        path.join(process.cwd(), 'gui-config.json'),
+        JSON.stringify(config, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
     });
 
   gui
     .command('password')
     .arguments('<password>')
     .description('Set the GUI server password')
-    .action(() => {
-      // TODO write to the config file
+    .action(password => {
+      config.gui.pass = crypto.hash(password);
+      fs.writeFile(
+        path.join(process.cwd(), 'gui-config.json'),
+        JSON.stringify(config, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+    });
+
+    gui
+    .command('login')
+    .arguments('<password>')
+    .description('verify GUI password')
+    .action(password => {
+      if(crypto.hash(password) !== config.gui.pass) {
+        return console.log("login: unauthorized")
+      }
+      console.log("login: authorized")
     });
 }
