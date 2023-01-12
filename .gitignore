@@ -4,3 +4,4 @@ db
 logs
 statistics.tsv
 validator-logs.txt
+config.json

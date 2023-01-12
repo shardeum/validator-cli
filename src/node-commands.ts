@@ -5,7 +5,7 @@ import path from 'path';
 import {exec} from 'child_process';
 import merge from 'deepmerge';
 import axios from 'axios';
-import defaultConfig from '../config.json';
+import {defaultConfig} from './config/default-config';
 import fs from 'fs';
 import {ethers} from 'ethers';
 const yaml = require('js-yaml');
@@ -19,6 +19,13 @@ let staking = {
   isStaked: false,
 };
 
+if (fs.existsSync(path.join(process.cwd(), 'config.json'))) {
+  const fileConfig = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), 'config.json')).toString()
+  );
+  config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
+}
+
 if (fs.existsSync(path.join(__dirname, '../stake.json'))) {
   const stakeConfig = JSON.parse(
     fs.readFileSync(path.join(__dirname, '../stake.json')).toString()
@@ -26,34 +33,6 @@ if (fs.existsSync(path.join(__dirname, '../stake.json'))) {
   staking = merge(staking, stakeConfig, {
     arrayMerge: (target, source) => source,
   });
-}
-
-if (process.env.APP_IN_PORT) {
-  config = merge(
-    config,
-    {
-      server: {
-        ip: {
-          internalPort: parseInt(process.env.APP_IN_PORT),
-        },
-      },
-    },
-    {arrayMerge: (target, source) => source}
-  );
-}
-
-if (process.env.APP_EX_PORT) {
-  config = merge(
-    config,
-    {
-      server: {
-        ip: {
-          externalPort: parseInt(process.env.APP_EX_PORT),
-        },
-      },
-    },
-    {arrayMerge: (target, source) => source}
-  );
 }
 
 export function registerNodeCommands(program: Command) {
@@ -113,6 +92,15 @@ export function registerNodeCommands(program: Command) {
     .command('start')
     .description('Starts the validator')
     .action(() => {
+      // Save config in current directory to be used by the validator
+      fs.writeFile(
+        path.join(process.cwd(), 'config.json'),
+        JSON.stringify(config, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+
       // Run the validators clean script
       //TODO: Inject port numbers from config as env vars into pm2
       exec(`node ${path.join(__dirname, '../../../scripts/clean.js')}`, () => {
@@ -184,7 +172,7 @@ export function registerNodeCommands(program: Command) {
 
       try {
         const provider = new ethers.providers.JsonRpcProvider(
-          'http://localhost:8080'
+          'http://localhost:8080' //TODO Set JSON-RPC from config
         );
 
         const walletWithProvider = new ethers.Wallet(
@@ -364,14 +352,63 @@ export function registerNodeCommands(program: Command) {
     .description('command to set various config parameters');
 
   setCommand
-    .command('port')
+    .command('external_port')
     .arguments('<port>')
-    .description('Set the port for the validator')
+    .description('Set the external port for the validator')
     .action(port => {
       config.server.ip.externalPort = parseInt(port);
-      fs.writeFile('config.json', JSON.stringify(config, undefined, 2), err => {
-        if (err) console.log(err);
-      });
+      fs.writeFile(
+        path.join(process.cwd(), 'config.json'),
+        JSON.stringify(config, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+    });
+
+  setCommand
+    .command('internal_port')
+    .arguments('<port>')
+    .description('Set the internal port for the validator')
+    .action(port => {
+      config.server.ip.internalPort = parseInt(port);
+      fs.writeFile(
+        path.join(process.cwd(), 'config.json'),
+        JSON.stringify(config, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+    });
+
+  setCommand
+    .command('external_ip')
+    .arguments('<ip>')
+    .description('Set the external ip for the validator')
+    .action(ip => {
+      config.server.ip.externalIp = ip;
+      fs.writeFile(
+        path.join(process.cwd(), 'config.json'),
+        JSON.stringify(config, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+    });
+
+  setCommand
+    .command('internal_ip')
+    .arguments('<ip>')
+    .description('Set the internal ip for the validator')
+    .action(ip => {
+      config.server.ip.internalIp = ip;
+      fs.writeFile(
+        path.join(process.cwd(), 'config.json'),
+        JSON.stringify(config, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
     });
 
   setCommand
