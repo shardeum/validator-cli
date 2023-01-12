@@ -26,6 +26,5 @@ registerDashboardCommands(program);
 /** === GUI === */
 registerGuiCommands(program);
 
-
 // Run the program and parse the cli
 program.parse();
