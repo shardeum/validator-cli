@@ -86,23 +86,25 @@ export function registerNodeCommands(program: Command) {
             )
             .then(res => res.data)
             .catch(err => console.error(err));
+
+          console.log(
+            yaml.dump({
+              state: 'active', // TODO standby/syncing/active and fill empty values
+              totalTimeValidating: status.uptimeInSeconds,
+              lastActive: '',
+              stakeAmount: staking.stakeAmount,
+              stakeRequirement: '',
+              stakeAddress: staking.stakeAddress,
+              earnings: '',
+              lastPayout: '',
+              lifetimeEarnings: '',
+              cpuUsagePercent: status.cpuUsagePercent,
+              memUsedInBytes: status.memUsedInBytes,
+              nodeInfo: nodeInfo.nodeInfo,
+            })
+          );
         }
 
-        console.log(
-          yaml.dump({
-            state: status.status == 'online' ? 'active' : 'inactive', // TODO standby/syncing/active and fill empty values
-            totalTimeValidating: status.uptimeInSeconds,
-            lastActive: '',
-            stakeAmount: staking.stakeAmount,
-            stakeRequirement: '',
-            stakeAddress: staking.stakeAddress,
-            earnings: '',
-            lastPayout: '',
-            lifetimeEarnings: '',
-            cpuUsagePercent: status.cpuUsagePercent,
-            memUsedInBytes: status.memUsedInBytes,
-          })
-        );
         return pm2.disconnect();
       });
     });
