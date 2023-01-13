@@ -132,6 +132,7 @@ export function registerNodeCommands(program: Command) {
               script: `${path.join(__dirname, '../../../dist/src/index.js')}`,
               name: 'validator',
               output: './validator-logs.txt',
+              autorestart: false, // Prevents the node from restarting if it is stopped by '/stop'
             },
             err => {
               if (err) console.error(err);
