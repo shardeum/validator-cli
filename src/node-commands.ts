@@ -8,7 +8,11 @@ import axios from 'axios';
 import {defaultConfig} from './config/default-config';
 import fs from 'fs';
 import {ethers} from 'ethers';
-import {calculateCurrentRewards, getLockedStake} from './utils';
+import {
+  calculateCurrentRewards,
+  fetchInitialParameters,
+  getLockedStake,
+} from './utils';
 import {BN} from 'ethereumjs-util';
 const yaml = require('js-yaml');
 
@@ -69,9 +73,13 @@ export function registerNodeCommands(program: Command) {
             .catch(err => console.error(err));
           let accumulatedRewards = new BN(0);
           let lockedStake = new BN(0);
+          let stakeRequired = '';
 
           if (staking.isStaked) {
             try {
+              const initParams = await fetchInitialParameters(config);
+              stakeRequired = new BN(initParams.stakeRequired, 16).toString();
+
               accumulatedRewards = await calculateCurrentRewards(
                 config,
                 nodeInfo.nodeInfo.publicKey
@@ -93,7 +101,7 @@ export function registerNodeCommands(program: Command) {
               totalTimeValidating: status.uptimeInSeconds,
               lastActive: '',
               stakeAmount: staking.stakeAmount,
-              stakeRequirement: '',
+              stakeRequirement: ethers.utils.formatEther(stakeRequired),
               stakeAddress: staking.stakeAddress,
               earnings: '',
               lastPayout: '',
