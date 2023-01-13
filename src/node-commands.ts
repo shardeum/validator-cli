@@ -128,7 +128,15 @@ export function registerNodeCommands(program: Command) {
               nodeInfo: nodeInfo.nodeInfo,
             })
           );
+
+          return pm2.disconnect();
         }
+
+        console.log(
+          yaml.dump({
+            state: 'inactive',
+          })
+        );
 
         return pm2.disconnect();
       });
