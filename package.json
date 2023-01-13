@@ -29,6 +29,7 @@
     "commander": "^9.4.1",
     "deepmerge": "^4.2.2",
     "dotenv": "^16.0.3",
+    "ethereumjs-util": "^7.1.5",
     "ethers": "^5.7.2",
     "js-yaml": "^4.1.0",
     "pm2": "^5.2.2"

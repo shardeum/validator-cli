@@ -8,6 +8,8 @@ import axios from 'axios';
 import {defaultConfig} from './config/default-config';
 import fs from 'fs';
 import {ethers} from 'ethers';
+import {calculateCurrentRewards} from './utils';
+import {BN} from 'ethereumjs-util';
 const yaml = require('js-yaml');
 
 let config = defaultConfig;
@@ -65,6 +67,18 @@ export function registerNodeCommands(program: Command) {
             )
             .then(res => res.data)
             .catch(err => console.error(err));
+          let accumulatedRewards = new BN(0);
+
+          if (staking.isStaked) {
+            try {
+              accumulatedRewards = await calculateCurrentRewards(
+                config,
+                nodeInfo.nodeInfo.publicKey
+              );
+            } catch (error) {
+              accumulatedRewards = new BN(0);
+            }
+          }
 
           console.log(
             yaml.dump({
@@ -79,6 +93,9 @@ export function registerNodeCommands(program: Command) {
               lifetimeEarnings: '',
               cpuUsagePercent: status.cpuUsagePercent,
               memUsedInBytes: status.memUsedInBytes,
+              currentRewards: ethers.utils.formatEther(
+                accumulatedRewards.toString()
+              ),
               nodeInfo: nodeInfo.nodeInfo,
             })
           );

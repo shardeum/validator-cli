@@ -25,3 +25,5 @@ export const defaultConfig = {
     },
   },
 };
+
+export type configType = typeof defaultConfig;
