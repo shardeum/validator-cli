@@ -75,6 +75,17 @@ export function registerNodeCommands(program: Command) {
           let lockedStake = new BN(0);
           let stakeRequired = '';
 
+          if (nodeInfo.nodeInfo.status === 'active') {
+            staking.isStaked = true;
+            fs.writeFile(
+              path.join(__dirname, '../stake.json'),
+              JSON.stringify(staking, undefined, 2),
+              err => {
+                if (err) console.log(err);
+              }
+            );
+          }
+
           if (staking.isStaked) {
             try {
               const initParams = await fetchInitialParameters(config);
