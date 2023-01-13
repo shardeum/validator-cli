@@ -34,6 +34,12 @@ async function fetchNodeParameters(config: configType, nodePubKey: string) {
   return nodeParams.account.data;
 }
 
+export async function getLockedStake(config: configType, nodePubKey: string) {
+  const nodeData = await fetchNodeParameters(config, nodePubKey);
+  const lockedStake = new BN(nodeData.stakeLock, 16);
+  return lockedStake;
+}
+
 export async function calculateCurrentRewards(
   config: configType,
   nodePubKey: string
