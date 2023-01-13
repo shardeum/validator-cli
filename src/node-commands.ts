@@ -101,7 +101,9 @@ export function registerNodeCommands(program: Command) {
               totalTimeValidating: status.uptimeInSeconds,
               lastActive: '',
               stakeAmount: staking.stakeAmount,
-              stakeRequirement: ethers.utils.formatEther(stakeRequired),
+              stakeRequirement: stakeRequired
+                ? ethers.utils.formatEther(stakeRequired)
+                : '',
               stakeAddress: staking.stakeAddress,
               earnings: '',
               lastPayout: '',
