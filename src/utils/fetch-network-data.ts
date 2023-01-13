@@ -42,7 +42,7 @@ export async function calculateCurrentRewards(
   const nodeData = await fetchNodeParameters(config, nodePubKey);
   const nodeRewardAmount = new BN(initParams.nodeRewardAmount, 16);
   const nodeRewardInterval = new BN(initParams.nodeRewardInterval);
-  const nodeActiveDuration = Date.now() - nodeData.rewardStartTime;
+  const nodeActiveDuration = Date.now() - nodeData.rewardStartTime * 1000;
 
   const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration));
   return totalReward.div(nodeRewardInterval);
