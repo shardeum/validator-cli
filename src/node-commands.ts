@@ -8,11 +8,7 @@ import axios from 'axios';
 import {defaultConfig} from './config/default-config';
 import fs from 'fs';
 import {ethers} from 'ethers';
-import {
-  calculateCurrentRewards,
-  fetchInitialParameters,
-  getLockedStake,
-} from './utils';
+import { getAccountInfoParams } from './utils';
 import {BN} from 'ethereumjs-util';
 const yaml = require('js-yaml');
 
@@ -74,6 +70,7 @@ export function registerNodeCommands(program: Command) {
           let accumulatedRewards = new BN(0);
           let lockedStake = new BN(0);
           let stakeRequired = '';
+          let nominator = '';
 
           if (nodeInfo.nodeInfo.status === 'active') {
             staking.isStaked = true;
@@ -88,18 +85,7 @@ export function registerNodeCommands(program: Command) {
 
           if (staking.isStaked) {
             try {
-              const initParams = await fetchInitialParameters(config);
-              stakeRequired = new BN(initParams.stakeRequired, 16).toString();
-
-              accumulatedRewards = await calculateCurrentRewards(
-                config,
-                nodeInfo.nodeInfo.publicKey
-              );
-
-              lockedStake = await getLockedStake(
-                config,
-                nodeInfo.nodeInfo.publicKey
-              );
+              ({nominator, accumulatedRewards, lockedStake, stakeRequired} = await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey));
             } catch (error) {
               accumulatedRewards = new BN(0);
               lockedStake = new BN(0);
@@ -115,6 +101,7 @@ export function registerNodeCommands(program: Command) {
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
                 : '',
+              nominatorAddress: nominator,
               stakeAddress: staking.stakeAddress,
               earnings: '',
               lastPayout: '',

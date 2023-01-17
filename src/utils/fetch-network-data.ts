@@ -34,22 +34,22 @@ async function fetchNodeParameters(config: configType, nodePubKey: string) {
   return nodeParams.account.data;
 }
 
-export async function getLockedStake(config: configType, nodePubKey: string) {
+export async function getAccountInfoParams(config: configType, nodePubKey: string) {
+  const initParams = await fetchInitialParameters(config);
+  const stakeRequired = new BN(initParams.stakeRequired, 16).toString();
   const nodeData = await fetchNodeParameters(config, nodePubKey);
   const lockedStake = new BN(nodeData.stakeLock, 16);
-  return lockedStake;
-}
-
-export async function calculateCurrentRewards(
-  config: configType,
-  nodePubKey: string
-) {
-  const initParams = await fetchInitialParameters(config);
-  const nodeData = await fetchNodeParameters(config, nodePubKey);
   const nodeRewardAmount = new BN(initParams.nodeRewardAmount, 16);
   const nodeRewardInterval = new BN(initParams.nodeRewardInterval);
   const nodeActiveDuration = Date.now() - nodeData.rewardStartTime * 1000;
 
   const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration));
-  return totalReward.div(nodeRewardInterval);
+
+  return { 
+    lockedStake, 
+    stakeRequired,
+    nominator: nodeData.nominator,
+    accumulatedRewards: totalReward.div(nodeRewardInterval) 
+  };
 }
+
