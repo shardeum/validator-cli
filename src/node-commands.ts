@@ -149,27 +149,33 @@ export function registerNodeCommands(program: Command) {
 
       // Run the validators clean script
       //TODO: Inject port numbers from config as env vars into pm2
-      exec(`node ${path.join(__dirname, '../../../scripts/clean.js')}`, () => {
-        // Exec PM2 to start the shardeum validator
-        pm2.connect(err => {
-          if (err) {
-            console.error(err);
-            throw 'Unable to connect to PM2';
-          }
-          pm2.start(
-            {
-              script: `${path.join(__dirname, '../../../dist/src/index.js')}`,
-              name: 'validator',
-              output: './validator-logs.txt',
-              autorestart: false, // Prevents the node from restarting if it is stopped by '/stop'
-            },
-            err => {
-              if (err) console.error(err);
-              return pm2.disconnect();
+      exec(
+        `node ${path.join(__dirname, '../../../validator/scripts/clean.js')}`,
+        () => {
+          // Exec PM2 to start the shardeum validator
+          pm2.connect(err => {
+            if (err) {
+              console.error(err);
+              throw 'Unable to connect to PM2';
             }
-          );
-        });
-      });
+            pm2.start(
+              {
+                script: `${path.join(
+                  __dirname,
+                  '../../../validator/dist/src/index.js'
+                )}`,
+                name: 'validator',
+                output: './validator-logs.txt',
+                autorestart: false, // Prevents the node from restarting if it is stopped by '/stop'
+              },
+              err => {
+                if (err) console.error(err);
+                return pm2.disconnect();
+              }
+            );
+          });
+        }
+      );
     });
 
   program
