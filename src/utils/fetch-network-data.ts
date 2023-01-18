@@ -34,7 +34,10 @@ async function fetchNodeParameters(config: configType, nodePubKey: string) {
   return nodeParams.account.data;
 }
 
-export async function getAccountInfoParams(config: configType, nodePubKey: string) {
+export async function getAccountInfoParams(
+  config: configType,
+  nodePubKey: string
+) {
   const initParams = await fetchInitialParameters(config);
   const stakeRequired = new BN(initParams.stakeRequired, 16).toString();
   const nodeData = await fetchNodeParameters(config, nodePubKey);
@@ -45,11 +48,10 @@ export async function getAccountInfoParams(config: configType, nodePubKey: strin
 
   const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration));
 
-  return { 
-    lockedStake, 
+  return {
+    lockedStake,
     stakeRequired,
     nominator: nodeData.nominator,
-    accumulatedRewards: totalReward.div(nodeRewardInterval) 
+    accumulatedRewards: totalReward.div(nodeRewardInterval),
   };
 }
-

@@ -1,6 +1,6 @@
 export const defaultGuiConfig = {
-  gui:{
+  gui: {
     port: 8080,
-    pass: ''
-  }
+    pass: '',
+  },
 };

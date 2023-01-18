@@ -5,12 +5,11 @@ import {ProcessStatus, statusFromPM2} from './pm2';
 import merge from 'deepmerge';
 import {defaultGuiConfig} from './config/default-gui-config';
 import fs from 'fs';
-import * as crypto from '@shardus/crypto-utils'
-
+import * as crypto from '@shardus/crypto-utils';
 
 let config = defaultGuiConfig;
 
-crypto.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347')
+crypto.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
 
 if (fs.existsSync(path.join(process.cwd(), 'gui-config.json'))) {
   const fileConfig = JSON.parse(
@@ -18,7 +17,6 @@ if (fs.existsSync(path.join(process.cwd(), 'gui-config.json'))) {
   );
   config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
 }
-
 
 export function registerGuiCommands(program: Command) {
   const gui = program.command('gui').description('GUI related commands');
@@ -58,11 +56,8 @@ export function registerGuiCommands(program: Command) {
         }
         pm2.start(
           {
-            cwd:`${path.join(
-              __dirname,
-              '../../../gui/'
-            )}`,
-            script: `npm start`,
+            cwd: `${path.join(__dirname, '../../../gui/')}`,
+            script: 'npm start',
             name: 'operator-gui',
             env: {PORT: `${config.gui.port}`},
           },
@@ -121,14 +116,14 @@ export function registerGuiCommands(program: Command) {
       );
     });
 
-    gui
+  gui
     .command('login')
     .arguments('<password>')
     .description('verify GUI password')
     .action(password => {
-      if(crypto.hash(password) !== config.gui.pass) {
-        return console.log("login: unauthorized")
+      if (crypto.hash(password) !== config.gui.pass) {
+        return console.log('login: unauthorized');
       }
-      console.log("login: authorized")
+      console.log('login: authorized');
     });
 }

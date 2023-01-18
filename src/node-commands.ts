@@ -8,7 +8,7 @@ import axios from 'axios';
 import {defaultConfig} from './config/default-config';
 import fs from 'fs';
 import {ethers} from 'ethers';
-import { getAccountInfoParams } from './utils';
+import {getAccountInfoParams} from './utils';
 import {BN} from 'ethereumjs-util';
 const yaml = require('js-yaml');
 
@@ -85,7 +85,12 @@ export function registerNodeCommands(program: Command) {
 
           if (staking.isStaked) {
             try {
-              ({nominator, accumulatedRewards, lockedStake, stakeRequired} = await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey));
+              // prettier-ignore
+              ({nominator, accumulatedRewards, lockedStake, stakeRequired} =
+                await getAccountInfoParams(
+                  config,
+                  nodeInfo.nodeInfo.publicKey
+                ));
             } catch (error) {
               accumulatedRewards = new BN(0);
               lockedStake = new BN(0);
