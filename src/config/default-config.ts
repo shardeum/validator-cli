@@ -13,9 +13,9 @@ export const defaultConfig = {
     },
     ip: {
       externalIp: '127.0.0.1',
-      externalPort: 9006,
+      externalPort: 9001,
       internalIp: '127.0.0.1',
-      internalPort: 10006,
+      internalPort: 10001,
     },
     reporting: {
       report: true,
