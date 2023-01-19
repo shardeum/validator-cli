@@ -54,37 +54,18 @@ export function registerGuiCommands(program: Command) {
           console.error(err);
           throw 'Unable to connect to PM2';
         }
+        // Start next.js front end on port 3000
         pm2.start(
           {
-            script: `${path.join(
-              __dirname,
-              '../../../gui/backend/build/src/index.js'
-            )}`,
-            name: 'operator-gui-backend',
+            name: 'operator-gui',
+            cwd: `${path.join(__dirname, '../../../gui')}`,
+            script: 'npm',
+            args: 'start',
             env: {PORT: `${config.gui.port}`},
           },
           err => {
-            if (err) {
-              console.error(err);
-              return pm2.disconnect();
-            }
-
-            // Start next.js front end on port 3000
-            pm2.start(
-              {
-                name: 'operator-gui-frontend',
-                cwd: `${path.join(
-                  __dirname,
-                  '../../../gui/frontend/dashboard-gui'
-                )}`,
-                script: 'npm',
-                args: 'start',
-              },
-              err => {
-                if (err) console.error(err);
-                return pm2.disconnect();
-              }
-            );
+            if (err) console.error(err);
+            return pm2.disconnect();
           }
         );
       });
@@ -101,15 +82,11 @@ export function registerGuiCommands(program: Command) {
           throw 'Unable to connect to PM2';
         }
 
-        pm2.stop('operator-gui-backend', err => {
+        pm2.stop('operator-gui', err => {
           if (err) console.log(err);
           pm2.disconnect();
         });
 
-        pm2.stop('operator-gui-frontend', err => {
-          if (err) console.log(err);
-          pm2.disconnect();
-        });
       });
     });
 
