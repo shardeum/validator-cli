@@ -1,7 +1,7 @@
 import pm2 from 'pm2';
 import {Command} from 'commander';
 import path = require('path');
-import {ProcessStatus, statusFromPM2} from './pm2';
+import {Pm2ProcessStatus, statusFromPM2} from './pm2';
 import merge from 'deepmerge';
 import {defaultGuiConfig} from './config/default-gui-config';
 import fs from 'fs';
@@ -37,7 +37,7 @@ export function registerGuiCommands(program: Command) {
           return pm2.disconnect();
         }
         const description = descriptions[0];
-        const status: ProcessStatus = statusFromPM2(description);
+        const status: Pm2ProcessStatus = statusFromPM2(description);
         status.link = `http://localhost:${config.gui.port}/`;
         console.log(status);
         return pm2.disconnect();
@@ -86,7 +86,6 @@ export function registerGuiCommands(program: Command) {
           if (err) console.log(err);
           pm2.disconnect();
         });
-
       });
     });
 

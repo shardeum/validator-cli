@@ -1,4 +1,4 @@
-import {ProcessStatus, statusFromPM2} from './pm2';
+import {Pm2ProcessStatus, statusFromPM2} from './pm2';
 import pm2 from 'pm2';
 import {Command} from 'commander';
 import path from 'path';
@@ -10,6 +10,7 @@ import fs from 'fs';
 import {ethers} from 'ethers';
 import {getAccountInfoParams} from './utils';
 import {BN} from 'ethereumjs-util';
+import {getPerformanceStatus} from './utils/performance-stats';
 const yaml = require('js-yaml');
 
 let config = defaultConfig;
@@ -113,16 +114,18 @@ export function registerNodeCommands(program: Command) {
           console.error(err);
           return pm2.disconnect();
         }
+        const performance = await getPerformanceStatus();
         if (descriptions.length === 0) {
           console.log(
             yaml.dump({
               state: 'inactive',
+              performance,
             })
           );
           return pm2.disconnect();
         }
         const description = descriptions[0];
-        const status: ProcessStatus = statusFromPM2(description);
+        const status: Pm2ProcessStatus = statusFromPM2(description);
 
         if (status.status !== 'stopped') {
           const nodeInfo = await axios
@@ -175,8 +178,7 @@ export function registerNodeCommands(program: Command) {
               earnings: '',
               lastPayout: '',
               lifetimeEarnings: '',
-              cpuUsagePercent: status.cpuUsagePercent,
-              memUsedInBytes: status.memUsedInBytes,
+              performance,
               currentRewards: ethers.utils.formatEther(
                 accumulatedRewards.toString()
               ),
@@ -191,6 +193,7 @@ export function registerNodeCommands(program: Command) {
         console.log(
           yaml.dump({
             state: 'inactive',
+            performance,
           })
         );
 
