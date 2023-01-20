@@ -21,11 +21,25 @@ let staking = {
   isStaked: false,
 };
 
+let rpcServer = {
+  ip: 'localhost',
+  port: '8080',
+};
+
 if (fs.existsSync(path.join(process.cwd(), 'config.json'))) {
   const fileConfig = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), 'config.json')).toString()
   );
   config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
+}
+
+if (fs.existsSync(path.join(__dirname, '../rpc-server.json'))) {
+  const fileConfig = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '../rpc-server.json')).toString()
+  );
+  rpcServer = merge(rpcServer, fileConfig, {
+    arrayMerge: (target, source) => source,
+  });
 }
 
 if (fs.existsSync(path.join(__dirname, '../stake.json'))) {
@@ -225,7 +239,7 @@ export function registerNodeCommands(program: Command) {
 
       try {
         const provider = new ethers.providers.JsonRpcProvider(
-          'http://localhost:8080' //TODO Set JSON-RPC from config
+          `http://${rpcServer.ip}:${rpcServer.port}` //TODO Set JSON-RPC from config
         );
 
         const walletWithProvider = new ethers.Wallet(
@@ -304,7 +318,7 @@ export function registerNodeCommands(program: Command) {
 
       try {
         const provider = new ethers.providers.JsonRpcProvider(
-          'http://localhost:8080'
+          `http://${rpcServer.ip}:${rpcServer.port}`
         );
 
         const walletWithProvider = new ethers.Wallet(
@@ -458,6 +472,36 @@ export function registerNodeCommands(program: Command) {
       fs.writeFile(
         path.join(process.cwd(), 'config.json'),
         JSON.stringify(config, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+    });
+
+  setCommand
+    .command('rpc_ip')
+    .argument('<ip>')
+    .description("Set the RPC server's IP address")
+    .action(ip => {
+      rpcServer.ip = ip;
+      fs.writeFile(
+        path.join(__dirname, '../rpc-server.json'),
+        JSON.stringify(rpcServer, undefined, 2),
+        err => {
+          if (err) console.log(err);
+        }
+      );
+    });
+
+  setCommand
+    .command('rpc_port')
+    .argument('<port>')
+    .description("Set the RPC server's port")
+    .action(port => {
+      rpcServer.port = port;
+      fs.writeFile(
+        path.join(__dirname, '../rpc-server.json'),
+        JSON.stringify(rpcServer, undefined, 2),
         err => {
           if (err) console.log(err);
         }
