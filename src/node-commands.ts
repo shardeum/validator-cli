@@ -239,7 +239,7 @@ export function registerNodeCommands(program: Command) {
 
       try {
         const provider = new ethers.providers.JsonRpcProvider(
-          `http://${rpcServer.ip}:${rpcServer.port}` //TODO Set JSON-RPC from config
+          `http://${rpcServer.ip}:${rpcServer.port}`
         );
 
         const walletWithProvider = new ethers.Wallet(
@@ -371,13 +371,6 @@ export function registerNodeCommands(program: Command) {
         console.log(error);
       }
     });
-
-  // program
-  //   .command('joined')
-  //   .description('Check the validator state standby/syncing/active')
-  //   .action(() => {
-  //     //TODO interact with node
-  //   });
 
   program
     .command('reward_address')
@@ -521,7 +514,6 @@ export function registerNodeCommands(program: Command) {
           if (err) console.log(err);
         }
       );
-      //TODO: Send TX
     });
 
   // setCommand
@@ -545,7 +537,6 @@ export function registerNodeCommands(program: Command) {
           if (err) console.log(err);
         }
       );
-      //TODO: Send TX
     });
 
   setCommand
@@ -561,6 +552,5 @@ export function registerNodeCommands(program: Command) {
           if (err) console.log(err);
         }
       );
-      //TODO: Send TX
     });
 }
