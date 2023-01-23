@@ -51,6 +51,56 @@ if (fs.existsSync(path.join(__dirname, '../stake.json'))) {
   });
 }
 
+if (process.env.APP_SEEDLIST) {
+  config = merge(
+    config,
+    {
+      server: {
+        p2p: {
+          existingArchivers: [
+            {
+              ip: process.env.APP_SEEDLIST,
+              port: 4000,
+              publicKey:
+                '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
+            },
+          ],
+        },
+      },
+    },
+    {arrayMerge: (target, source) => source}
+  );
+}
+
+if (process.env.APP_MONITOR) {
+  config = merge(
+    config,
+    {
+      server: {
+        reporting: {
+          recipient: `http://${process.env.APP_MONITOR}:3000/api`,
+        },
+      },
+    },
+    {arrayMerge: (target, source) => source}
+  );
+}
+
+if (process.env.APP_IP) {
+  config = merge(
+    config,
+    {
+      server: {
+        ip: {
+          externalIp: process.env.APP_IP,
+          internalIp: process.env.APP_IP,
+        },
+      },
+    },
+    {arrayMerge: (target, source) => source}
+  );
+}
+
 export function registerNodeCommands(program: Command) {
   program
     .command('status')
