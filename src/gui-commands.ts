@@ -73,6 +73,20 @@ export function registerGuiCommands(program: Command) {
     });
 
   gui
+    .command('version')
+    .description('Show the GUI version')
+    .action(() => {
+      const guiPackageJsonPath = path.join(
+        __dirname,
+        '../../../gui/package.json'
+      );
+      const packageJson = JSON.parse(
+        fs.readFileSync(guiPackageJsonPath).toString()
+      );
+      console.log(packageJson.version);
+    });
+
+  gui
     .command('stop')
     .description('Stops the GUI server')
     .action(() => {

@@ -12,6 +12,7 @@ import {getAccountInfoParams} from './utils';
 import {BN} from 'ethereumjs-util';
 import {getPerformanceStatus} from './utils/performance-stats';
 const yaml = require('js-yaml');
+import {version} from '../package.json';
 
 let config = defaultConfig;
 
@@ -474,10 +475,39 @@ export function registerNodeCommands(program: Command) {
     });
 
   program
-    .command('update')
-    .description('Shows instructions for version update')
+    .command('version')
+    .description('Show the CLI version')
     .action(() => {
-      console.log('Run the ./update.sh script in the installer root directory');
+      console.log(version);
+    });
+
+  program
+    .command('update')
+    .description('Update the CLI and the GUI')
+    .action(() => {
+      exec(
+        'sh update.sh',
+        {cwd: path.join(__dirname, '../..')},
+        (error, stdout, stderr) => {
+          console.log(stdout);
+          console.log(stderr);
+          if (error !== null) {
+            console.log(`exec error: ${error}`);
+          }
+        }
+      );
+
+      exec(
+        'sh update.sh',
+        {cwd: path.join(__dirname, '../../../gui')},
+        (error, stdout, stderr) => {
+          console.log(stdout);
+          console.log(stderr);
+          if (error !== null) {
+            console.log(`exec error: ${error}`);
+          }
+        }
+      );
     });
 
     program
