@@ -93,8 +93,10 @@ if (process.env.APP_IP) {
     {
       server: {
         ip: {
-          externalIp: process.env.APP_IP,
-          internalIp: process.env.APP_IP,
+          externalIp:
+            process.env.APP_IP === 'auto' ? '127.0.0.1' : process.env.APP_IP,
+          internalIp:
+            process.env.APP_IP === 'auto' ? '127.0.0.1' : process.env.APP_IP,
         },
       },
     },
@@ -105,6 +107,14 @@ const dashboardPackageJson = JSON.parse(
   readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
 );
 
+
+fs.writeFile(
+  path.join(__dirname, '../config.json'),
+  JSON.stringify(config, undefined, 2),
+  err => {
+    if (err) console.log(err);
+  }
+);
 
 export function registerNodeCommands(program: Command) {
   program
