@@ -27,9 +27,9 @@ let rpcServer = {
   port: '8080',
 };
 
-if (fs.existsSync(path.join(process.cwd(), 'config.json'))) {
+if (fs.existsSync(path.join(__dirname, '../config.json'))) {
   const fileConfig = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), 'config.json')).toString()
+    fs.readFileSync(path.join(__dirname, '../config.json')).toString()
   );
   config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
 }
@@ -211,7 +211,7 @@ export function registerNodeCommands(program: Command) {
     .action(() => {
       // Save config in current directory to be used by the validator
       fs.writeFile(
-        path.join(process.cwd(), 'config.json'),
+        path.join(__dirname, '../config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.log(err);
@@ -237,6 +237,7 @@ export function registerNodeCommands(program: Command) {
                 )}`,
                 name: 'validator',
                 output: './validator-logs.txt',
+                cwd: path.join(__dirname, '../'),
                 autorestart: false, // Prevents the node from restarting if it is stopped by '/stop'
               },
               err => {
@@ -493,7 +494,7 @@ export function registerNodeCommands(program: Command) {
     .action(port => {
       config.server.ip.externalPort = parseInt(port);
       fs.writeFile(
-        path.join(process.cwd(), 'config.json'),
+        path.join(__dirname, '../config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
@@ -508,7 +509,7 @@ export function registerNodeCommands(program: Command) {
     .action(port => {
       config.server.ip.internalPort = parseInt(port);
       fs.writeFile(
-        path.join(process.cwd(), 'config.json'),
+        path.join(__dirname, '../config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
@@ -523,7 +524,7 @@ export function registerNodeCommands(program: Command) {
     .action(ip => {
       config.server.ip.externalIp = ip;
       fs.writeFile(
-        path.join(process.cwd(), 'config.json'),
+        path.join(__dirname, '../config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
@@ -538,7 +539,7 @@ export function registerNodeCommands(program: Command) {
     .action(ip => {
       config.server.ip.internalIp = ip;
       fs.writeFile(
-        path.join(process.cwd(), 'config.json'),
+        path.join(__dirname, '../config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
