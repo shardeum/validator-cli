@@ -6,6 +6,7 @@ import merge from 'deepmerge';
 import {defaultGuiConfig} from './config/default-gui-config';
 import fs from 'fs';
 import * as crypto from '@shardus/crypto-utils';
+const yaml = require('js-yaml');
 
 let config = defaultGuiConfig;
 
@@ -39,7 +40,7 @@ export function registerGuiCommands(program: Command) {
         const description = descriptions[0];
         const status: Pm2ProcessStatus = statusFromPM2(description);
         status.link = `http://localhost:${config.gui.port}/`;
-        console.log(status);
+        console.log(yaml.dump(status));
         return pm2.disconnect();
       });
     });
@@ -114,7 +115,7 @@ export function registerGuiCommands(program: Command) {
         path.join(process.cwd(), 'gui-config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -125,8 +126,9 @@ export function registerGuiCommands(program: Command) {
     .description('verify GUI password')
     .action(password => {
       if (crypto.hash(password) !== config.gui.pass) {
-        return console.log('login: unauthorized');
+        console.log(yaml.dump({login: 'unauthorized'}));
+        return;
       }
-      console.log('login: authorized');
+      console.log(yaml.dump({login: 'authorized'}));
     });
 }

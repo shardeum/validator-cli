@@ -5,7 +5,6 @@ import {Command} from 'commander';
 import cliPackageJson = require('../package.json');
 import dotenv = require('dotenv');
 import {registerGuiCommands} from './gui-commands';
-import {registerDashboardCommands} from './dashboard-commands';
 import {registerNodeCommands} from './node-commands';
 
 dotenv.config();
@@ -19,9 +18,6 @@ program
 
 /** === NODE === */
 registerNodeCommands(program);
-
-/** === DASHBOARD === */
-registerDashboardCommands(program);
 
 /** === GUI === */
 registerGuiCommands(program);

@@ -6,7 +6,7 @@ import {exec} from 'child_process';
 import merge from 'deepmerge';
 import axios from 'axios';
 import {defaultConfig} from './config/default-config';
-import fs from 'fs';
+import fs, { readFileSync } from 'fs';
 import {ethers} from 'ethers';
 import {getAccountInfoParams} from './utils';
 import {BN} from 'ethereumjs-util';
@@ -101,6 +101,10 @@ if (process.env.APP_IP) {
     {arrayMerge: (target, source) => source}
   );
 }
+const dashboardPackageJson = JSON.parse(
+  readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
+);
+
 
 export function registerNodeCommands(program: Command) {
   program
@@ -265,7 +269,7 @@ export function registerNodeCommands(program: Command) {
         }
 
         pm2.stop('validator', err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
           return pm2.disconnect();
         });
       });
@@ -343,11 +347,11 @@ export function registerNodeCommands(program: Command) {
           path.join(__dirname, '../stake.json'),
           JSON.stringify(staking, undefined, 2),
           err => {
-            if (err) console.log(err);
+            if (err) console.error(err);
           }
         );
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     });
 
@@ -417,11 +421,11 @@ export function registerNodeCommands(program: Command) {
           path.join(__dirname, '../stake.json'),
           JSON.stringify(staking, undefined, 2),
           err => {
-            if (err) console.log(err);
+            if (err) console.error(err);
           }
         );
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     });
 
@@ -429,35 +433,53 @@ export function registerNodeCommands(program: Command) {
     .command('reward_address')
     .description('Query the validator reward address')
     .action(() => {
-      console.log(staking.rewardAddress);
+      console.log(
+        yaml.dump({
+          reward_address: staking.rewardAddress,
+        })
+      );
     });
 
   program
     .command('stake_amount')
     .description('Query the set stake amount')
     .action(() => {
-      console.log(staking.stakeAmount);
+      console.log(
+        yaml.dump({
+          stake_amount: staking.stakeAmount,
+        })
+      );
     });
 
   program
     .command('stake_address')
     .description('Query the validator stake address')
     .action(() => {
-      console.log(staking.stakeAddress);
+      console.log(
+        yaml.dump({
+          stake_address: staking.stakeAddress,
+        })
+      );
     });
-
-  // program
-  //   .command('version')
-  //   .description('Shows my version, latest version and minimum version')
-  //   .action(() => {
-  //     //TODO interact with node
-  //   });
 
   program
     .command('update')
     .description('Shows instructions for version update')
     .action(() => {
       console.log('Run the ./update.sh script in the installer root directory');
+    });
+
+    program
+    .command('version')
+    .description(
+      'Shows the installed version, latest version and minimum version of the operator dashboard'
+    )
+    .action(() => {
+      console.log( yaml.dump({
+        runningVersion: dashboardPackageJson.version,
+        minimumVersion: "1.0.0", //TODO query from some official online source
+        latestVersion: "1.0.0",
+      }));
     });
 
   const setCommand = program
@@ -474,7 +496,7 @@ export function registerNodeCommands(program: Command) {
         path.join(process.cwd(), 'config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -489,7 +511,7 @@ export function registerNodeCommands(program: Command) {
         path.join(process.cwd(), 'config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -504,7 +526,7 @@ export function registerNodeCommands(program: Command) {
         path.join(process.cwd(), 'config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -519,7 +541,7 @@ export function registerNodeCommands(program: Command) {
         path.join(process.cwd(), 'config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -534,7 +556,7 @@ export function registerNodeCommands(program: Command) {
         path.join(__dirname, '../rpc-server.json'),
         JSON.stringify(rpcServer, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -549,7 +571,7 @@ export function registerNodeCommands(program: Command) {
         path.join(__dirname, '../rpc-server.json'),
         JSON.stringify(rpcServer, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -564,7 +586,7 @@ export function registerNodeCommands(program: Command) {
         path.join(__dirname, '../stake.json'),
         JSON.stringify(staking, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -587,7 +609,7 @@ export function registerNodeCommands(program: Command) {
         path.join(__dirname, '../stake.json'),
         JSON.stringify(staking, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
@@ -602,8 +624,10 @@ export function registerNodeCommands(program: Command) {
         path.join(__dirname, '../stake.json'),
         JSON.stringify(staking, undefined, 2),
         err => {
-          if (err) console.log(err);
+          if (err) console.error(err);
         }
       );
     });
+
+
 }
