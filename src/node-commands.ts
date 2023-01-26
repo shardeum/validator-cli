@@ -6,13 +6,13 @@ import {exec} from 'child_process';
 import merge from 'deepmerge';
 import axios from 'axios';
 import {defaultConfig} from './config/default-config';
-import fs, { readFileSync } from 'fs';
+import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
 import {getAccountInfoParams} from './utils';
 import {BN} from 'ethereumjs-util';
 import {getPerformanceStatus} from './utils/performance-stats';
 const yaml = require('js-yaml');
-import {version} from '../package.json';
+import {getLatestCliVersion} from './utils/project-data';
 
 let config = defaultConfig;
 
@@ -107,7 +107,6 @@ if (process.env.APP_IP) {
 const dashboardPackageJson = JSON.parse(
   readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
 );
-
 
 fs.writeFile(
   path.join(__dirname, '../config.json'),
@@ -475,13 +474,6 @@ export function registerNodeCommands(program: Command) {
     });
 
   program
-    .command('version')
-    .description('Show the CLI version')
-    .action(() => {
-      console.log(version);
-    });
-
-  program
     .command('update')
     .description('Update the CLI and the GUI')
     .action(() => {
@@ -510,17 +502,19 @@ export function registerNodeCommands(program: Command) {
       );
     });
 
-    program
+  program
     .command('version')
     .description(
       'Shows the installed version, latest version and minimum version of the operator dashboard'
     )
-    .action(() => {
-      console.log( yaml.dump({
-        runningVersion: dashboardPackageJson.version,
-        minimumVersion: "1.0.0", //TODO query from some official online source
-        latestVersion: "1.0.0",
-      }));
+    .action(async () => {
+      console.log(
+        yaml.dump({
+          runningVersion: dashboardPackageJson.version,
+          minimumVersion: '1.0.0', //TODO query from some official online source
+          latestVersion: await getLatestCliVersion(),
+        })
+      );
     });
 
   const setCommand = program
@@ -669,6 +663,4 @@ export function registerNodeCommands(program: Command) {
         }
       );
     });
-
-
 }

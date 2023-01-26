@@ -48,28 +48,14 @@ export function registerGuiCommands(program: Command) {
   gui
     .command('start')
     .description('Starts the GUI server')
-    .action(() => {
-      // Exec PM2 to start the GUI server
-      pm2.connect(err => {
-        if (err) {
-          console.error(err);
-          throw 'Unable to connect to PM2';
-        }
-        // Start next.js front end on port 3000
-        pm2.start(
-          {
-            name: 'operator-gui',
-            cwd: `${path.join(__dirname, '../../../gui')}`,
-            script: 'npm',
-            args: 'start',
-            env: {PORT: `${config.gui.port}`},
-          },
-          err => {
-            if (err) console.error(err);
-            return pm2.disconnect();
-          }
-        );
-      });
+    .action(async () => await startGui());
+
+  gui
+    .command('restart')
+    .description('Restarts the GUI server')
+    .action(async () => {
+      await stopGui();
+      await startGui();
     });
 
   gui
@@ -89,19 +75,8 @@ export function registerGuiCommands(program: Command) {
   gui
     .command('stop')
     .description('Stops the GUI server')
-    .action(() => {
-      // Exec PM2 to stop the GUI server
-      pm2.connect(err => {
-        if (err) {
-          console.error(err);
-          throw 'Unable to connect to PM2';
-        }
-
-        pm2.stop('operator-gui', err => {
-          if (err) console.log(err);
-          pm2.disconnect();
-        });
-      });
+    .action(async () => {
+      await stopGui();
     });
 
   gui
@@ -145,4 +120,54 @@ export function registerGuiCommands(program: Command) {
       }
       console.log(yaml.dump({login: 'authorized'}));
     });
+
+  function startGui() {
+    // Exec PM2 to start the GUI server
+    return new Promise<void>((resolve, reject) =>
+      pm2.connect(err => {
+        if (err) {
+          console.error(err);
+          reject('Unable to connect to PM2');
+        }
+        // Start next.js front end on port 3000
+        pm2.start(
+          {
+            name: 'operator-gui',
+            cwd: `${path.join(__dirname, '../../../gui')}`,
+            script: 'npm',
+            args: 'start',
+            env: {PORT: `${config.gui.port}`},
+          },
+          err => {
+            if (err) {
+              console.error(err);
+              reject('Unable to start GUI');
+            }
+            pm2.disconnect();
+            resolve();
+          }
+        );
+      })
+    );
+  }
+
+  function stopGui() {
+    return new Promise<void>((resolve, reject) => {
+      pm2.connect(err => {
+        if (err) {
+          console.error(err);
+          reject('Unable to connect to PM2');
+        }
+
+        pm2.stop('operator-gui', err => {
+          if (err) {
+            console.log(err);
+            reject('Unable to stop gui');
+          }
+          pm2.disconnect();
+          resolve();
+        });
+      });
+    });
+  }
 }
