@@ -12,9 +12,9 @@ let config = defaultGuiConfig;
 
 crypto.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
 
-if (fs.existsSync(path.join(process.cwd(), 'gui-config.json'))) {
+if (fs.existsSync(path.join(__dirname, '../gui-config.json'))) {
   const fileConfig = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), 'gui-config.json')).toString()
+    fs.readFileSync(path.join(__dirname, '../gui-config.json')).toString()
   );
   config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
 }
@@ -86,7 +86,7 @@ export function registerGuiCommands(program: Command) {
     .action(port => {
       config.gui.port = parseInt(port);
       fs.writeFile(
-        path.join(process.cwd(), 'gui-config.json'),
+        path.join(__dirname, '../gui-config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.log(err);
@@ -101,7 +101,7 @@ export function registerGuiCommands(program: Command) {
     .action(password => {
       config.gui.pass = crypto.hash(password);
       fs.writeFile(
-        path.join(process.cwd(), 'gui-config.json'),
+        path.join(__dirname, '../gui-config.json'),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
