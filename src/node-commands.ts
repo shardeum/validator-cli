@@ -108,12 +108,9 @@ const dashboardPackageJson = JSON.parse(
   readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
 );
 
-fs.writeFile(
+fs.writeFileSync(
   path.join(__dirname, '../config.json'),
-  JSON.stringify(config, undefined, 2),
-  err => {
-    if (err) console.log(err);
-  }
+  JSON.stringify(config, undefined, 2)
 );
 
 export function registerNodeCommands(program: Command) {
