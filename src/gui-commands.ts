@@ -79,7 +79,11 @@ export function registerGuiCommands(program: Command) {
       await stopGui();
     });
 
-  gui
+  const setCommand = gui
+    .command('set')
+    .description('command to set various config parameters');
+
+  setCommand
     .command('port')
     .arguments('<port>')
     .description('Set the GUI server port')
@@ -94,7 +98,7 @@ export function registerGuiCommands(program: Command) {
       );
     });
 
-  gui
+  setCommand
     .command('password')
     .arguments('<password>')
     .description('Set the GUI server password')
