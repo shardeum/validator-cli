@@ -4,8 +4,23 @@ import {BN} from 'ethereumjs-util';
 
 export const networkAccount = '0'.repeat(64);
 
+export async function getActiveNode(config: configType) {
+  const archiverUrl = `http://${config.server.p2p.existingArchivers[0].ip}:${config.server.p2p.existingArchivers[0].port}/nodelist`;
+  const nodeList = await axios
+    .get(archiverUrl)
+    .then(res => res.data)
+    .catch(err => console.error(err));
+  if (nodeList.nodeList === null) {
+    throw new Error('Unable to fetch list of nodes in the network');
+  }
+  return nodeList.nodeList[
+    Math.floor(Math.random() * nodeList.nodeList.length)
+  ];
+}
+
 export async function fetchInitialParameters(config: configType) {
-  const url = `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/account/${networkAccount}?type=5`;
+  const activeNode = await getActiveNode(config);
+  const url = `http://${activeNode.ip}:${activeNode.port}/account/${networkAccount}?type=5`;
   const initialParams = await axios
     .get(url)
     .then(res => res.data)
@@ -19,17 +34,15 @@ export async function fetchInitialParameters(config: configType) {
 }
 
 async function fetchNodeParameters(config: configType, nodePubKey: string) {
-  const url = `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/account/${nodePubKey}?type=9`;
+  const activeNode = await getActiveNode(config);
+  const url = `http://${activeNode.ip}:${activeNode.port}/account/${nodePubKey}?type=9`;
   const nodeParams = await axios
     .get(url)
     .then(res => res.data)
     .catch(err => console.error(err));
 
-  // Check if node is still Inactive (Grey)
   if (nodeParams.account === null) {
-    throw new Error(
-      'Node not active in the network. Unable to fetch node params'
-    );
+    throw new Error('Unable to fetch node params');
   }
   return nodeParams.account.data;
 }
@@ -40,18 +53,28 @@ export async function getAccountInfoParams(
 ) {
   const initParams = await fetchInitialParameters(config);
   const stakeRequired = new BN(initParams.stakeRequired, 16).toString();
-  const nodeData = await fetchNodeParameters(config, nodePubKey);
-  const lockedStake = new BN(nodeData.stakeLock, 16);
   const nodeRewardAmount = new BN(initParams.nodeRewardAmount, 16);
   const nodeRewardInterval = new BN(initParams.nodeRewardInterval);
-  const nodeActiveDuration = Date.now() - nodeData.rewardStartTime * 1000;
+
+  let lockedStake, nodeActiveDuration, nominator;
+
+  try {
+    const nodeData = await fetchNodeParameters(config, nodePubKey);
+    lockedStake = new BN(nodeData.stakeLock, 16);
+    nodeActiveDuration = Date.now() - nodeData.rewardStartTime * 1000;
+    nominator = nodeData.nominator;
+  } catch (err) {
+    lockedStake = new BN(0);
+    nodeActiveDuration = 0;
+    nominator = '';
+  }
 
   const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration));
 
   return {
     lockedStake,
     stakeRequired,
-    nominator: nodeData.nominator,
+    nominator,
     accumulatedRewards: totalReward.div(nodeRewardInterval),
   };
 }

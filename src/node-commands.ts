@@ -9,7 +9,6 @@ import {defaultConfig} from './config/default-config';
 import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
 import {getAccountInfoParams} from './utils';
-import {BN} from 'ethereumjs-util';
 import {getPerformanceStatus} from './utils/performance-stats';
 const yaml = require('js-yaml');
 import {getLatestCliVersion} from './utils/project-data';
@@ -145,35 +144,10 @@ export function registerNodeCommands(program: Command) {
             )
             .then(res => res.data)
             .catch(err => console.error(err));
-          let accumulatedRewards = new BN(0);
-          let lockedStake = new BN(0);
-          let stakeRequired = '';
-          let nominator = '';
 
-          if (nodeInfo.nodeInfo.status === 'active') {
-            staking.isStaked = true;
-            fs.writeFile(
-              path.join(__dirname, '../stake.json'),
-              JSON.stringify(staking, undefined, 2),
-              err => {
-                if (err) console.log(err);
-              }
-            );
-          }
-
-          if (staking.isStaked) {
-            try {
-              // prettier-ignore
-              ({nominator, accumulatedRewards, lockedStake, stakeRequired} =
-                await getAccountInfoParams(
-                  config,
-                  nodeInfo.nodeInfo.publicKey
-                ));
-            } catch (error) {
-              accumulatedRewards = new BN(0);
-              lockedStake = new BN(0);
-            }
-          }
+          //prettier-ignore
+          const {nominator, accumulatedRewards, lockedStake, stakeRequired} =
+            await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey);
 
           console.log(
             yaml.dump({
