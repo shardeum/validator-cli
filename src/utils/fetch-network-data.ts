@@ -47,6 +47,20 @@ async function fetchNodeParameters(config: configType, nodePubKey: string) {
   return nodeParams.account.data;
 }
 
+export async function fetchEOADetails(config: configType, eoaAddress: string) {
+  const activeNode = await getActiveNode(config);
+  const url = `http://${activeNode.ip}:${activeNode.port}/account/${eoaAddress}`;
+  const eoaParams = await axios
+    .get(url)
+    .then(res => res.data)
+    .catch(err => console.error(err));
+
+  if (eoaParams.account === null) {
+    throw new Error('Unable to fetch EOA params');
+  }
+  return eoaParams.account;
+}
+
 export async function getAccountInfoParams(
   config: configType,
   nodePubKey: string

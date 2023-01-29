@@ -8,7 +8,7 @@ import axios from 'axios';
 import {defaultConfig} from './config/default-config';
 import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
-import {getAccountInfoParams} from './utils';
+import {fetchEOADetails, getAccountInfoParams} from './utils';
 import {getPerformanceStatus} from './utils/performance-stats';
 const yaml = require('js-yaml');
 import {getLatestCliVersion} from './utils/project-data';
@@ -343,11 +343,6 @@ export function registerNodeCommands(program: Command) {
     .action(async () => {
       //TODO should we handle partial unstakes?
 
-      if (!staking.isStaked) {
-        console.error('No SHM staked');
-        return;
-      }
-
       if (!process.env.PRIV_KEY) {
         console.error(
           'Please set private key as PRIV_KEY environment variable'
@@ -365,6 +360,19 @@ export function registerNodeCommands(program: Command) {
           provider
         );
 
+        const eoaData = await fetchEOADetails(
+          config,
+          walletWithProvider.address
+        );
+
+        if (
+          eoaData.operatorAccountInfo.nominee === null ||
+          eoaData.operatorAccountInfo.stake === '00'
+        ) {
+          console.error('No stake found');
+          return;
+        }
+
         const [gasPrice, from, nonce] = await Promise.all([
           walletWithProvider.getGasPrice(),
           walletWithProvider.getAddress(),
@@ -374,9 +382,9 @@ export function registerNodeCommands(program: Command) {
         const unstakeData = {
           isInternalTx: true,
           internalTXType: 7,
-          nominator: staking.rewardAddress,
+          nominator: walletWithProvider.address,
           timestamp: Date.now(),
-          nominee: staking.stakeAddress,
+          nominee: eoaData.operatorAccountInfo.nominee,
         };
         console.log(unstakeData);
 
