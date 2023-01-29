@@ -382,7 +382,7 @@ export function registerNodeCommands(program: Command) {
         const unstakeData = {
           isInternalTx: true,
           internalTXType: 7,
-          nominator: walletWithProvider.address,
+          nominator: walletWithProvider.address.toLowerCase(),
           timestamp: Date.now(),
           nominee: eoaData.operatorAccountInfo.nominee,
         };
@@ -398,6 +398,7 @@ export function registerNodeCommands(program: Command) {
           ),
           nonce,
         };
+        console.log(txDetails);
 
         const {hash, data, wait} = await walletWithProvider.sendTransaction(
           txDetails
