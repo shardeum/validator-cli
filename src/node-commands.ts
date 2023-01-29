@@ -11,11 +11,17 @@ import {ethers} from 'ethers';
 import {
   fetchEOADetails,
   fetchInitialParameters,
+  getNetworkParams,
   getAccountInfoParams,
 } from './utils';
 import {getPerformanceStatus} from './utils/performance-stats';
 const yaml = require('js-yaml');
-import {getLatestCliVersion} from './utils/project-data';
+import {
+  getInstalledGuiVersion,
+  getLatestCliVersion,
+  getLatestGuiVersion,
+  isGuiInstalled,
+} from './utils/project-data';
 
 let config = defaultConfig;
 
@@ -580,13 +586,31 @@ export function registerNodeCommands(program: Command) {
       'Shows the installed version, latest version and minimum version of the operator dashboard'
     )
     .action(async () => {
-      console.log(
-        yaml.dump({
-          runningVersion: dashboardPackageJson.version,
-          minimumVersion: '1.0.0', //TODO query from some official online source
-          latestVersion: await getLatestCliVersion(),
-        })
-      );
+      let versions: any = {
+        runningCliVersion: dashboardPackageJson.version,
+        minimumCliVersion: '1.0.0', //TODO query from some official online source
+        latestCliVersion: await getLatestCliVersion(),
+      };
+
+      if (isGuiInstalled()) {
+        versions = {
+          ...versions,
+          runningGuiVersion: getInstalledGuiVersion(),
+          minimumGuiVersion: '1.0.0', //TODO query from some official online source
+          latestGuiVersion: await getLatestGuiVersion(),
+        };
+      }
+      console.log(yaml.dump(versions));
+    });
+
+  program
+    .command('network-stats')
+    .description(
+      'Show statistics like TPS, active nodes etc. about the network'
+    )
+    .action(async () => {
+      const networkStats = await getNetworkParams(config);
+      console.log(yaml.dump(networkStats));
     });
 
   const setCommand = program

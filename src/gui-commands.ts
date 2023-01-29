@@ -6,6 +6,7 @@ import merge from 'deepmerge';
 import {defaultGuiConfig} from './config/default-gui-config';
 import fs from 'fs';
 import * as crypto from '@shardus/crypto-utils';
+import {getInstalledGuiVersion} from './utils/project-data';
 const yaml = require('js-yaml');
 
 let config = defaultGuiConfig;
@@ -62,14 +63,7 @@ export function registerGuiCommands(program: Command) {
     .command('version')
     .description('Show the GUI version')
     .action(() => {
-      const guiPackageJsonPath = path.join(
-        __dirname,
-        '../../../gui/package.json'
-      );
-      const packageJson = JSON.parse(
-        fs.readFileSync(guiPackageJsonPath).toString()
-      );
-      console.log(packageJson.version);
+      console.log(getInstalledGuiVersion());
     });
 
   gui
@@ -167,6 +161,15 @@ export function registerGuiCommands(program: Command) {
           if (err) {
             console.log(err);
             reject('Unable to stop gui');
+          }
+          pm2.disconnect();
+          resolve();
+        });
+
+        pm2.delete('operator-gui', err => {
+          if (err) {
+            console.log(err);
+            reject('Unable to delete gui');
           }
           pm2.disconnect();
           resolve();

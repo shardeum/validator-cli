@@ -45,7 +45,7 @@ export async function getActiveNode(config: configType) {
     .get(archiverUrl)
     .then(res => res.data)
     .catch(err => console.error(err));
-  if (nodeList.nodeList === null) {
+  if (nodeList === null || nodeList.nodeList === null) {
     throw new Error('Unable to fetch list of nodes in the network');
   }
   savedActiveNode =
@@ -75,6 +75,56 @@ async function fetchNodeParameters(config: configType, nodePubKey: string) {
   );
 
   return nodeParams.account.data;
+}
+
+async function fetchNodeLoad(config: configType) {
+  const url = `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/load`;
+  const nodeLoad = await axios.get(url);
+
+  if (nodeLoad === null || nodeLoad.data === null) {
+    throw new Error(
+      'Node not active in the network. Unable to fetch node load'
+    );
+  }
+  return nodeLoad.data;
+}
+
+async function fetchNodeTxStats(config: configType) {
+  const url = `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/tx-stats`;
+  const txStats = await axios.get(url);
+
+  if (txStats === null || txStats.data === null) {
+    throw new Error(
+      'Node not active in the network. Unable to fetch node tx-stats'
+    );
+  }
+  return txStats.data;
+}
+
+async function fetchNetworkStats(config: configType) {
+  const networkStats = await fetchDataFromNetwork(
+    config,
+    '/network-stats',
+    data => data === null
+  );
+
+  if (networkStats === null) {
+    throw new Error('Unable to fetch network-stats');
+  }
+  return networkStats;
+}
+
+export async function getNetworkParams(config: configType) {
+  const networkStats = await fetchNetworkStats(config);
+  let result = {...networkStats};
+  try {
+    const nodeLoad = await fetchNodeLoad(config);
+    const nodeTxStats = await fetchNodeTxStats(config);
+    result = {...result, ...nodeLoad, ...nodeTxStats};
+  } catch (e) {
+    console.error(e);
+  }
+  return result;
 }
 
 export async function fetchEOADetails(config: configType, eoaAddress: string) {
