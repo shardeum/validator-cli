@@ -200,6 +200,31 @@ export function registerNodeCommands(program: Command) {
     });
 
   program
+    .command('stake_info')
+    .description('Show staking info for a particular EOA account')
+    .argument('<address>', 'The EOA address to fetch stake info for')
+    .action(async address => {
+      if (!ethers.utils.isAddress(address)) {
+        console.error('Invalid address entered');
+        return;
+      }
+
+      try {
+        const eoaData = await fetchEOADetails(config, address);
+        console.log(
+          yaml.dump({
+            stake: ethers.utils.formatEther(
+              String(parseInt(eoaData.operatorAccountInfo.stake, 16))
+            ),
+            nominee: eoaData.operatorAccountInfo.nominee,
+          })
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+  program
     .command('start')
     .description('Starts the validator')
     .action(() => {
