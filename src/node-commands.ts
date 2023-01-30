@@ -125,6 +125,8 @@ export function registerNodeCommands(program: Command) {
           console.error(err);
           return pm2.disconnect();
         }
+
+        const {stakeRequired} = await getAccountInfoParams(config, 'none');
         const performance = await getPerformanceStatus();
 
         if (descriptions.length === 0) {
@@ -133,6 +135,9 @@ export function registerNodeCommands(program: Command) {
             yaml.dump({
               state: 'inactive',
               performance,
+              stakeRequirement: stakeRequired
+                ? ethers.utils.formatEther(stakeRequired)
+                : '',
             })
           );
           return pm2.disconnect();
@@ -150,7 +155,7 @@ export function registerNodeCommands(program: Command) {
             .catch(err => console.error(err));
 
           //prettier-ignore
-          const {nominator, accumulatedRewards, lockedStake, stakeRequired} =
+          const {nominator, accumulatedRewards, lockedStake} =
             await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey);
 
           console.log(
@@ -184,6 +189,9 @@ export function registerNodeCommands(program: Command) {
           yaml.dump({
             state: 'inactive',
             performance,
+            stakeRequirement: stakeRequired
+              ? ethers.utils.formatEther(stakeRequired)
+              : '',
           })
         );
 
