@@ -120,12 +120,15 @@ export function registerNodeCommands(program: Command) {
     )
     .action(() => {
       pm2.describe('validator', async (err, descriptions) => {
+        // PM2 not reachable
         if (err) {
           console.error(err);
           return pm2.disconnect();
         }
         const performance = await getPerformanceStatus();
+
         if (descriptions.length === 0) {
+          // Node process not started
           console.log(
             yaml.dump({
               state: 'inactive',
@@ -134,10 +137,11 @@ export function registerNodeCommands(program: Command) {
           );
           return pm2.disconnect();
         }
+
         const description = descriptions[0];
         const status: Pm2ProcessStatus = statusFromPM2(description);
-
         if (status.status !== 'stopped') {
+          // Node is started and active
           const nodeInfo = await axios
             .get(
               `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/nodeinfo`
@@ -175,6 +179,7 @@ export function registerNodeCommands(program: Command) {
           return pm2.disconnect();
         }
 
+        // Node was started but is currently inactive
         console.log(
           yaml.dump({
             state: 'inactive',
