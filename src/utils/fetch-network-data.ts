@@ -13,7 +13,7 @@ let savedActiveNode: {
 async function fetchDataFromNetwork(
   config: configType,
   query: string,
-  callback: (response: any) => boolean
+  callback: (response: {[id: string]: string}) => boolean
 ) {
   if (savedActiveNode === undefined) {
     await getActiveNode(config);
@@ -58,7 +58,12 @@ export async function fetchInitialParameters(config: configType) {
     data => data.account === null
   );
 
-  return initialParams.account.data.current;
+  const response = initialParams.account.data.current;
+  const stakeRequired = new BN(response.stakeRequired, 16).toString();
+  const nodeRewardAmount = new BN(response.nodeRewardAmount, 16);
+  const nodeRewardInterval = new BN(response.nodeRewardInterval);
+
+  return {stakeRequired, nodeRewardAmount, nodeRewardInterval};
 }
 
 async function fetchNodeParameters(config: configType, nodePubKey: string) {
@@ -85,10 +90,12 @@ export async function getAccountInfoParams(
   config: configType,
   nodePubKey: string
 ) {
-  const initParams = await fetchInitialParameters(config);
-  const stakeRequired = new BN(initParams.stakeRequired, 16).toString();
-  const nodeRewardAmount = new BN(initParams.nodeRewardAmount, 16);
-  const nodeRewardInterval = new BN(initParams.nodeRewardInterval);
+  // prettier-ignore
+  const {
+    stakeRequired,
+    nodeRewardAmount,
+    nodeRewardInterval,
+  } = await fetchInitialParameters(config);
 
   let lockedStake, nodeActiveDuration, nominator;
 

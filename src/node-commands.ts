@@ -8,7 +8,11 @@ import axios from 'axios';
 import {defaultConfig} from './config/default-config';
 import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
-import {fetchEOADetails, getAccountInfoParams} from './utils';
+import {
+  fetchEOADetails,
+  fetchInitialParameters,
+  getAccountInfoParams,
+} from './utils';
 import {getPerformanceStatus} from './utils/performance-stats';
 const yaml = require('js-yaml');
 import {getLatestCliVersion} from './utils/project-data';
@@ -132,7 +136,7 @@ export function registerNodeCommands(program: Command) {
           return pm2.disconnect();
         }
 
-        const {stakeRequired} = await getAccountInfoParams(config, 'none');
+        const {stakeRequired} = await fetchInitialParameters(config);
         const performance = await getPerformanceStatus();
         let publicKey = '';
         let lockedStake = '';
