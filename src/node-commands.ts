@@ -305,14 +305,30 @@ export function registerNodeCommands(program: Command) {
 
   program
     .command('stake')
+    .argument('<value>', 'The amount of SHM to stake')
     .description(
       'Stake the set amount of SHM at the stake address. Rewards will be sent to set reward address.'
     )
-    .action(async () => {
+    .action(async stakeValue => {
       //TODO should we handle consecutive stakes?
 
-      if (staking.stakeAmount === 0) {
-        console.error('Stake amount set to 0');
+      // Fetch the public key from secrets.json
+      if (!fs.existsSync(path.join(__dirname, '../secrets.json'))) {
+        console.error('Please start the node once before staking');
+        return;
+      }
+
+      const secrets = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '../secrets.json')).toString()
+      );
+
+      if (secrets.publicKey === null) {
+        console.error('Unable to find public key in secrets.json');
+        return;
+      }
+
+      if (stakeValue <= 0) {
+        console.error('Stake amount must be non-zero');
         return;
       }
       if (!process.env.PRIV_KEY) {
@@ -341,12 +357,10 @@ export function registerNodeCommands(program: Command) {
         const stakeData = {
           isInternalTx: true,
           internalTXType: 6,
-          nominator: staking.rewardAddress,
+          nominator: walletWithProvider.address.toLowerCase(),
           timestamp: Date.now(),
-          nominee: staking.stakeAddress,
-          stake: ethers.utils
-            .parseEther(String(staking.stakeAmount))
-            .toString(),
+          nominee: secrets.publicKey,
+          stake: ethers.utils.parseEther(stakeValue).toString(),
         };
         const value = ethers.BigNumber.from(stakeData.stake);
         console.log(stakeData);
