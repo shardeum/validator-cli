@@ -27,7 +27,7 @@ export async function fetchInitialParameters(config: configType) {
     .catch(err => console.error(err));
   if (initialParams.account === null) {
     throw new Error(
-      'Node not active in the network. Unable to fetch initial params'
+      `${activeNode.ip}:${activeNode.port} not active in the network. Unable to fetch initial params`
     );
   }
   return initialParams.account.data.current;
