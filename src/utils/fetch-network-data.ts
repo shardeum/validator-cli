@@ -103,7 +103,9 @@ export async function getAccountInfoParams(
   try {
     const nodeData = await fetchNodeParameters(config, nodePubKey);
     lockedStake = new BN(nodeData.stakeLock, 16).toString();
-    nodeActiveDuration = Date.now() - nodeData.rewardStartTime * 1000;
+    nodeActiveDuration = nodeData.rewardStartTime
+      ? Date.now() - nodeData.rewardStartTime * 1000
+      : 0;
     nominator = nodeData.nominator;
   } catch (err) {
     lockedStake = new BN(0).toString();
