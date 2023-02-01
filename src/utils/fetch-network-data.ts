@@ -143,7 +143,6 @@ export async function getAccountInfoParams(
 ) {
   // prettier-ignore
   const {
-    stakeRequired,
     nodeRewardAmount,
     nodeRewardInterval,
   } = await fetchInitialParameters(config);
@@ -167,8 +166,20 @@ export async function getAccountInfoParams(
 
   return {
     lockedStake,
-    stakeRequired,
     nominator,
     accumulatedRewards: totalReward.div(nodeRewardInterval),
+  };
+}
+
+export async function fetchStakeParameters(config: configType) {
+  const stakeParams = await fetchDataFromNetwork(
+    config,
+    '/stake',
+    data => !data
+  );
+
+  const stakeRequired = new BN(stakeParams.stakeRequired, 16).toString();
+  return {
+    stakeRequired,
   };
 }

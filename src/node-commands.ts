@@ -10,8 +10,8 @@ import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
 import {
   fetchEOADetails,
-  fetchInitialParameters,
   getNetworkParams,
+  fetchStakeParameters,
   getAccountInfoParams,
 } from './utils';
 import {getPerformanceStatus} from './utils/performance-stats';
@@ -142,7 +142,7 @@ export function registerNodeCommands(program: Command) {
           return pm2.disconnect();
         }
 
-        const {stakeRequired} = await fetchInitialParameters(config);
+        const {stakeRequired} = await fetchStakeParameters(config);
         const performance = await getPerformanceStatus();
         let publicKey = '';
         let lockedStake = '';
@@ -365,10 +365,17 @@ export function registerNodeCommands(program: Command) {
         return;
       }
 
-      if (stakeValue <= 0) {
-        console.error('Stake amount must be non-zero');
+      const {stakeRequired} = await fetchStakeParameters(config);
+      if (
+        ethers.BigNumber.from(stakeRequired).gt(
+          ethers.utils.parseEther(stakeValue)
+        )
+      ) {
+        /*prettier-ignore*/
+        console.error(`Stake amount must be greater than ${ethers.utils.formatEther(stakeRequired)} SHM`);
         return;
       }
+
       if (!process.env.PRIV_KEY) {
         console.error(
           'Please set private key as PRIV_KEY environment variable'
