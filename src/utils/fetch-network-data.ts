@@ -3,6 +3,40 @@ import axios from 'axios';
 import {BN} from 'ethereumjs-util';
 
 export const networkAccount = '0'.repeat(64);
+let savedActiveNode: {
+  id: string;
+  ip: string;
+  port: string;
+  publicKey: string;
+};
+
+async function fetchDataFromNetwork(
+  config: configType,
+  query: string,
+  callback: (response: any) => boolean
+) {
+  if (savedActiveNode === undefined) {
+    await getActiveNode(config);
+  }
+
+  const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
+  let data = await axios
+    .get(url)
+    .then(res => res.data)
+    .catch(err => console.error(err));
+
+  while (callback(data)) {
+    getActiveNode(config);
+
+    const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
+    data = await axios
+      .get(url)
+      .then(res => res.data)
+      .catch(err => console.error(err));
+  }
+
+  return data;
+}
 
 export async function getActiveNode(config: configType) {
   const archiverUrl = `http://${config.server.p2p.existingArchivers[0].ip}:${config.server.p2p.existingArchivers[0].port}/nodelist`;
@@ -13,51 +47,37 @@ export async function getActiveNode(config: configType) {
   if (nodeList.nodeList === null) {
     throw new Error('Unable to fetch list of nodes in the network');
   }
-  return nodeList.nodeList[
-    Math.floor(Math.random() * nodeList.nodeList.length)
-  ];
+  savedActiveNode =
+    nodeList.nodeList[Math.floor(Math.random() * nodeList.nodeList.length)];
 }
 
 export async function fetchInitialParameters(config: configType) {
-  const activeNode = await getActiveNode(config);
-  const url = `http://${activeNode.ip}:${activeNode.port}/account/${networkAccount}?type=5`;
-  const initialParams = await axios
-    .get(url)
-    .then(res => res.data)
-    .catch(err => console.error(err));
-  if (initialParams.account === null) {
-    throw new Error(
-      `${activeNode.ip}:${activeNode.port} not active in the network. Unable to fetch initial params`
-    );
-  }
+  const initialParams = await fetchDataFromNetwork(
+    config,
+    `/account/${networkAccount}?type=5`,
+    data => data.account === null
+  );
+
   return initialParams.account.data.current;
 }
 
 async function fetchNodeParameters(config: configType, nodePubKey: string) {
-  const activeNode = await getActiveNode(config);
-  const url = `http://${activeNode.ip}:${activeNode.port}/account/${nodePubKey}?type=9`;
-  const nodeParams = await axios
-    .get(url)
-    .then(res => res.data)
-    .catch(err => console.error(err));
+  const nodeParams = await fetchDataFromNetwork(
+    config,
+    `/account/${nodePubKey}?type=9`,
+    data => data.account === null
+  );
 
-  if (nodeParams.account === null) {
-    throw new Error('Unable to fetch node params');
-  }
   return nodeParams.account.data;
 }
 
 export async function fetchEOADetails(config: configType, eoaAddress: string) {
-  const activeNode = await getActiveNode(config);
-  const url = `http://${activeNode.ip}:${activeNode.port}/account/${eoaAddress}`;
-  const eoaParams = await axios
-    .get(url)
-    .then(res => res.data)
-    .catch(err => console.error(err));
+  const eoaParams = await fetchDataFromNetwork(
+    config,
+    `/account/${eoaAddress}`,
+    data => data.account === null
+  );
 
-  if (eoaParams.account === null) {
-    throw new Error('Unable to fetch EOA params');
-  }
   return eoaParams.account;
 }
 
