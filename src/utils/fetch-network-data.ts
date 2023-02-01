@@ -15,6 +15,7 @@ async function fetchDataFromNetwork(
   query: string,
   callback: (response: {[id: string]: string}) => boolean
 ) {
+  let retries = 3;
   if (savedActiveNode === undefined) {
     await getActiveNode(config);
   }
@@ -25,7 +26,7 @@ async function fetchDataFromNetwork(
     .then(res => res.data)
     .catch(err => console.error(err));
 
-  while (callback(data)) {
+  while (callback(data) && retries--) {
     getActiveNode(config);
 
     const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
