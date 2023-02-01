@@ -135,6 +135,8 @@ export function registerNodeCommands(program: Command) {
         const {stakeRequired} = await getAccountInfoParams(config, 'none');
         const performance = await getPerformanceStatus();
         let publicKey = '';
+        let lockedStake = '';
+        let accountInfo;
 
         // Fetch the public key from secrets.json if it exists
         if (fs.existsSync(path.join(__dirname, '../secrets.json'))) {
@@ -144,9 +146,10 @@ export function registerNodeCommands(program: Command) {
           publicKey = secrets.publicKey;
         }
 
-        const {lockedStake} = publicKey
-          ? await getAccountInfoParams(config, publicKey)
-          : {lockedStake: ''};
+        if (publicKey) {
+          accountInfo = await getAccountInfoParams(config, publicKey);
+          lockedStake = accountInfo.lockedStake;
+        }
 
         if (descriptions.length === 0) {
           // Node process not started
@@ -177,10 +180,14 @@ export function registerNodeCommands(program: Command) {
             .catch(err => console.error(err));
 
           const nodeState = stateMap[nodeInfo.nodeInfo.status];
+          let nominator, accumulatedRewards;
 
-          //prettier-ignore
-          const {nominator, accumulatedRewards} =
-            await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey);
+          if (accountInfo) {
+            ({nominator, accumulatedRewards} = accountInfo);
+          } else {
+            //prettier-ignore
+            ({nominator, accumulatedRewards} = await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey));
+          }
 
           console.log(
             yaml.dump({
