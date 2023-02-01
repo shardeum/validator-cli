@@ -27,6 +27,12 @@ let rpcServer = {
   port: '8080',
 };
 
+const stateMap: {[id: string]: string} = {
+  null: 'standby',
+  syncing: 'active-syncing',
+  active: 'active',
+};
+
 if (fs.existsSync(path.join(__dirname, '../config.json'))) {
   const fileConfig = JSON.parse(
     fs.readFileSync(path.join(__dirname, '../config.json')).toString()
@@ -133,7 +139,7 @@ export function registerNodeCommands(program: Command) {
           // Node process not started
           console.log(
             yaml.dump({
-              state: 'inactive',
+              state: 'stopped',
               performance,
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
@@ -154,13 +160,15 @@ export function registerNodeCommands(program: Command) {
             .then(res => res.data)
             .catch(err => console.error(err));
 
+          const nodeState = stateMap[nodeInfo.nodeInfo.status];
+
           //prettier-ignore
           const {nominator, accumulatedRewards, lockedStake} =
             await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey);
 
           console.log(
             yaml.dump({
-              state: 'active', // TODO standby/syncing/active and fill empty values
+              state: nodeState,
               totalTimeValidating: status.uptimeInSeconds,
               lastActive: '',
               stakeAmount: staking.stakeAmount,
@@ -187,7 +195,7 @@ export function registerNodeCommands(program: Command) {
         // Node was started but is currently inactive
         console.log(
           yaml.dump({
-            state: 'inactive',
+            state: 'stopped',
             performance,
             stakeRequirement: stakeRequired
               ? ethers.utils.formatEther(stakeRequired)
