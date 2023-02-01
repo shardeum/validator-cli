@@ -134,6 +134,19 @@ export function registerNodeCommands(program: Command) {
 
         const {stakeRequired} = await getAccountInfoParams(config, 'none');
         const performance = await getPerformanceStatus();
+        let publicKey = '';
+
+        // Fetch the public key from secrets.json if it exists
+        if (fs.existsSync(path.join(__dirname, '../secrets.json'))) {
+          const secrets = JSON.parse(
+            fs.readFileSync(path.join(__dirname, '../secrets.json')).toString()
+          );
+          publicKey = secrets.publicKey;
+        }
+
+        const {lockedStake} = publicKey
+          ? await getAccountInfoParams(config, publicKey)
+          : {lockedStake: ''};
 
         if (descriptions.length === 0) {
           // Node process not started
@@ -143,6 +156,9 @@ export function registerNodeCommands(program: Command) {
               performance,
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
+                : '',
+              lockedStake: lockedStake
+                ? ethers.utils.formatEther(lockedStake)
                 : '',
             })
           );
@@ -163,7 +179,7 @@ export function registerNodeCommands(program: Command) {
           const nodeState = stateMap[nodeInfo.nodeInfo.status];
 
           //prettier-ignore
-          const {nominator, accumulatedRewards, lockedStake} =
+          const {nominator, accumulatedRewards} =
             await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey);
 
           console.log(
@@ -184,7 +200,9 @@ export function registerNodeCommands(program: Command) {
               currentRewards: ethers.utils.formatEther(
                 accumulatedRewards.toString()
               ),
-              lockedStake: ethers.utils.formatEther(lockedStake.toString()),
+              lockedStake: lockedStake
+                ? ethers.utils.formatEther(lockedStake)
+                : '',
               nodeInfo: nodeInfo.nodeInfo,
             })
           );
@@ -199,6 +217,9 @@ export function registerNodeCommands(program: Command) {
             performance,
             stakeRequirement: stakeRequired
               ? ethers.utils.formatEther(stakeRequired)
+              : '',
+            lockedStake: lockedStake
+              ? ethers.utils.formatEther(lockedStake)
               : '',
           })
         );
