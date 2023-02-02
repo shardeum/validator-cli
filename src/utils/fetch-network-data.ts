@@ -60,11 +60,10 @@ export async function fetchInitialParameters(config: configType) {
   );
 
   const response = initialParams.account.data.current;
-  const stakeRequired = new BN(response.stakeRequired, 16).toString();
   const nodeRewardAmount = new BN(response.nodeRewardAmount, 16);
   const nodeRewardInterval = new BN(response.nodeRewardInterval);
 
-  return {stakeRequired, nodeRewardAmount, nodeRewardInterval};
+  return {nodeRewardAmount, nodeRewardInterval};
 }
 
 async function fetchNodeParameters(config: configType, nodePubKey: string) {
