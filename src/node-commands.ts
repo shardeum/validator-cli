@@ -146,6 +146,7 @@ export function registerNodeCommands(program: Command) {
         const performance = await getPerformanceStatus();
         let publicKey = '';
         let lockedStake = '';
+        let nominator = '';
         let accountInfo;
 
         // Fetch the public key from secrets.json if it exists
@@ -159,6 +160,7 @@ export function registerNodeCommands(program: Command) {
         if (publicKey) {
           accountInfo = await getAccountInfoParams(config, publicKey);
           lockedStake = accountInfo.lockedStake;
+          nominator = accountInfo.nominator;
         }
 
         if (descriptions.length === 0) {
@@ -190,7 +192,7 @@ export function registerNodeCommands(program: Command) {
             .catch(err => console.error(err));
 
           const nodeState = stateMap[nodeInfo.nodeInfo.status];
-          let nominator, accumulatedRewards;
+          let accumulatedRewards;
 
           if (accountInfo) {
             ({nominator, accumulatedRewards} = accountInfo);
@@ -238,6 +240,7 @@ export function registerNodeCommands(program: Command) {
             lockedStake: lockedStake
               ? ethers.utils.formatEther(lockedStake)
               : '',
+            nominatorAddress: nominator,
           })
         );
 
