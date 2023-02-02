@@ -60,7 +60,7 @@ export async function fetchInitialParameters(config: configType) {
   );
 
   const response = initialParams.account.data.current;
-  const nodeRewardAmount = new BN(response.nodeRewardAmount, 16);
+  const nodeRewardAmount = new BN(response.nodeRewardAmountUsd, 16);
   const nodeRewardInterval = new BN(response.nodeRewardInterval);
 
   return {nodeRewardAmount, nodeRewardInterval};
