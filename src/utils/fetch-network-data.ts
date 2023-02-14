@@ -27,7 +27,11 @@ async function fetchDataFromNetwork(
     .catch(err => console.error(err));
 
   while (callback(data) && retries--) {
-    getActiveNode(config);
+    try {
+      getActiveNode(config);
+    } catch (e) {
+      continue;
+    }
 
     const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
     data = await axios
@@ -45,7 +49,7 @@ export async function getActiveNode(config: configType) {
     .get(archiverUrl)
     .then(res => res.data)
     .catch(err => console.error(err));
-  if (nodeList === null || nodeList.nodeList === null) {
+  if (!nodeList?.nodeList) {
     throw new Error('Unable to fetch list of nodes in the network');
   }
   savedActiveNode =

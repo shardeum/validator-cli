@@ -22,15 +22,9 @@ import {
   getLatestGuiVersion,
   isGuiInstalled,
 } from './utils/project-data';
+import {getExitInformation} from './utils/fetch-summaries';
 
 let config = defaultConfig;
-
-let staking = {
-  rewardAddress: '',
-  stakeAddress: '',
-  stakeAmount: 0,
-  isStaked: false,
-};
 
 let rpcServer = {
   ip: 'localhost',
@@ -39,7 +33,7 @@ let rpcServer = {
 
 const stateMap: {[id: string]: string} = {
   null: 'standby',
-  syncing: 'active-syncing',
+  syncing: 'syncing',
   active: 'active',
 };
 
@@ -55,15 +49,6 @@ if (fs.existsSync(path.join(__dirname, '../rpc-server.json'))) {
     fs.readFileSync(path.join(__dirname, '../rpc-server.json')).toString()
   );
   rpcServer = merge(rpcServer, fileConfig, {
-    arrayMerge: (target, source) => source,
-  });
-}
-
-if (fs.existsSync(path.join(__dirname, '../stake.json'))) {
-  const stakeConfig = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../stake.json')).toString()
-  );
-  staking = merge(staking, stakeConfig, {
     arrayMerge: (target, source) => source,
   });
 }
@@ -162,12 +147,15 @@ export function registerNodeCommands(program: Command) {
           lockedStake = accountInfo.lockedStake;
           nominator = accountInfo.nominator;
         }
+        const {exitMessage, exitStatus} = await getExitInformation();
 
         if (descriptions.length === 0) {
           // Node process not started
           console.log(
             yaml.dump({
               state: 'stopped',
+              exitMessage,
+              exitStatus,
               performance,
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
@@ -204,14 +192,14 @@ export function registerNodeCommands(program: Command) {
           console.log(
             yaml.dump({
               state: nodeState,
-              totalTimeValidating: status.uptimeInSeconds,
+              exitMessage,
+              exitStatus,
+              totalTimeRunning: status.uptimeInSeconds,
               lastActive: '',
-              stakeAmount: staking.stakeAmount,
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
                 : '',
               nominatorAddress: nominator,
-              stakeAddress: staking.stakeAddress,
               earnings: '',
               lastPayout: '',
               lifetimeEarnings: '',
@@ -233,6 +221,8 @@ export function registerNodeCommands(program: Command) {
         console.log(
           yaml.dump({
             state: 'stopped',
+            exitMessage,
+            exitStatus,
             performance,
             stakeRequirement: stakeRequired
               ? ethers.utils.formatEther(stakeRequired)
@@ -432,14 +422,6 @@ export function registerNodeCommands(program: Command) {
         console.log('TX RECEIPT: ', {hash, data});
         const txConfirmation = await wait();
         console.log('TX CONFRIMED: ', txConfirmation);
-        staking.isStaked = true;
-        fs.writeFile(
-          path.join(__dirname, '../stake.json'),
-          JSON.stringify(staking, undefined, 2),
-          err => {
-            if (err) console.error(err);
-          }
-        );
       } catch (error) {
         console.error(error);
       }
@@ -515,50 +497,9 @@ export function registerNodeCommands(program: Command) {
         console.log('TX RECEIPT: ', {hash, data});
         const txConfirmation = await wait();
         console.log('TX CONFRIMED: ', txConfirmation);
-        staking.isStaked = false;
-        fs.writeFile(
-          path.join(__dirname, '../stake.json'),
-          JSON.stringify(staking, undefined, 2),
-          err => {
-            if (err) console.error(err);
-          }
-        );
       } catch (error) {
         console.error(error);
       }
-    });
-
-  program
-    .command('reward_address')
-    .description('Query the validator reward address')
-    .action(() => {
-      console.log(
-        yaml.dump({
-          reward_address: staking.rewardAddress,
-        })
-      );
-    });
-
-  program
-    .command('stake_amount')
-    .description('Query the set stake amount')
-    .action(() => {
-      console.log(
-        yaml.dump({
-          stake_amount: staking.stakeAmount,
-        })
-      );
-    });
-
-  program
-    .command('stake_address')
-    .description('Query the validator stake address')
-    .action(() => {
-      console.log(
-        yaml.dump({
-          stake_address: staking.stakeAddress,
-        })
-      );
     });
 
   program
@@ -717,21 +658,6 @@ export function registerNodeCommands(program: Command) {
       );
     });
 
-  setCommand
-    .command('reward_address')
-    .arguments('<address>')
-    .description('Set the reward address for the validator')
-    .action(address => {
-      staking.rewardAddress = address;
-      fs.writeFile(
-        path.join(__dirname, '../stake.json'),
-        JSON.stringify(staking, undefined, 2),
-        err => {
-          if (err) console.error(err);
-        }
-      );
-    });
-
   // setCommand
   //   .command('archiver')
   //   .arguments('<URL>')
@@ -739,34 +665,4 @@ export function registerNodeCommands(program: Command) {
   //   .action(url => {
   //     //TODO interact with node
   //   });
-
-  setCommand
-    .command('stake_address')
-    .arguments('<address>')
-    .description('Set the stake address')
-    .action(address => {
-      staking.stakeAddress = address;
-      fs.writeFile(
-        path.join(__dirname, '../stake.json'),
-        JSON.stringify(staking, undefined, 2),
-        err => {
-          if (err) console.error(err);
-        }
-      );
-    });
-
-  setCommand
-    .command('stake_amount')
-    .arguments('<amount>')
-    .description('Set the stake amount')
-    .action(amount => {
-      staking.stakeAmount = parseInt(amount); //Add checks for all parseInts
-      fs.writeFile(
-        path.join(__dirname, '../stake.json'),
-        JSON.stringify(staking, undefined, 2),
-        err => {
-          if (err) console.error(err);
-        }
-      );
-    });
 }
