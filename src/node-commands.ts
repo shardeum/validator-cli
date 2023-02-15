@@ -212,6 +212,7 @@ export function registerNodeCommands(program: Command) {
                 ? ethers.utils.formatEther(stakeRequired)
                 : '',
               nominatorAddress: nominator,
+              nomineeAddress: publicKey,
               earnings: '',
               lastPayout: '',
               lifetimeEarnings: '',
