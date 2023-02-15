@@ -26,4 +26,24 @@ export const defaultConfig = {
   },
 };
 
+export type nodeProgressType = {
+  nodeInfo: {
+    id: string;
+    publicKey: string;
+    curvePublicKay: string;
+    externalIP: string;
+    internalIP: string;
+    externalPort: number;
+    internalPort: number;
+    status: string;
+  };
+  lastRotationIndex: {
+    idx: number;
+    total: number;
+  };
+  activeNodes: number;
+  lastActiveTime: number;
+  totalActiveTime: number;
+};
+
 export type configType = typeof defaultConfig;

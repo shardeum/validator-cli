@@ -4,7 +4,6 @@ import {Command} from 'commander';
 import path from 'path';
 import {exec} from 'child_process';
 import merge from 'deepmerge';
-import axios from 'axios';
 import {defaultConfig} from './config/default-config';
 import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
@@ -22,7 +21,7 @@ import {
   getLatestGuiVersion,
   isGuiInstalled,
 } from './utils/project-data';
-import {getExitInformation} from './utils/fetch-summaries';
+import {fetchNodeProgress, getExitInformation} from './utils/fetch-node-data';
 
 let config = defaultConfig;
 
@@ -127,8 +126,20 @@ export function registerNodeCommands(program: Command) {
           return pm2.disconnect();
         }
 
-        const {stakeRequired} = await fetchStakeParameters(config);
-        const performance = await getPerformanceStatus();
+        const [
+          {stakeRequired},
+          performance,
+          nodeProgress,
+          {exitMessage, exitStatus},
+        ] = await Promise.all([
+          fetchStakeParameters(config),
+          getPerformanceStatus(),
+          fetchNodeProgress(),
+          getExitInformation(),
+        ]);
+
+        // TODO: Use Promise.allSettled. Need to update nodeJs to 12.9
+
         let publicKey = '';
         let lockedStake = '';
         let nominator = '';
@@ -147,7 +158,6 @@ export function registerNodeCommands(program: Command) {
           lockedStake = accountInfo.lockedStake;
           nominator = accountInfo.nominator;
         }
-        const {exitMessage, exitStatus} = await getExitInformation();
 
         if (descriptions.length === 0) {
           // Node process not started
@@ -172,21 +182,17 @@ export function registerNodeCommands(program: Command) {
         const status: Pm2ProcessStatus = statusFromPM2(description);
         if (status.status !== 'stopped') {
           // Node is started and active
-          const nodeInfo = await axios
-            .get(
-              `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/nodeinfo`
-            )
-            .then(res => res.data)
-            .catch(err => console.error(err));
 
-          const nodeState = stateMap[nodeInfo.nodeInfo.status];
+          const nodeState = nodeProgress
+            ? stateMap[nodeProgress.nodeInfo.status]
+            : 'standby';
           let accumulatedRewards;
 
           if (accountInfo) {
             ({nominator, accumulatedRewards} = accountInfo);
           } else {
             //prettier-ignore
-            ({nominator, accumulatedRewards} = await getAccountInfoParams(config, nodeInfo.nodeInfo.publicKey));
+            ({nominator, accumulatedRewards} = await getAccountInfoParams(config, publicKey));
           }
 
           console.log(
@@ -195,7 +201,13 @@ export function registerNodeCommands(program: Command) {
               exitMessage,
               exitStatus,
               totalTimeRunning: status.uptimeInSeconds,
-              lastActive: '',
+              totalTimeValidating: nodeProgress
+                ? nodeProgress.totalActiveTime
+                : '',
+              lastActive: nodeProgress ? nodeProgress.lastActiveTime : '',
+              lastRotationIndex: nodeProgress
+                ? `${nodeProgress.lastRotationIndex.idx}/${nodeProgress.lastRotationIndex.total}`
+                : '',
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
                 : '',
@@ -210,7 +222,7 @@ export function registerNodeCommands(program: Command) {
               lockedStake: lockedStake
                 ? ethers.utils.formatEther(lockedStake)
                 : '',
-              nodeInfo: nodeInfo.nodeInfo,
+              nodeInfo: nodeProgress ? nodeProgress.nodeInfo : '',
             })
           );
 

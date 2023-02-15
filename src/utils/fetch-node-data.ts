@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import {nodeProgressType} from '../config/default-config';
 
 export async function fetchExitSummary() {
   return fetchFromLog('exit-summary.json');
@@ -7,6 +8,10 @@ export async function fetchExitSummary() {
 
 export async function fetchStartSummary() {
   return fetchFromLog('start-summary.json');
+}
+
+export async function fetchNodeProgress(): Promise<nodeProgressType | null> {
+  return fetchFromLog('node-progress.json');
 }
 
 export async function getExitInformation() {
@@ -29,6 +34,6 @@ async function fetchFromLog(logName: string) {
   if (!validatorLogExists(logName)) {
     return null;
   }
-  const exitSummaryPath = path.join(__dirname, `../../logs/${logName}`);
-  return JSON.parse(fs.readFileSync(exitSummaryPath).toString());
+  const logData = path.join(__dirname, `../../logs/${logName}`);
+  return JSON.parse(fs.readFileSync(logData).toString());
 }
