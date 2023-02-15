@@ -539,7 +539,7 @@ export function registerNodeCommands(program: Command) {
     .action(async () => {
       let versions: any = {
         runningCliVersion: dashboardPackageJson.version,
-        minimumCliVersion: '1.0.0', //TODO query from some official online source
+        minimumCliVersion: '0.1.0', //TODO query from some official online source
         latestCliVersion: await getLatestCliVersion(),
       };
 
@@ -547,7 +547,7 @@ export function registerNodeCommands(program: Command) {
         versions = {
           ...versions,
           runningGuiVersion: getInstalledGuiVersion(),
-          minimumGuiVersion: '1.0.0', //TODO query from some official online source
+          minimumGuiVersion: '0.1.0', //TODO query from some official online source
           latestGuiVersion: await getLatestGuiVersion(),
         };
       }
