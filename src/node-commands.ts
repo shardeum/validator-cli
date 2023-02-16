@@ -244,6 +244,11 @@ export function registerNodeCommands(program: Command) {
               ? ethers.utils.formatEther(lockedStake)
               : '',
             nominatorAddress: nominator,
+            currentRewards: accountInfo
+              ? ethers.utils.formatEther(
+                  accountInfo.accumulatedRewards.toString()
+                )
+              : '',
           })
         );
 
