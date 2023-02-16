@@ -396,7 +396,7 @@ export function registerNodeCommands(program: Command) {
 
       try {
         const provider = new ethers.providers.JsonRpcProvider(
-          `http://${rpcServer.ip}:${rpcServer.port}`
+          'https://sphinx.shardeum.org'
         );
 
         const walletWithProvider = new ethers.Wallet(
@@ -460,7 +460,7 @@ export function registerNodeCommands(program: Command) {
 
       try {
         const provider = new ethers.providers.JsonRpcProvider(
-          `http://${rpcServer.ip}:${rpcServer.port}`
+          'https://sphinx.shardeum.org'
         );
 
         const walletWithProvider = new ethers.Wallet(
