@@ -155,9 +155,21 @@ export async function getAccountInfoParams(
   try {
     const nodeData = await fetchNodeParameters(config, nodePubKey);
     lockedStake = new BN(nodeData.stakeLock, 16).toString();
-    nodeActiveDuration = nodeData.rewardStartTime
-      ? Date.now() - nodeData.rewardStartTime * 1000
-      : 0;
+    const startTime = nodeData.rewardStartTime;
+    const endTime = nodeData.rewardEndTime;
+
+    if (startTime > 0 && endTime === 0) {
+      // Node is earning rewards
+      nodeActiveDuration = Date.now() - startTime * 1000;
+    } else if (startTime > 0 && endTime > 0) {
+      // Node has earned rewards but is in standby
+      nodeActiveDuration = endTime - startTime;
+    } else if (startTime === 0 && endTime === 0) {
+      // Node has not earned rewards and is in standby
+      nodeActiveDuration = 0;
+    } else {
+      nodeActiveDuration = 0;
+    }
     nominator = nodeData.nominator;
   } catch (err) {
     lockedStake = new BN(0).toString();
