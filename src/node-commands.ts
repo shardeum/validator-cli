@@ -12,16 +12,15 @@ import {
   getNetworkParams,
   fetchStakeParameters,
   getAccountInfoParams,
-} from './utils';
-import {getPerformanceStatus} from './utils/performance-stats';
-const yaml = require('js-yaml');
-import {
-  getInstalledGuiVersion,
+  getPerformanceStatus,
   getLatestCliVersion,
-  getLatestGuiVersion,
   isGuiInstalled,
-} from './utils/project-data';
-import {fetchNodeProgress, getExitInformation} from './utils/fetch-node-data';
+  getInstalledGuiVersion,
+  getLatestGuiVersion,
+  fetchNodeProgress,
+  getExitInformation,
+} from './utils';
+const yaml = require('js-yaml');
 
 let config = defaultConfig;
 
