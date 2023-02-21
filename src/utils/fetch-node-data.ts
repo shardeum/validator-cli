@@ -2,11 +2,11 @@ import path from 'path';
 import fs from 'fs';
 import {nodeProgressType} from '../config/default-config';
 
-export async function fetchExitSummary() {
+export function fetchExitSummary() {
   return fetchFromLog('exit-summary.json');
 }
 
-export async function fetchStartSummary() {
+export function fetchStartSummary() {
   return fetchFromLog('start-summary.json');
 }
 
@@ -15,8 +15,8 @@ export async function fetchNodeProgress(): Promise<nodeProgressType | null> {
 }
 
 export async function getExitInformation() {
-  const exitSummary = await fetchExitSummary();
-  const startSummary = await fetchStartSummary();
+  const exitSummary = fetchExitSummary();
+  const startSummary = fetchStartSummary();
   // don't show exit reason if the validator is running or was never started
   const showExitReason =
     exitSummary?.exitTime > startSummary?.startTime ||
@@ -26,11 +26,37 @@ export async function getExitInformation() {
   return {exitMessage, exitStatus};
 }
 
+export function getProgressData(nodeProgress: nodeProgressType | null) {
+  if (!nodeProgress) {
+    return {
+      state: 'standby',
+      totalTimeValidating: 0,
+      lastActive: '',
+      lastRotationIndex: '',
+      nodeInfo: '',
+    };
+  }
+
+  const startData = fetchFromLog('start-summary.json');
+  const totalTimeValidating =
+    startData.startTime < nodeProgress.lastActiveTime
+      ? nodeProgress.totalActiveTime
+      : 0;
+
+  return {
+    state: nodeProgress.nodeInfo.status,
+    totalTimeValidating: totalTimeValidating,
+    lastActive: nodeProgress.lastActiveTime,
+    lastRotationIndex: `${nodeProgress.lastRotationIndex.idx}/${nodeProgress.lastRotationIndex.total}`,
+    nodeInfo: nodeProgress.nodeInfo,
+  };
+}
+
 function validatorLogExists(logName: string) {
   return fs.existsSync(path.join(__dirname, `../../logs/${logName}`));
 }
 
-async function fetchFromLog(logName: string) {
+function fetchFromLog(logName: string) {
   if (!validatorLogExists(logName)) {
     return null;
   }

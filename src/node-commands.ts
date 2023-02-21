@@ -19,6 +19,7 @@ import {
   getLatestGuiVersion,
   fetchNodeProgress,
   getExitInformation,
+  getProgressData,
 } from './utils';
 const yaml = require('js-yaml');
 
@@ -107,12 +108,12 @@ export function registerNodeCommands(program: Command) {
         const [
           {stakeRequired},
           performance,
-          nodeProgress,
+          {state, totalTimeValidating, lastRotationIndex, lastActive, nodeInfo},
           {exitMessage, exitStatus},
         ] = await Promise.all([
           fetchStakeParameters(config),
           getPerformanceStatus(),
-          fetchNodeProgress(),
+          fetchNodeProgress().then(getProgressData),
           getExitInformation(),
         ]);
 
@@ -161,9 +162,6 @@ export function registerNodeCommands(program: Command) {
         if (status.status !== 'stopped') {
           // Node is started and active
 
-          const nodeState = nodeProgress
-            ? stateMap[nodeProgress.nodeInfo.status]
-            : 'standby';
           let accumulatedRewards;
 
           if (accountInfo) {
@@ -175,17 +173,13 @@ export function registerNodeCommands(program: Command) {
 
           console.log(
             yaml.dump({
-              state: nodeState,
+              state: state, // TODO: Fetch syncing state
               exitMessage,
               exitStatus,
               totalTimeRunning: status.uptimeInSeconds,
-              totalTimeValidating: nodeProgress
-                ? nodeProgress.totalActiveTime
-                : '',
-              lastActive: nodeProgress ? nodeProgress.lastActiveTime : '',
-              lastRotationIndex: nodeProgress
-                ? `${nodeProgress.lastRotationIndex.idx}/${nodeProgress.lastRotationIndex.total}`
-                : '',
+              totalTimeValidating: totalTimeValidating,
+              lastActive: lastActive,
+              lastRotationIndex: lastRotationIndex,
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
                 : '',
@@ -201,7 +195,8 @@ export function registerNodeCommands(program: Command) {
               lockedStake: lockedStake
                 ? ethers.utils.formatEther(lockedStake)
                 : '',
-              nodeInfo: nodeProgress ? nodeProgress.nodeInfo : '',
+              nodeInfo: nodeInfo,
+              // TODO: Add fetching node info when in standby
             })
           );
 
