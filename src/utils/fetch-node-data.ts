@@ -43,10 +43,14 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
       ? nodeProgress.totalActiveTime
       : 0;
 
+  const LastActiveDate = new Date(nodeProgress.lastActiveTime);
+  const validatingDuration = new Date(0);
+  validatingDuration.setMilliseconds(totalTimeValidating);
+
   return {
     state: nodeProgress.nodeInfo.status,
-    totalTimeValidating: totalTimeValidating,
-    lastActive: nodeProgress.lastActiveTime,
+    totalTimeValidating: validatingDuration.toISOString().substring(11, 19),
+    lastActive: `${LastActiveDate.toDateString()} ${LastActiveDate.toTimeString()}`,
     lastRotationIndex: `${nodeProgress.lastRotationIndex.idx}/${nodeProgress.lastRotationIndex.total}`,
     nodeInfo: nodeProgress.nodeInfo,
   };
