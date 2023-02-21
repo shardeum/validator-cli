@@ -173,7 +173,7 @@ export function registerNodeCommands(program: Command) {
 
           console.log(
             yaml.dump({
-              state: state, // TODO: Fetch syncing state
+              state: stateMap[state], // TODO: Fetch syncing state
               exitMessage,
               exitStatus,
               totalTimeRunning: status.uptimeInSeconds,
