@@ -26,8 +26,7 @@ const yaml = require('js-yaml');
 let config = defaultConfig;
 
 let rpcServer = {
-  ip: 'localhost',
-  port: '8080',
+  url: 'https://sphinx.shardeum.org',
 };
 
 const stateMap: {[id: string]: string} = {
@@ -368,9 +367,7 @@ export function registerNodeCommands(program: Command) {
       }
 
       try {
-        const provider = new ethers.providers.JsonRpcProvider(
-          'https://sphinx.shardeum.org'
-        );
+        const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
 
         const walletWithProvider = new ethers.Wallet(
           process.env.PRIV_KEY,
@@ -432,9 +429,7 @@ export function registerNodeCommands(program: Command) {
       }
 
       try {
-        const provider = new ethers.providers.JsonRpcProvider(
-          'https://sphinx.shardeum.org'
-        );
+        const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
 
         const walletWithProvider = new ethers.Wallet(
           process.env.PRIV_KEY,
@@ -620,26 +615,11 @@ export function registerNodeCommands(program: Command) {
     });
 
   setCommand
-    .command('rpc_ip')
-    .argument('<ip>')
-    .description("Set the RPC server's IP address")
-    .action(ip => {
-      rpcServer.ip = ip;
-      fs.writeFile(
-        path.join(__dirname, '../rpc-server.json'),
-        JSON.stringify(rpcServer, undefined, 2),
-        err => {
-          if (err) console.error(err);
-        }
-      );
-    });
-
-  setCommand
-    .command('rpc_port')
-    .argument('<port>')
-    .description("Set the RPC server's port")
-    .action(port => {
-      rpcServer.port = port;
+    .command('rpc_url')
+    .argument('<url>')
+    .description("Set the RPC server's URL")
+    .action(url => {
+      rpcServer.url = url;
       fs.writeFile(
         path.join(__dirname, '../rpc-server.json'),
         JSON.stringify(rpcServer, undefined, 2),
