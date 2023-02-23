@@ -51,6 +51,27 @@ if (fs.existsSync(path.join(__dirname, '../rpc-server.json'))) {
   });
 }
 
+if (process.env.APP_SEEDLIST) {
+  config = merge(
+    config,
+    {
+      server: {
+        p2p: {
+          existingArchivers: [
+            {
+              ip: process.env.APP_SEEDLIST,
+              port: 4000,
+              publicKey:
+                '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
+            },
+          ],
+        },
+      },
+    },
+    {arrayMerge: (target, source) => source}
+  );
+}
+
 if (process.env.APP_MONITOR) {
   config = merge(
     config,
@@ -348,17 +369,6 @@ export function registerNodeCommands(program: Command) {
         return;
       }
 
-      const {stakeRequired} = await fetchStakeParameters(config);
-      if (
-        ethers.BigNumber.from(stakeRequired).gt(
-          ethers.utils.parseEther(stakeValue)
-        )
-      ) {
-        /*prettier-ignore*/
-        console.error(`Stake amount must be greater than ${ethers.utils.formatEther(stakeRequired)} SHM`);
-        return;
-      }
-
       if (!process.env.PRIV_KEY) {
         console.error(
           'Please set private key as PRIV_KEY environment variable'
@@ -366,14 +376,31 @@ export function registerNodeCommands(program: Command) {
         return;
       }
 
+      const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
+
+      const walletWithProvider = new ethers.Wallet(
+        process.env.PRIV_KEY,
+        provider
+      );
+
+      const [{stakeRequired}, eoaData] = await Promise.all([
+        fetchStakeParameters(config),
+        fetchEOADetails(config, walletWithProvider.address),
+      ]);
+
+      if (
+        ethers.BigNumber.from(stakeRequired).gt(
+          ethers.utils.parseEther(stakeValue)
+        )
+      ) {
+        if (eoaData === null) {
+          /*prettier-ignore*/
+          console.error(`Stake amount must be greater than ${ethers.utils.formatEther(stakeRequired)} SHM`);
+          return;
+        }
+      }
+
       try {
-        const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
-
-        const walletWithProvider = new ethers.Wallet(
-          process.env.PRIV_KEY,
-          provider
-        );
-
         const [gasPrice, from, nonce] = await Promise.all([
           walletWithProvider.getGasPrice(),
           walletWithProvider.getAddress(),
