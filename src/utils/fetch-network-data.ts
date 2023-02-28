@@ -44,7 +44,11 @@ async function fetchDataFromNetwork(
 }
 
 export async function getActiveNode(config: configType) {
-  const archiverUrl = `http://${config.server.p2p.existingArchivers[0].ip}:${config.server.p2p.existingArchivers[0].port}/nodelist`;
+  const randomArchiver =
+    config.server.p2p.existingArchivers[
+      Math.floor(Math.random() * config.server.p2p.existingArchivers.length)
+    ];
+  const archiverUrl = `http://${randomArchiver.ip}:${randomArchiver.port}/nodelist`;
   const nodeList = await axios
     .get(archiverUrl)
     .then(res => res.data)
