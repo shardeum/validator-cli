@@ -205,9 +205,6 @@ export function registerNodeCommands(program: Command) {
                 : '',
               nominatorAddress: nominator,
               nomineeAddress: publicKey,
-              earnings: '',
-              lastPayout: '',
-              lifetimeEarnings: '',
               performance,
               currentRewards: ethers.utils.formatEther(
                 accumulatedRewards.toString()
