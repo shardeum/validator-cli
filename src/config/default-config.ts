@@ -19,7 +19,7 @@ export const defaultConfig = {
           ip: '194.195.220.150',
           port: 4000,
           publicKey:
-            '2db7c949632d26b87d7e7a5a4ad41c306f63ee972655121a37c5e4f52b00a542',
+            '616f720f4b6145373acd95b068cb674ff3a24ba738cfff5da568ec36873859f6',
         },
         {
           ip: '45.79.113.106',
