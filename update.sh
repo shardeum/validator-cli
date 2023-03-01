@@ -12,6 +12,8 @@ check_update_available() {
 }
 
 self_update() {
+  git fetch
+  git reset --hard HEAD
   git pull --force
   echo "Installing the new version..."
   npm install
