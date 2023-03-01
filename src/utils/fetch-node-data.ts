@@ -29,7 +29,7 @@ export async function getExitInformation() {
 export function getProgressData(nodeProgress: nodeProgressType | null) {
   if (!nodeProgress) {
     return {
-      state: 'standby',
+      state: 'null',
       totalTimeValidating: 0,
       lastActive: '',
       lastRotationIndex: '',
@@ -37,21 +37,27 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
     };
   }
 
+  const lastRotationIndexSafe = nodeProgress.lastRotationIndex ?? {
+    idx: 0,
+    total: 0,
+  };
+  const lastActiveTimeSafe = nodeProgress.lastActiveTime ?? 0;
+
   const startData = fetchFromLog('start-summary.json');
   const totalTimeValidating =
-    startData.startTime < nodeProgress.lastActiveTime
-      ? nodeProgress.totalActiveTime
-      : 0;
+    startData.startTime < lastActiveTimeSafe ? lastActiveTimeSafe : 0;
 
-  const LastActiveDate = new Date(nodeProgress.lastActiveTime);
+  const LastActiveDate = new Date(lastActiveTimeSafe);
   const validatingDuration = new Date(0);
   validatingDuration.setMilliseconds(totalTimeValidating);
 
   return {
     state: nodeProgress.nodeInfo.status,
     totalTimeValidating: validatingDuration.toISOString().substring(11, 19),
-    lastActive: `${LastActiveDate.toDateString()} ${LastActiveDate.toTimeString()}`,
-    lastRotationIndex: `${nodeProgress.lastRotationIndex.idx}/${nodeProgress.lastRotationIndex.total}`,
+    lastActive: lastActiveTimeSafe
+      ? `${LastActiveDate.toDateString()} ${LastActiveDate.toTimeString()}`
+      : '',
+    lastRotationIndex: `${lastRotationIndexSafe.idx}/${lastRotationIndexSafe.total}`,
     nodeInfo: nodeProgress.nodeInfo,
   };
 }
