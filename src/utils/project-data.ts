@@ -1,6 +1,6 @@
 import axios from 'axios';
-import path from "path";
-import fs from "fs";
+import path from 'path';
+import fs from 'fs';
 
 const CLI_PROJECT_PATH = 'https://gitlab.com/shardeum/validator/cli/';
 const GUI_PROJECT_PATH = 'https://gitlab.com/shardeum/validator/gui/';
@@ -31,6 +31,24 @@ export function getInstalledGuiVersion(): string | undefined {
   return packageJson.version;
 }
 
+export function getInstalledValidatorVersion(): string | undefined {
+  if (!isValidatorInstalled()) {
+    return;
+  }
+  const validatorPackageJsonPath = path.join(
+    __dirname,
+    '../../../../validator/package.json'
+  );
+  const packageJson = JSON.parse(
+    fs.readFileSync(validatorPackageJsonPath).toString()
+  );
+  return packageJson.version;
+}
+
 export function isGuiInstalled() {
   return fs.existsSync(path.join(__dirname, '../../../../gui'));
+}
+
+export function isValidatorInstalled() {
+  return fs.existsSync(path.join(__dirname, '../../../../validator'));
 }

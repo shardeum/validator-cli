@@ -20,6 +20,8 @@ import {
   fetchNodeProgress,
   getExitInformation,
   getProgressData,
+  isValidatorInstalled,
+  getInstalledValidatorVersion,
 } from './utils';
 const yaml = require('js-yaml');
 
@@ -559,6 +561,13 @@ export function registerNodeCommands(program: Command) {
           runningGuiVersion: getInstalledGuiVersion(),
           minimumGuiVersion: '0.1.0', //TODO query from some official online source
           latestGuiVersion: await getLatestGuiVersion(),
+        };
+      }
+
+      if (isValidatorInstalled()) {
+        versions = {
+          ...versions,
+          runnningValidatorVersion: getInstalledValidatorVersion(),
         };
       }
       console.log(yaml.dump(versions));
