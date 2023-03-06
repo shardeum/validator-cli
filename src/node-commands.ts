@@ -133,13 +133,11 @@ export function registerNodeCommands(program: Command) {
           performance,
           {state, totalTimeValidating, lastRotationIndex, lastActive, nodeInfo},
           {exitMessage, exitStatus},
-          validatorVersions,
         ] = await Promise.all([
           fetchStakeParameters(config),
           getPerformanceStatus(),
           fetchNodeProgress().then(getProgressData),
           getExitInformation(),
-          fetchValidatorVersions(config),
         ]);
         // TODO: Use Promise.allSettled. Need to update nodeJs to 12.9
 
@@ -176,8 +174,6 @@ export function registerNodeCommands(program: Command) {
               lockedStake: lockedStake
                 ? ethers.utils.formatEther(lockedStake)
                 : '',
-              minShardeumVersion: validatorVersions.minVersion,
-              activeShardeumVersion: validatorVersions.activeVersion,
             })
           );
           return pm2.disconnect();
@@ -218,8 +214,6 @@ export function registerNodeCommands(program: Command) {
               lockedStake: lockedStake
                 ? ethers.utils.formatEther(lockedStake)
                 : '',
-              minShardeumVersion: validatorVersions.minVersion,
-              activeShardeumVersion: validatorVersions.activeVersion,
               nodeInfo: nodeInfo,
               // TODO: Add fetching node info when in standby
             })
@@ -247,8 +241,6 @@ export function registerNodeCommands(program: Command) {
                   accountInfo.accumulatedRewards.toString()
                 )
               : '',
-            minShardeumVersion: validatorVersions.minVersion,
-            activeShardeumVersion: validatorVersions.activeVersion,
           })
         );
 
@@ -557,10 +549,14 @@ export function registerNodeCommands(program: Command) {
       'Shows the installed version, latest version and minimum version of the operator dashboard'
     )
     .action(async () => {
+      const validatorVersions = await fetchValidatorVersions(config);
+
       let versions: any = {
         runningCliVersion: dashboardPackageJson.version,
         minimumCliVersion: '0.1.0', //TODO query from some official online source
         latestCliVersion: await getLatestCliVersion(),
+        minShardeumVersion: validatorVersions.minVersion,
+        activeShardeumVersion: validatorVersions.activeVersion,
       };
 
       if (isGuiInstalled()) {
