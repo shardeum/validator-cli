@@ -144,6 +144,16 @@ export async function fetchEOADetails(config: configType, eoaAddress: string) {
   return eoaParams.account;
 }
 
+export async function fetchValidatorVersions(config: configType) {
+  const validatorVersions = await fetchDataFromNetwork(
+    config,
+    '/nodeinfo',
+    data => data === null
+  );
+
+  return validatorVersions.nodeInfo.appData;
+}
+
 export async function getAccountInfoParams(
   config: configType,
   nodePubKey: string

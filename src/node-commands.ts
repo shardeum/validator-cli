@@ -22,6 +22,7 @@ import {
   getProgressData,
   isValidatorInstalled,
   getInstalledValidatorVersion,
+  fetchValidatorVersions,
 } from './utils';
 const yaml = require('js-yaml');
 
@@ -132,13 +133,14 @@ export function registerNodeCommands(program: Command) {
           performance,
           {state, totalTimeValidating, lastRotationIndex, lastActive, nodeInfo},
           {exitMessage, exitStatus},
+          validatorVersions,
         ] = await Promise.all([
           fetchStakeParameters(config),
           getPerformanceStatus(),
           fetchNodeProgress().then(getProgressData),
           getExitInformation(),
+          fetchValidatorVersions(config),
         ]);
-
         // TODO: Use Promise.allSettled. Need to update nodeJs to 12.9
 
         let publicKey = '';
@@ -174,6 +176,8 @@ export function registerNodeCommands(program: Command) {
               lockedStake: lockedStake
                 ? ethers.utils.formatEther(lockedStake)
                 : '',
+              minShardeumVersion: validatorVersions.minVersion,
+              activeShardeumVersion: validatorVersions.activeVersion,
             })
           );
           return pm2.disconnect();
@@ -214,6 +218,8 @@ export function registerNodeCommands(program: Command) {
               lockedStake: lockedStake
                 ? ethers.utils.formatEther(lockedStake)
                 : '',
+              minShardeumVersion: validatorVersions.minVersion,
+              activeShardeumVersion: validatorVersions.activeVersion,
               nodeInfo: nodeInfo,
               // TODO: Add fetching node info when in standby
             })
@@ -241,6 +247,8 @@ export function registerNodeCommands(program: Command) {
                   accountInfo.accumulatedRewards.toString()
                 )
               : '',
+            minShardeumVersion: validatorVersions.minVersion,
+            activeShardeumVersion: validatorVersions.activeVersion,
           })
         );
 
