@@ -302,16 +302,7 @@ export function registerNodeCommands(program: Command) {
               throw 'Unable to connect to PM2';
             }
             pm2.start(
-              {
-                script: `${path.join(
-                  __dirname,
-                  '../../../validator/dist/src/index.js'
-                )}`,
-                name: 'validator',
-                output: './validator-logs.txt',
-                cwd: path.join(__dirname, '../'),
-                autorestart: false, // Prevents the node from restarting if it is stopped by '/stop'
-              },
+              path.join(__dirname, '../../environment.config.js'),
               err => {
                 if (err) console.error(err);
                 return pm2.disconnect();
