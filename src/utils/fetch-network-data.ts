@@ -1,6 +1,7 @@
 import {configType} from '../config/default-config';
 import axios from 'axios';
 import {BN} from 'ethereumjs-util';
+import {Pm2ProcessStatus, statusFromPM2} from '../pm2';
 
 export const networkAccount = '0'.repeat(64);
 let savedActiveNode: {
@@ -125,9 +126,12 @@ export async function getNetworkParams(config: configType) {
   const networkStats = await fetchNetworkStats(config);
   let result = {...networkStats};
   try {
-    const nodeLoad = await fetchNodeLoad(config);
-    const nodeTxStats = await fetchNodeTxStats(config);
-    result = {...result, ...nodeLoad, ...nodeTxStats};
+    const status: Pm2ProcessStatus = statusFromPM2(config);
+    if (status?.status && status.status !== 'stopped') {
+      const nodeLoad = await fetchNodeLoad(config);
+      const nodeTxStats = await fetchNodeTxStats(config);
+      result = {...result, ...nodeLoad, ...nodeTxStats};
+    }
   } catch (e) {
     console.error(e);
   }
@@ -161,7 +165,7 @@ export async function getAccountInfoParams(
   // prettier-ignore
   const {
     nodeRewardAmount,
-    nodeRewardInterval,
+    nodeRewardInterval
   } = await fetchInitialParameters(config);
 
   let lockedStake, nodeActiveDuration, nominator;
