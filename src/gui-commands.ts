@@ -112,7 +112,7 @@ export function registerGuiCommands(program: Command) {
     .arguments('<password>')
     .description('verify GUI password')
     .action(password => {
-      if (crypto.hash(password) !== config.gui.pass) {
+      if (password !== config.gui.pass) {
         console.log(yaml.dump({login: 'unauthorized'}));
         return;
       }
