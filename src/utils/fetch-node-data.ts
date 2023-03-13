@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import {nodeProgressType} from '../config/default-config';
+import {nodeProgressType} from '../config/default-network-config';
 
 export function fetchExitSummary() {
   return fetchFromLog('exit-summary.json');

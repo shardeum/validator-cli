@@ -1,4 +1,4 @@
-import {configType} from '../config/default-config';
+import {configType} from '../config/default-network-config';
 import axios from 'axios';
 import {BN} from 'ethereumjs-util';
 import {Pm2ProcessStatus, statusFromPM2} from '../pm2';

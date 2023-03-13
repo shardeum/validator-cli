@@ -4,7 +4,8 @@ import {Command} from 'commander';
 import path from 'path';
 import {exec} from 'child_process';
 import merge from 'deepmerge';
-import {defaultConfig} from './config/default-config';
+import {defaultConfig} from './config/default-network-config';
+import {defaultNodeConfig, nodeConfigType} from './config/default-node-config';
 import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
 import {
@@ -27,6 +28,7 @@ import {
 const yaml = require('js-yaml');
 
 let config = defaultConfig;
+let nodeConfig: nodeConfigType = defaultNodeConfig;
 
 let rpcServer = {
   url: 'https://sphinx.shardeum.org',
@@ -43,6 +45,15 @@ if (fs.existsSync(path.join(__dirname, '../config.json'))) {
     fs.readFileSync(path.join(__dirname, '../config.json')).toString()
   );
   config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
+}
+
+if (fs.existsSync(path.join(__dirname, '../nodeConfig.json'))) {
+  const fileConfig = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '../nodeConfig.json')).toString()
+  );
+  nodeConfig = merge(nodeConfig, fileConfig, {
+    arrayMerge: (target, source) => source,
+  });
 }
 
 if (fs.existsSync(path.join(__dirname, '../rpc-server.json'))) {
@@ -112,6 +123,11 @@ const dashboardPackageJson = JSON.parse(
 fs.writeFileSync(
   path.join(__dirname, '../config.json'),
   JSON.stringify(config, undefined, 2)
+);
+
+fs.writeFileSync(
+  path.join(__dirname, '../nodeConfig.json'),
+  JSON.stringify(nodeConfig, undefined, 2)
 );
 
 export function registerNodeCommands(program: Command) {
@@ -655,6 +671,23 @@ export function registerNodeCommands(program: Command) {
       fs.writeFile(
         path.join(__dirname, '../rpc-server.json'),
         JSON.stringify(rpcServer, undefined, 2),
+        err => {
+          if (err) console.error(err);
+        }
+      );
+    });
+
+  setCommand
+    .command('autostart')
+    .argument('<true/false>')
+    .description(
+      'To autostart the node after being rotated out. Set autostart to true or false'
+    )
+    .action((autostart: string) => {
+      nodeConfig.autoRestart = autostart === 'true';
+      fs.writeFile(
+        path.join(__dirname, '../node-config.json'),
+        JSON.stringify(nodeConfig, undefined, 2),
         err => {
           if (err) console.error(err);
         }
