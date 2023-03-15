@@ -62,6 +62,15 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
   };
 }
 
+export function getNodeSettings() {
+  if(!fs.existsSync(path.join(__dirname, `../../nodeConfig.json`))) {
+    return null
+  }
+
+  const settingsData = path.join(__dirname, `../../nodeConfig.json`)
+  return JSON.parse(fs.readFileSync(settingsData).toString())
+}
+
 function validatorLogExists(logName: string) {
   return fs.existsSync(path.join(__dirname, `../../logs/${logName}`));
 }

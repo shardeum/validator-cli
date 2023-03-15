@@ -24,6 +24,7 @@ import {
   isValidatorInstalled,
   getInstalledValidatorVersion,
   fetchValidatorVersions,
+  getNodeSettings,
 } from './utils';
 const yaml = require('js-yaml');
 
@@ -597,6 +598,18 @@ export function registerNodeCommands(program: Command) {
       const networkStats = await getNetworkParams(config);
       console.log(yaml.dump(networkStats));
     });
+
+  program
+    .command('node-settings')
+    .description('Display node settings')
+    .action(() => {
+      const settings = getNodeSettings()
+      console.log(
+        yaml.dump({
+          autoRestart: settings.autoRestart
+        })
+      )
+    })
 
   const setCommand = program
     .command('set')
