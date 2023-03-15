@@ -45,7 +45,7 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
 
   const startData = fetchFromLog('start-summary.json');
   const totalTimeValidating =
-    startData.startTime < lastActiveTimeSafe ? lastActiveTimeSafe : 0;
+    startData.startTime < lastActiveTimeSafe ? nodeProgress.totalActiveTime : 0;
 
   const LastActiveDate = new Date(lastActiveTimeSafe);
   const validatingDuration = new Date(0);
