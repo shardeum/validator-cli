@@ -473,7 +473,11 @@ export function registerNodeCommands(program: Command) {
   program
     .command('unstake')
     .description('Remove staked SHM')
-    .action(async () => {
+    .option(
+      '-f, --force',
+      'Force unstake in case the node is stuck, will forfeit rewards'
+    )
+    .action(async (options) => {
       //TODO should we handle partial unstakes?
 
       if (!process.env.PRIV_KEY) {
@@ -516,6 +520,7 @@ export function registerNodeCommands(program: Command) {
           nominator: walletWithProvider.address.toLowerCase(),
           timestamp: Date.now(),
           nominee: eoaData.operatorAccountInfo.nominee,
+          force: options.force ?? false
         };
         console.log(unstakeData);
 
