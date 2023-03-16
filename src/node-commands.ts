@@ -262,10 +262,14 @@ export function registerNodeCommands(program: Command) {
         const eoaData = await fetchEOADetails(config, address);
         console.log(
           yaml.dump({
-            stake: ethers.utils.formatEther(
-              String(parseInt(eoaData.operatorAccountInfo.stake, 16))
-            ),
-            nominee: eoaData.operatorAccountInfo.nominee,
+            stake: eoaData.operatorAccountInfo
+              ? ethers.utils.formatEther(
+                  String(parseInt(eoaData.operatorAccountInfo.stake, 16))
+                )
+              : '',
+            nominee: eoaData.operatorAccountInfo
+              ? eoaData.operatorAccountInfo.nominee
+              : '',
           })
         );
       } catch (error) {
