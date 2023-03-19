@@ -1,3 +1,29 @@
 {
-  "extends": "./node_modules/gts/"
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "env": {
+    //"browser": true,
+    "node": true
+  },
+  "plugins": ["@typescript-eslint", "security", "xss"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:security/recommended",
+    "plugin:no-unsanitized/DOM",
+    "prettier"
+  ],
+  "ignorePatterns": ["*.ts"],
+  "rules": {
+    "no-empty": [
+      1,
+      {
+        "allowEmptyCatch": true
+      }
+    ],
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/member-delimiter-style": "off",
+    "@typescript-eslint/no-non-null-assertion": "off"
+  }
 }
