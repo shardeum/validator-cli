@@ -603,13 +603,13 @@ export function registerNodeCommands(program: Command) {
     .command('node-settings')
     .description('Display node settings')
     .action(() => {
-      const settings = getNodeSettings()
+      const settings = getNodeSettings();
       console.log(
         yaml.dump({
-          autoRestart: settings.autoRestart
+          autoRestart: settings.autoRestart,
         })
-      )
-    })
+      );
+    });
 
   const setCommand = program
     .command('set')
@@ -691,13 +691,18 @@ export function registerNodeCommands(program: Command) {
     });
 
   setCommand
-    .command('autostart')
+    .command('auto_restart')
     .argument('<true/false>')
     .description(
       'To autostart the node after being rotated out. Set autostart to true or false'
     )
     .action((autostart: string) => {
-      nodeConfig.autoRestart = autostart === 'true';
+      const input = autostart.toLowerCase();
+      if (input !== 'true' && input !== 'false') {
+        console.error('Invalid input. Please enter true or false');
+        return;
+      }
+      nodeConfig.autoRestart = input === 'true';
       fs.writeFile(
         path.join(__dirname, '../node-config.json'),
         JSON.stringify(nodeConfig, undefined, 2),
