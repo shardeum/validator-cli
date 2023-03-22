@@ -87,6 +87,23 @@ if (process.env.APP_SEEDLIST) {
   );
 }
 
+if (process.env.EXISTING_ARCHIVERS) {
+  const existingArchivers = JSON.parse(process.env.EXISTING_ARCHIVERS);
+  if (existingArchivers.length > 0) {
+    config = merge(
+      config,
+      {
+        server: {
+          p2p: {
+            existingArchivers,
+          },
+        },
+      },
+      {arrayMerge: (target, source) => source}
+    );
+  }
+}
+
 if (process.env.APP_MONITOR) {
   config = merge(
     config,
