@@ -45,7 +45,10 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
 
   const startData = fetchFromLog('start-summary.json');
 
-  if (startData.startTime > lastActiveTimeSafe) {
+  if (
+    startData.startTime >
+    fs.statSync(path.join(__dirname, `../../logs/node-progress.json`)).mtimeMs
+  ) {
     nodeProgress.totalActiveTime = 0;
     nodeProgress.nodeInfo.status = 'standby';
   }
