@@ -243,7 +243,7 @@ export function registerNodeCommands(program: Command) {
               lockedStake: lockedStake
                 ? ethers.utils.formatEther(lockedStake)
                 : '',
-              nodeInfo: nodeInfo ? nodeInfo : await fetchNodeInfo(config),
+              nodeInfo: nodeInfo,
               // TODO: Add fetching node info when in standby
             })
           );
