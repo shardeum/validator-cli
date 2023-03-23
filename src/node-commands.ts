@@ -477,7 +477,7 @@ export function registerNodeCommands(program: Command) {
       '-f, --force',
       'Force unstake in case the node is stuck, will forfeit rewards'
     )
-    .action(async (options) => {
+    .action(async options => {
       //TODO should we handle partial unstakes?
 
       if (!process.env.PRIV_KEY) {
@@ -520,7 +520,7 @@ export function registerNodeCommands(program: Command) {
           nominator: walletWithProvider.address.toLowerCase(),
           timestamp: Date.now(),
           nominee: eoaData.operatorAccountInfo.nominee,
-          force: options.force ?? false
+          force: options.force ?? false,
         };
         console.log(unstakeData);
 
@@ -726,7 +726,7 @@ export function registerNodeCommands(program: Command) {
       }
       nodeConfig.autoRestart = input === 'true';
       fs.writeFile(
-        path.join(__dirname, '../node-config.json'),
+        path.join(__dirname, '../nodeConfig.json'),
         JSON.stringify(nodeConfig, undefined, 2),
         err => {
           if (err) console.error(err);
