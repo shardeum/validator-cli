@@ -36,12 +36,6 @@ let rpcServer = {
   url: 'https://sphinx.shardeum.org',
 };
 
-const stateMap: {[id: string]: string} = {
-  null: 'standby',
-  syncing: 'syncing',
-  active: 'active',
-};
-
 if (fs.existsSync(path.join(__dirname, '../config.json'))) {
   const fileConfig = JSON.parse(
     fs.readFileSync(path.join(__dirname, '../config.json')).toString()
@@ -230,7 +224,7 @@ export function registerNodeCommands(program: Command) {
 
           console.log(
             yaml.dump({
-              state: stateMap[state], // TODO: Fetch syncing state
+              state: state,
               exitMessage,
               exitStatus,
               totalTimeRunning: status.uptimeInSeconds,
@@ -316,17 +310,8 @@ export function registerNodeCommands(program: Command) {
     .command('start')
     .description('Starts the validator')
     .action(() => {
-      // Save config in current directory to be used by the validator
-      fs.writeFile(
-        path.join(__dirname, '../config.json'),
-        JSON.stringify(config, undefined, 2),
-        err => {
-          if (err) console.log(err);
-        }
-      );
-
       // Run the validators clean script
-      //TODO: Inject port numbers from config as env vars into pm2
+
       exec(
         `node ${path.join(__dirname, '../../../validator/scripts/clean.js')}`,
         () => {

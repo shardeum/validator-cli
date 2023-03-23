@@ -29,7 +29,7 @@ export async function getExitInformation() {
 export function getProgressData(nodeProgress: nodeProgressType | null) {
   if (!nodeProgress) {
     return {
-      state: 'null',
+      state: 'standby',
       totalTimeValidating: 0,
       lastActive: '',
       lastRotationIndex: '',
@@ -44,12 +44,15 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
   const lastActiveTimeSafe = nodeProgress.lastActiveTime ?? 0;
 
   const startData = fetchFromLog('start-summary.json');
-  const totalTimeValidating =
-    startData.startTime < lastActiveTimeSafe ? nodeProgress.totalActiveTime : 0;
+
+  if (startData.startTime > lastActiveTimeSafe) {
+    nodeProgress.totalActiveTime = 0;
+    nodeProgress.nodeInfo.status = 'standby';
+  }
 
   const LastActiveDate = new Date(lastActiveTimeSafe);
   const validatingDuration = new Date(0);
-  validatingDuration.setMilliseconds(totalTimeValidating);
+  validatingDuration.setMilliseconds(nodeProgress.totalActiveTime);
 
   return {
     state: nodeProgress.nodeInfo.status,
