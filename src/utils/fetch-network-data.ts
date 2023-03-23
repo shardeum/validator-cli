@@ -2,14 +2,44 @@ import {configType} from '../config/default-network-config';
 import axios from 'axios';
 import {BN} from 'ethereumjs-util';
 import {Pm2ProcessStatus, statusFromPM2} from '../pm2';
+import fs from 'fs';
+import path from 'path';
 
 export const networkAccount = '0'.repeat(64);
-let savedActiveNode: {
-  id: string;
-  ip: string;
-  port: string;
-  publicKey: string;
-};
+let savedActiveNode:
+  | {
+      id: string;
+      ip: string;
+      port: string;
+      publicKey: string;
+    }
+  | undefined = undefined;
+
+/**
+ * Checks if active node is already defined or present in file. Returns true
+ * If active node is not available, returns false
+ * denoting that new node needs to be fetched
+ *
+ * @returns {boolean} True if active node is already defined, false if not
+ */
+function readActiveNode() {
+  // Check if savedActiveNode is already defined
+  if (savedActiveNode !== undefined) {
+    return true;
+  } else {
+    try {
+      const data = fs.readFileSync(
+        path.join(__dirname, '../../active-node.json'),
+        'utf8'
+      );
+      savedActiveNode = JSON.parse(data);
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+}
 
 async function fetchDataFromNetwork(
   config: configType,
@@ -17,26 +47,30 @@ async function fetchDataFromNetwork(
   callback: (response: {[id: string]: string}) => boolean
 ) {
   let retries = 3;
-  if (savedActiveNode === undefined) {
-    await getActiveNode(config);
+  if (!readActiveNode()) {
+    await getNewActiveNode(config);
+  }
+
+  if (!savedActiveNode) {
+    throw new Error('Unable to fetch active node');
   }
 
   const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
   let data = await axios
-    .get(url)
+    .get(url, {timeout: 2000})
     .then(res => res.data)
     .catch(err => console.error(err));
 
   while (callback(data) && retries--) {
     try {
-      getActiveNode(config);
+      await getNewActiveNode(config);
     } catch (e) {
       continue;
     }
 
     const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
     data = await axios
-      .get(url)
+      .get(url, {timeout: 2000})
       .then(res => res.data)
       .catch(err => console.error(err));
   }
@@ -44,14 +78,23 @@ async function fetchDataFromNetwork(
   return data;
 }
 
-export async function getActiveNode(config: configType) {
+/**
+ * Fetches a new random active node from the network.
+ * Saves to file by overwriting the previous active node.
+ * Also saves the active node to a global variable.
+ *
+ * @param config
+ * @returns {Promise<void>}
+ * @throws {Error} If unable to fetch list of nodes in the network
+ */
+export async function getNewActiveNode(config: configType) {
   const randomArchiver =
     config.server.p2p.existingArchivers[
       Math.floor(Math.random() * config.server.p2p.existingArchivers.length)
     ];
   const archiverUrl = `http://${randomArchiver.ip}:${randomArchiver.port}/nodelist`;
   const nodeList = await axios
-    .get(archiverUrl)
+    .get(archiverUrl, {timeout: 2000})
     .then(res => res.data)
     .catch(err => console.error(err));
   if (!nodeList?.nodeList) {
@@ -59,6 +102,12 @@ export async function getActiveNode(config: configType) {
   }
   savedActiveNode =
     nodeList.nodeList[Math.floor(Math.random() * nodeList.nodeList.length)];
+
+  //Write savedActiveNode to file
+  fs.writeFileSync(
+    path.join(__dirname, '../../active-node.json'),
+    JSON.stringify(savedActiveNode)
+  );
 }
 
 export async function fetchInitialParameters(config: configType) {
