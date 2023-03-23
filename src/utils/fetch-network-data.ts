@@ -109,6 +109,18 @@ async function fetchNodeTxStats(config: configType) {
   return txStats.data;
 }
 
+export async function fetchNodeInfo(config: configType) {
+  const url = `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/nodeinfo`;
+  const nodeInfo = await axios.get(url, {timeout: 2000});
+
+  if (nodeInfo === null || nodeInfo.data === null) {
+    throw new Error(
+      'Node not active in the network. Unable to fetch node-info'
+    );
+  }
+  return nodeInfo.data;
+}
+
 async function fetchNetworkStats(config: configType) {
   const networkStats = await fetchDataFromNetwork(
     config,

@@ -25,6 +25,7 @@ import {
   getInstalledValidatorVersion,
   fetchValidatorVersions,
   getNodeSettings,
+  fetchNodeInfo,
 } from './utils';
 const yaml = require('js-yaml');
 
@@ -248,7 +249,7 @@ export function registerNodeCommands(program: Command) {
               lockedStake: lockedStake
                 ? ethers.utils.formatEther(lockedStake)
                 : '',
-              nodeInfo: nodeInfo,
+              nodeInfo: nodeInfo ? nodeInfo : await fetchNodeInfo(config),
               // TODO: Add fetching node info when in standby
             })
           );
