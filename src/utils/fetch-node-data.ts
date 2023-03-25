@@ -54,12 +54,10 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
   }
 
   const LastActiveDate = new Date(lastActiveTimeSafe);
-  const validatingDuration = new Date(0);
-  validatingDuration.setMilliseconds(nodeProgress.totalActiveTime);
 
   return {
     state: nodeProgress.nodeInfo.status,
-    totalTimeValidating: validatingDuration.toISOString().substring(11, 19),
+    totalTimeValidating: convertMsToDHM(nodeProgress.totalActiveTime),
     lastActive: lastActiveTimeSafe
       ? `${LastActiveDate.toDateString()} ${LastActiveDate.toTimeString()}`
       : '',
@@ -87,4 +85,20 @@ function fetchFromLog(logName: string) {
   }
   const logData = path.join(__dirname, `../../logs/${logName}`);
   return JSON.parse(fs.readFileSync(logData).toString());
+}
+
+function convertMsToDHM(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+  const remainingMinutes = minutes % 60;
+
+  const daysString = days > 0 ? `${days} Days ` : '';
+  const hoursString = remainingHours > 0 ? `${remainingHours} Hours ` : '';
+  const minutesString =
+    remainingMinutes > 0 ? `${remainingMinutes} Minutes` : '';
+
+  return `${daysString}${hoursString}${minutesString}`;
 }
