@@ -25,7 +25,7 @@ import {
   getInstalledValidatorVersion,
   fetchValidatorVersions,
   getNodeSettings,
-  fetchNodeInfo,
+  cache,
 } from './utils';
 const yaml = require('js-yaml');
 
@@ -205,6 +205,7 @@ export function registerNodeCommands(program: Command) {
                 : '',
             })
           );
+          cache.writeMaps();
           return pm2.disconnect();
         }
 
@@ -247,7 +248,7 @@ export function registerNodeCommands(program: Command) {
               // TODO: Add fetching node info when in standby
             })
           );
-
+          cache.writeMaps();
           return pm2.disconnect();
         }
 
@@ -272,7 +273,7 @@ export function registerNodeCommands(program: Command) {
               : '',
           })
         );
-
+        cache.writeMaps();
         return pm2.disconnect();
       });
     });
