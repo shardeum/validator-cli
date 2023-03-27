@@ -223,9 +223,16 @@ export function registerNodeCommands(program: Command) {
             ({nominator, accumulatedRewards} = await getAccountInfoParams(config, publicKey));
           }
 
+          const nodeStatus =
+            state === 'standby'
+              ? lockedStake === '0.0'
+                ? 'need-stake'
+                : 'standby'
+              : state;
+
           console.log(
             yaml.dump({
-              state: state,
+              state: nodeStatus,
               exitMessage,
               exitStatus,
               totalTimeRunning: status.uptimeInSeconds,
