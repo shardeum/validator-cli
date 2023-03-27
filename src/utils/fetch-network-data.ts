@@ -261,11 +261,12 @@ export async function getAccountInfoParams(
     nodeRewardInterval
   } = await fetchInitialParameters(config);
 
-  let lockedStake, nodeActiveDuration, nominator;
+  let lockedStake, nodeActiveDuration, nominator, previousStake;
 
   try {
     const nodeData = await fetchNodeParameters(config, nodePubKey);
     lockedStake = new BN(nodeData.stakeLock, 16).toString();
+    previousStake = new BN(nodeData.reward, 16);
     const startTime = nodeData.rewardStartTime * 1000;
     const endTime = nodeData.rewardEndTime * 1000;
 
@@ -286,9 +287,12 @@ export async function getAccountInfoParams(
     lockedStake = new BN(0).toString();
     nodeActiveDuration = 0;
     nominator = '';
+    previousStake = new BN(0);
   }
 
-  const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration));
+  const totalReward = previousStake.add(
+    nodeRewardAmount.mul(new BN(nodeActiveDuration))
+  );
 
   return {
     lockedStake,
