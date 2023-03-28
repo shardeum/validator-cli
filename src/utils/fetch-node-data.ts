@@ -76,6 +76,7 @@ export function getNodeSettings() {
 }
 
 function validatorLogExists(logName: string) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   return fs.existsSync(path.join(__dirname, `../../logs/${logName}`));
 }
 
@@ -84,6 +85,7 @@ function fetchFromLog(logName: string) {
     return null;
   }
   const logData = path.join(__dirname, `../../logs/${logName}`);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   return JSON.parse(fs.readFileSync(logData).toString());
 }
 

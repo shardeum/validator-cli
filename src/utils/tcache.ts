@@ -13,10 +13,13 @@ export default class tcache {
 
   readMaps() {
     // Skip if files don't exist
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!fs.existsSync(this.valPath) || !fs.existsSync(this.timePath)) {
       return;
     }
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const valStr = fs.readFileSync(this.valPath, 'utf8');
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const timeStr = fs.readFileSync(this.timePath, 'utf8');
     const valArr = JSON.parse(valStr);
     const timeArr = JSON.parse(timeStr);
@@ -27,7 +30,9 @@ export default class tcache {
   writeMaps() {
     const valStr = JSON.stringify([...this.val]);
     const timeStr = JSON.stringify([...this.time]);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.writeFileSync(this.valPath, valStr);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.writeFileSync(this.timePath, timeStr);
   }
 
