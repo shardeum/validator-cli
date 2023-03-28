@@ -1,20 +1,23 @@
 import pm2 from 'pm2';
 import {Command} from 'commander';
 import path = require('path');
+import {timingSafeEqual} from 'crypto';
 import {Pm2ProcessStatus, statusFromPM2} from './pm2';
 import merge from 'deepmerge';
 import {defaultGuiConfig} from './config/default-gui-config';
 import fs from 'fs';
+import * as yaml from 'js-yaml';
 import * as crypto from '@shardus/crypto-utils';
 import {getInstalledGuiVersion} from './utils/project-data';
-const yaml = require('js-yaml');
 
 let config = defaultGuiConfig;
 
 crypto.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
 
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 if (fs.existsSync(path.join(__dirname, '../gui-config.json'))) {
   const fileConfig = JSON.parse(
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.readFileSync(path.join(__dirname, '../gui-config.json')).toString()
   );
   config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
@@ -83,6 +86,7 @@ export function registerGuiCommands(program: Command) {
     .description('Set the GUI server port')
     .action(port => {
       config.gui.port = parseInt(port);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, '../gui-config.json'),
         JSON.stringify(config, undefined, 2),
@@ -98,6 +102,7 @@ export function registerGuiCommands(program: Command) {
     .description('Set the GUI server password')
     .action(password => {
       config.gui.pass = crypto.hash(password);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, '../gui-config.json'),
         JSON.stringify(config, undefined, 2),
@@ -112,7 +117,9 @@ export function registerGuiCommands(program: Command) {
     .arguments('<password>')
     .description('verify GUI password')
     .action(password => {
-      if (password !== config.gui.pass) {
+      if (
+        !timingSafeEqual(Buffer.from(password), Buffer.from(config.gui.pass))
+      ) {
         console.log(yaml.dump({login: 'unauthorized'}));
         return;
       }

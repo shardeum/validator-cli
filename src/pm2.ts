@@ -1,3 +1,4 @@
+import { ProcessDescription } from 'pm2'
 export interface Pm2ProcessStatus {
   name?: string;
   uptimeInSeconds?: number;
@@ -8,7 +9,7 @@ export interface Pm2ProcessStatus {
   link?: string;
 }
 
-export function statusFromPM2(pm2Description: any): Pm2ProcessStatus {
+export function statusFromPM2(pm2Description: ProcessDescription): Pm2ProcessStatus {
   return {
     name: pm2Description.name,
     uptimeInSeconds: pm2Description.pm2_env?.pm_uptime

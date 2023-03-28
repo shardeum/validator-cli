@@ -1,5 +1,6 @@
 import {Pm2ProcessStatus, statusFromPM2} from './pm2';
 import pm2 from 'pm2';
+import * as yaml from 'js-yaml';
 import {Command} from 'commander';
 import path from 'path';
 import {exec} from 'child_process';
@@ -27,7 +28,18 @@ import {
   getNodeSettings,
   cache,
 } from './utils';
-const yaml = require('js-yaml');
+
+type VersionStats = {
+  runningCliVersion: string;
+  minimumCliVersion: string;
+  latestCliVersion: string;
+  minShardeumVersion: string;
+  activeShardeumVersion: string;
+  minimumGuiVersion?: string;
+  latestGuiVersion?: string;
+  runningGuiVersion?: string | undefined;
+  runnningValidatorVersion?: string | undefined;
+};
 
 let config = defaultConfig;
 let nodeConfig: nodeConfigType = defaultNodeConfig;
@@ -579,7 +591,7 @@ export function registerNodeCommands(program: Command) {
     .action(async () => {
       const validatorVersions = await fetchValidatorVersions(config);
 
-      let versions: any = {
+      let versions: VersionStats = {
         runningCliVersion: dashboardPackageJson.version,
         minimumCliVersion: '0.1.0', //TODO query from some official online source
         latestCliVersion: await getLatestCliVersion(),
