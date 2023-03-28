@@ -30,7 +30,7 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
   if (!nodeProgress) {
     return {
       state: 'standby',
-      totalTimeValidating: 0,
+      totalTimeValidating: '00:00:00',
       lastActive: '',
       lastRotationIndex: '',
       nodeInfo: '',
@@ -88,6 +88,8 @@ function fetchFromLog(logName: string) {
 }
 
 function convertMsToDHM(ms: number): string {
+  if (ms === 0) return '00:00:00';
+
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
