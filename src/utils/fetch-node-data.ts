@@ -1,17 +1,18 @@
 import path from 'path';
 import fs from 'fs';
+import { File } from '../utils'
 import {nodeProgressType} from '../config/default-network-config';
 
 export function fetchExitSummary() {
-  return fetchFromLog('exit-summary.json');
+  return fetchFromLog(`${File.EXIT_SUMMARY}`);
 }
 
 export function fetchStartSummary() {
-  return fetchFromLog('start-summary.json');
+  return fetchFromLog(`${File.START_SUMMARY}`);
 }
 
 export async function fetchNodeProgress(): Promise<nodeProgressType | null> {
-  return fetchFromLog('node-progress.json');
+  return fetchFromLog(`${File.NODE_PROGRESS}`);
 }
 
 export async function getExitInformation() {
@@ -43,11 +44,12 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
   };
   const lastActiveTimeSafe = nodeProgress.lastActiveTime ?? 0;
 
-  const startData = fetchFromLog('start-summary.json');
+  const startData = fetchFromLog(`${File.START_SUMMARY}`);
 
   if (
     startData.startTime >
-    fs.statSync(path.join(__dirname, `../../logs/node-progress.json`)).mtimeMs
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.statSync(path.join(__dirname, `../../logs/${File.NODE_PROGRESS}`)).mtimeMs
   ) {
     nodeProgress.totalActiveTime = 0;
     nodeProgress.nodeInfo.status = 'standby';
@@ -67,11 +69,13 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
 }
 
 export function getNodeSettings() {
-  if (!fs.existsSync(path.join(__dirname, `../../nodeConfig.json`))) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  if (!fs.existsSync(path.join(__dirname, `../../${File.NODE_CONFIG}`))) {
     return null;
   }
 
-  const settingsData = path.join(__dirname, `../../nodeConfig.json`);
+  const settingsData = path.join(__dirname, `../../${File.NODE_CONFIG}`);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   return JSON.parse(fs.readFileSync(settingsData).toString());
 }
 

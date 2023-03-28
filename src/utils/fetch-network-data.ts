@@ -6,6 +6,7 @@ import {Pm2ProcessStatus, statusFromPM2} from '../pm2';
 import fs from 'fs';
 import path from 'path';
 import tcache from './tcache';
+import { File } from '../utils'
 
 export const cache = new tcache();
 export const networkAccount = '0'.repeat(64);
@@ -31,8 +32,9 @@ function readActiveNode() {
     return true;
   } else {
     try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const data = fs.readFileSync(
-        path.join(__dirname, '../../active-node.json'),
+        path.join(__dirname, `../../${File.ACTIVE_NODE}`),
         'utf8'
       );
       savedActiveNode = JSON.parse(data);
@@ -107,8 +109,9 @@ export async function getNewActiveNode(config: configType) {
     nodeList.nodeList[Math.floor(Math.random() * nodeList.nodeList.length)];
 
   //Write savedActiveNode to file
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   fs.writeFileSync(
-    path.join(__dirname, '../../active-node.json'),
+    path.join(__dirname, `../../${File.ACTIVE_NODE}`),
     JSON.stringify(savedActiveNode)
   );
 }

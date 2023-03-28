@@ -1,11 +1,12 @@
 import fs from 'fs';
 import path from 'path';
+import { File } from '.';
 
 export default class tcache {
   val = new Map<string, string>();
   time = new Map<string, Date>();
-  valPath = path.join(__dirname, 'val.json');
-  timePath = path.join(__dirname, 'time.json');
+  valPath = path.join(__dirname, `${File.VAL}`);
+  timePath = path.join(__dirname, `${File.TIME}`);
 
   constructor() {
     this.readMaps();

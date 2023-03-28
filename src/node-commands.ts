@@ -27,6 +27,7 @@ import {
   fetchValidatorVersions,
   getNodeSettings,
   cache,
+  File,
 } from './utils';
 
 type VersionStats = {
@@ -48,25 +49,31 @@ let rpcServer = {
   url: 'https://sphinx.shardeum.org',
 };
 
-if (fs.existsSync(path.join(__dirname, '../config.json'))) {
+// eslint-disable-next-line security/detect-non-literal-fs-filename
+if (fs.existsSync(path.join(__dirname, `../${File.CONFIG}`))) {
   const fileConfig = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../config.json')).toString()
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.readFileSync(path.join(__dirname, `../${File.CONFIG}`)).toString()
   );
   config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
 }
 
-if (fs.existsSync(path.join(__dirname, '../nodeConfig.json'))) {
+// eslint-disable-next-line security/detect-non-literal-fs-filename
+if (fs.existsSync(path.join(__dirname, `../${File.NODE_CONFIG}`))) {
   const fileConfig = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../nodeConfig.json')).toString()
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.readFileSync(path.join(__dirname, `../${File.NODE_CONFIG}`)).toString()
   );
   nodeConfig = merge(nodeConfig, fileConfig, {
     arrayMerge: (target, source) => source,
   });
 }
 
-if (fs.existsSync(path.join(__dirname, '../rpc-server.json'))) {
+// eslint-disable-next-line security/detect-non-literal-fs-filename
+if (fs.existsSync(path.join(__dirname, `../${File.RPC_SERVER}`))) {
   const fileConfig = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../rpc-server.json')).toString()
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.readFileSync(path.join(__dirname, `../${File.RPC_SERVER}`)).toString()
   );
   rpcServer = merge(rpcServer, fileConfig, {
     arrayMerge: (target, source) => source,
@@ -145,13 +152,15 @@ const dashboardPackageJson = JSON.parse(
   readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
 );
 
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 fs.writeFileSync(
-  path.join(__dirname, '../config.json'),
+  path.join(__dirname, `../${File.CONFIG}`),
   JSON.stringify(config, undefined, 2)
 );
 
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 fs.writeFileSync(
-  path.join(__dirname, '../nodeConfig.json'),
+  path.join(__dirname, `../${File.NODE_CONFIG}`),
   JSON.stringify(nodeConfig, undefined, 2)
 );
 
@@ -188,9 +197,11 @@ export function registerNodeCommands(program: Command) {
         let accountInfo;
 
         // Fetch the public key from secrets.json if it exists
-        if (fs.existsSync(path.join(__dirname, '../secrets.json'))) {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        if (fs.existsSync(path.join(__dirname, `../${File.SECRETS}`))) {
           const secrets = JSON.parse(
-            fs.readFileSync(path.join(__dirname, '../secrets.json')).toString()
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            fs.readFileSync(path.join(__dirname, `../${File.SECRETS}`)).toString()
           );
           publicKey = secrets.publicKey;
         }
@@ -342,7 +353,7 @@ export function registerNodeCommands(program: Command) {
               throw 'Unable to connect to PM2';
             }
             pm2.start(
-              path.join(__dirname, '../../environment.config.js'),
+              path.join(__dirname, `../../${File.ENVIRONMENT_CONFIG}`),
               err => {
                 if (err) console.error(err);
                 return pm2.disconnect();
@@ -389,13 +400,15 @@ export function registerNodeCommands(program: Command) {
       //TODO should we handle consecutive stakes?
 
       // Fetch the public key from secrets.json
-      if (!fs.existsSync(path.join(__dirname, '../secrets.json'))) {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      if (!fs.existsSync(path.join(__dirname, `../${File.SECRETS}`))) {
         console.error('Please start the node once before staking');
         return;
       }
 
       const secrets = JSON.parse(
-        fs.readFileSync(path.join(__dirname, '../secrets.json')).toString()
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        fs.readFileSync(path.join(__dirname, `../${File.SECRETS}`)).toString()
       );
 
       if (secrets.publicKey === null) {
@@ -655,8 +668,9 @@ export function registerNodeCommands(program: Command) {
     .description('Set the external port for the validator')
     .action(port => {
       config.server.ip.externalPort = parseInt(port);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
-        path.join(__dirname, '../config.json'),
+        path.join(__dirname, `../${File.CONFIG}`),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
@@ -670,8 +684,9 @@ export function registerNodeCommands(program: Command) {
     .description('Set the internal port for the validator')
     .action(port => {
       config.server.ip.internalPort = parseInt(port);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
-        path.join(__dirname, '../config.json'),
+        path.join(__dirname, `../${File.CONFIG}`),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
@@ -685,8 +700,9 @@ export function registerNodeCommands(program: Command) {
     .description('Set the external ip for the validator')
     .action(ip => {
       config.server.ip.externalIp = ip;
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
-        path.join(__dirname, '../config.json'),
+        path.join(__dirname, `../${File.CONFIG}`),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
@@ -700,8 +716,9 @@ export function registerNodeCommands(program: Command) {
     .description('Set the internal ip for the validator')
     .action(ip => {
       config.server.ip.internalIp = ip;
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
-        path.join(__dirname, '../config.json'),
+        path.join(__dirname, `../${File.CONFIG}`),
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
@@ -715,8 +732,9 @@ export function registerNodeCommands(program: Command) {
     .description("Set the RPC server's URL")
     .action(url => {
       rpcServer.url = url;
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
-        path.join(__dirname, '../rpc-server.json'),
+        path.join(__dirname, `../${File.RPC_SERVER}`),
         JSON.stringify(rpcServer, undefined, 2),
         err => {
           if (err) console.error(err);
@@ -737,8 +755,9 @@ export function registerNodeCommands(program: Command) {
         return;
       }
       nodeConfig.autoRestart = input === 'true';
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
-        path.join(__dirname, '../nodeConfig.json'),
+        path.join(__dirname, `../${File.NODE_CONFIG}`),
         JSON.stringify(nodeConfig, undefined, 2),
         err => {
           if (err) console.error(err);
