@@ -1,6 +1,7 @@
 import {configType} from '../config/default-network-config';
 import axios from 'axios';
 import {BN} from 'ethereumjs-util';
+import {ProcessDescription} from 'pm2';
 import {Pm2ProcessStatus, statusFromPM2} from '../pm2';
 import fs from 'fs';
 import path from 'path';
@@ -206,15 +207,18 @@ async function fetchNetworkStats(config: configType) {
   return networkStats;
 }
 
-export async function getNetworkParams(config: configType) {
+export async function getNetworkParams(
+  config: configType,
+  description: ProcessDescription
+) {
   const networkStats = await fetchNetworkStats(config);
-  let result = {...networkStats};
+  let result = { ...networkStats };
   try {
-    const status: Pm2ProcessStatus = statusFromPM2(config);
+    const status: Pm2ProcessStatus = statusFromPM2(description);
     if (status?.status && status.status !== 'stopped') {
       const nodeLoad = await fetchNodeLoad(config);
       const nodeTxStats = await fetchNodeTxStats(config);
-      result = {...result, ...nodeLoad, ...nodeTxStats};
+      result = { ...result, ...nodeLoad, ...nodeTxStats };
     }
   } catch (e) {
     console.error(e);

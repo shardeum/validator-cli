@@ -604,8 +604,12 @@ export function registerNodeCommands(program: Command) {
       'Show statistics like TPS, active nodes etc. about the network'
     )
     .action(async () => {
-      const networkStats = await getNetworkParams(config);
-      console.log(yaml.dump(networkStats));
+      pm2.describe('validator', async (err, [descriptions]) => {
+        if (!err) {
+          const networkStats = await getNetworkParams(config, descriptions);
+          console.log(yaml.dump(networkStats));
+        }
+      });
     });
 
   program
