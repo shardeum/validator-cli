@@ -59,12 +59,12 @@ async function fetchDataFromNetwork(
   }
 
   const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
-  let data = await axios
-    .get(url, {timeout: 2000})
-    .then(res => res.data)
-    .catch(err => console.error(err));
+  let data = await axios.get(url, {timeout: 2000}).catch(err => {
+    // console.error(err);
+    return {data: null, status: 500};
+  });
 
-  while (callback(data) && retries--) {
+  while ((callback(data.data) || data.status === 500) && retries--) {
     try {
       await getNewActiveNode(config);
     } catch (e) {
@@ -72,14 +72,13 @@ async function fetchDataFromNetwork(
     }
 
     const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
-    data = await axios
-      .get(url, {timeout: 2000})
-      .then(res => res.data)
-      .catch(err => console.error(err));
+    data = await axios.get(url, {timeout: 2000}).catch(err => {
+      // console.error(err);
+      return {data: null, status: 500};
+    });
   }
 
-  // TODO: Add final check for callback
-  return data;
+  return data.data;
 }
 
 /**
@@ -212,13 +211,13 @@ export async function getNetworkParams(
   description: ProcessDescription
 ) {
   const networkStats = await fetchNetworkStats(config);
-  let result = { ...networkStats };
+  let result = {...networkStats};
   try {
     const status: Pm2ProcessStatus = statusFromPM2(description);
     if (status?.status && status.status !== 'stopped') {
       const nodeLoad = await fetchNodeLoad(config);
       const nodeTxStats = await fetchNodeTxStats(config);
-      result = { ...result, ...nodeLoad, ...nodeTxStats };
+      result = {...result, ...nodeLoad, ...nodeTxStats};
     }
   } catch (e) {
     console.error(e);
