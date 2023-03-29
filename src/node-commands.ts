@@ -292,12 +292,12 @@ export function registerNodeCommands(program: Command) {
         const eoaData = await fetchEOADetails(config, address);
         console.log(
           yaml.dump({
-            stake: eoaData.operatorAccountInfo
+            stake: eoaData?.operatorAccountInfo
               ? ethers.utils.formatEther(
                   String(parseInt(eoaData.operatorAccountInfo.stake, 16))
                 )
               : '',
-            nominee: eoaData.operatorAccountInfo
+            nominee: eoaData?.operatorAccountInfo
               ? eoaData.operatorAccountInfo.nominee
               : '',
           })
