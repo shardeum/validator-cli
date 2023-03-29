@@ -229,7 +229,7 @@ export async function fetchEOADetails(config: configType, eoaAddress: string) {
   const eoaParams = await fetchDataFromNetwork(
     config,
     `/account/${eoaAddress}`,
-    data => data.account === null
+    data => data?.account == null
   );
 
   return eoaParams.account;
