@@ -609,6 +609,8 @@ export function registerNodeCommands(program: Command) {
           const networkStats = await getNetworkParams(config, descriptions);
           console.log(yaml.dump(networkStats));
         }
+
+        pm2.disconnect();
       });
     });
 

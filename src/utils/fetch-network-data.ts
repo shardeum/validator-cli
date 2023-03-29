@@ -212,6 +212,12 @@ export async function getNetworkParams(
 ) {
   const networkStats = await fetchNetworkStats(config);
   let result = {...networkStats};
+
+  // Check if description is undefined
+  if (!description) {
+    return result;
+  }
+
   try {
     const status: Pm2ProcessStatus = statusFromPM2(description);
     if (status?.status && status.status !== 'stopped') {
