@@ -246,9 +246,10 @@ export function registerNodeCommands(program: Command) {
             ({nominator, accumulatedRewards} = await getAccountInfoParams(config, publicKey));
           }
 
+          const lockedStakeStr = lockedStake ? ethers.utils.formatEther(lockedStake) : ''
           const nodeStatus =
             state === 'standby'
-              ? lockedStake === '0.0'
+              ? lockedStakeStr === '0.0'
                 ? 'need-stake'
                 : 'standby'
               : state;
@@ -271,9 +272,7 @@ export function registerNodeCommands(program: Command) {
               currentRewards: ethers.utils.formatEther(
                 accumulatedRewards.toString()
               ),
-              lockedStake: lockedStake
-                ? ethers.utils.formatEther(lockedStake)
-                : '',
+              lockedStake: lockedStakeStr,
               nodeInfo: nodeInfo,
               // TODO: Add fetching node info when in standby
             })
