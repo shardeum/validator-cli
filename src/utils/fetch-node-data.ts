@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { File } from '../utils'
+import {File} from '../utils';
 import {nodeProgressType} from '../config/default-network-config';
 
 export function fetchExitSummary() {
@@ -49,7 +49,8 @@ export function getProgressData(nodeProgress: nodeProgressType | null) {
   if (
     startData.startTime >
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    fs.statSync(path.join(__dirname, `../../logs/${File.NODE_PROGRESS}`)).mtimeMs
+    fs.statSync(path.join(__dirname, `../../logs/${File.NODE_PROGRESS}`))
+      .mtimeMs
   ) {
     nodeProgress.totalActiveTime = 0;
     nodeProgress.nodeInfo.status = 'standby';

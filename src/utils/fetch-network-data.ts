@@ -6,7 +6,7 @@ import {Pm2ProcessStatus, statusFromPM2} from '../pm2';
 import fs from 'fs';
 import path from 'path';
 import tcache from './tcache';
-import { File } from '../utils'
+import {File} from '../utils';
 
 export const cache = new tcache();
 export const networkAccount = '0'.repeat(64);
@@ -61,7 +61,7 @@ async function fetchDataFromNetwork(
   }
 
   const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
-  let data = await axios.get(url, {timeout: 2000}).catch(err => {
+  let data = await axios.get(url, {timeout: 2000}).catch(() => {
     // console.error(err);
     return {data: null, status: 500};
   });
@@ -74,7 +74,7 @@ async function fetchDataFromNetwork(
     }
 
     const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
-    data = await axios.get(url, {timeout: 2000}).catch(err => {
+    data = await axios.get(url, {timeout: 2000}).catch(() => {
       // console.error(err);
       return {data: null, status: 500};
     });
