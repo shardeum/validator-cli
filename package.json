@@ -22,6 +22,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/diskspace": "^2.0.1",
+    "@types/js-yaml": "^4.0.5",
     "@types/node": "^14.11.2",
     "@types/os-utils": "^0.0.1",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
@@ -44,7 +45,6 @@
   },
   "dependencies": {
     "@shardus/crypto-utils": "^4.0.4",
-    "@types/js-yaml": "^4.0.5",
     "axios": "^1.2.2",
     "commander": "^9.4.1",
     "deepmerge": "^4.2.2",
