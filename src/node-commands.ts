@@ -29,6 +29,7 @@ import {
   cache,
   File,
 } from './utils';
+import * as readline from 'readline';
 
 type VersionStats = {
   runningCliVersion: string;
@@ -201,7 +202,9 @@ export function registerNodeCommands(program: Command) {
         if (fs.existsSync(path.join(__dirname, `../${File.SECRETS}`))) {
           const secrets = JSON.parse(
             // eslint-disable-next-line security/detect-non-literal-fs-filename
-            fs.readFileSync(path.join(__dirname, `../${File.SECRETS}`)).toString()
+            fs
+              .readFileSync(path.join(__dirname, `../${File.SECRETS}`))
+              .toString()
           );
           publicKey = secrets.publicKey;
         }
@@ -243,10 +246,12 @@ export function registerNodeCommands(program: Command) {
             ({nominator, accumulatedRewards} = accountInfo);
           } else {
             //prettier-ignore
-            ({nominator, accumulatedRewards} = await getAccountInfoParams(config, publicKey));
+            ({ nominator, accumulatedRewards } = await getAccountInfoParams(config, publicKey));
           }
 
-          const lockedStakeStr = lockedStake ? ethers.utils.formatEther(lockedStake) : ''
+          const lockedStakeStr = lockedStake
+            ? ethers.utils.formatEther(lockedStake)
+            : '';
           const nodeStatus =
             state === 'standby'
               ? lockedStakeStr === '0.0'
@@ -363,12 +368,19 @@ export function registerNodeCommands(program: Command) {
       );
     });
 
+  function stopNode() {
+    pm2.stop('validator', err => {
+      if (err) console.error(err);
+      return pm2.disconnect();
+    });
+  }
+
   program
     .command('stop')
     .description('Stops the validator')
     .option(
       '-f, --force',
-      'stops the node even if it is participating and could get slashed'
+      'stops the node without prompting for confirmation even if it is participating and could get slashed'
     )
     .action(options => {
       // Exec PM2 to stop the shardeum validator
@@ -378,13 +390,36 @@ export function registerNodeCommands(program: Command) {
           throw 'Unable to connect to PM2';
         }
 
-        if (!options.force) {
-          //TODO check to make sure the node is not participating
-        }
+        pm2.describe('validator', async (err, descriptions) => {
+          if (descriptions.length === 0) {
+            console.error('Node is not running');
+            return pm2.disconnect();
+          }
 
-        pm2.stop('validator', err => {
-          if (err) console.error(err);
-          return pm2.disconnect();
+          const description = descriptions[0];
+          const status: Pm2ProcessStatus = statusFromPM2(description);
+          const {state} = await fetchNodeProgress().then(getProgressData);
+          if (status.status !== 'stopped' && state !== 'standby') {
+            if (!options.force) {
+              const rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout,
+              });
+
+              rl.question(
+                'The node is active and stopping it could result in losing the stake amount. ' +
+                  'Confirm if you would like to force the node to stop (y/n): ',
+                answer => {
+                  rl.close();
+                  if (answer.toLowerCase() === 'y') {
+                    return stopNode();
+                  }
+                  return pm2.disconnect();
+                }
+              );
+            }
+          }
+          return stopNode();
         });
       });
     });
