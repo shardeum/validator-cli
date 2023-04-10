@@ -28,6 +28,7 @@ import {
   getNodeSettings,
   cache,
   File,
+  fetchNodeInfo,
 } from './utils';
 import * as readline from 'readline';
 
@@ -195,7 +196,7 @@ export function registerNodeCommands(program: Command) {
         const [
           {stakeRequired},
           performance,
-          {state, totalTimeValidating, lastRotationIndex, lastActive, nodeInfo},
+          {totalTimeValidating, lastRotationIndex, lastActive},
           {exitMessage, exitStatus},
           accountInfo,
         ] = await Promise.all([
@@ -232,15 +233,17 @@ export function registerNodeCommands(program: Command) {
         if (status.status !== 'stopped') {
           // Node is started and active
 
+          const nodeInfo = await fetchNodeInfo(config);
+
           const lockedStakeStr = accountInfo.lockedStake
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
           const nodeStatus =
-            state === 'standby'
+            nodeInfo.status === 'null'
               ? lockedStakeStr === '0.0'
                 ? 'need-stake'
                 : 'standby'
-              : state;
+              : nodeInfo.status;
 
           console.log(
             yaml.dump({
