@@ -258,6 +258,16 @@ export async function getAccountInfoParams(
   config: configType,
   nodePubKey: string
 ) {
+  if (nodePubKey === '') {
+    // Public key not found. This can happen in the primitive case when
+    // the node has not been started for the first time.
+    return {
+      lockedStake: '',
+      nominator: '',
+      accumulatedRewards: new BN(0),
+    };
+  }
+
   // prettier-ignore
   const {
     nodeRewardAmount,

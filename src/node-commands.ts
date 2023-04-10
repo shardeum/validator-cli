@@ -179,24 +179,7 @@ export function registerNodeCommands(program: Command) {
           return pm2.disconnect();
         }
 
-        const [
-          {stakeRequired},
-          performance,
-          {state, totalTimeValidating, lastRotationIndex, lastActive, nodeInfo},
-          {exitMessage, exitStatus},
-        ] = await Promise.all([
-          fetchStakeParameters(config),
-          getPerformanceStatus(),
-          fetchNodeProgress().then(getProgressData),
-          getExitInformation(),
-        ]);
-        // TODO: Use Promise.allSettled. Need to update nodeJs to 12.9
-
         let publicKey = '';
-        let lockedStake = '';
-        let nominator = '';
-        let accountInfo;
-
         // Fetch the public key from secrets.json if it exists
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         if (fs.existsSync(path.join(__dirname, `../${File.SECRETS}`))) {
@@ -209,11 +192,20 @@ export function registerNodeCommands(program: Command) {
           publicKey = secrets.publicKey;
         }
 
-        if (publicKey) {
-          accountInfo = await getAccountInfoParams(config, publicKey);
-          lockedStake = accountInfo.lockedStake;
-          nominator = accountInfo.nominator;
-        }
+        const [
+          {stakeRequired},
+          performance,
+          {state, totalTimeValidating, lastRotationIndex, lastActive, nodeInfo},
+          {exitMessage, exitStatus},
+          accountInfo,
+        ] = await Promise.all([
+          fetchStakeParameters(config),
+          getPerformanceStatus(),
+          fetchNodeProgress().then(getProgressData),
+          getExitInformation(),
+          getAccountInfoParams(config, publicKey),
+        ]);
+        // TODO: Use Promise.allSettled. Need to update nodeJs to 12.9
 
         if (descriptions.length === 0) {
           // Node process not started
@@ -226,8 +218,8 @@ export function registerNodeCommands(program: Command) {
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
                 : '',
-              lockedStake: lockedStake
-                ? ethers.utils.formatEther(lockedStake)
+              lockedStake: accountInfo.lockedStake
+                ? ethers.utils.formatEther(accountInfo.lockedStake)
                 : '',
             })
           );
@@ -240,17 +232,8 @@ export function registerNodeCommands(program: Command) {
         if (status.status !== 'stopped') {
           // Node is started and active
 
-          let accumulatedRewards;
-
-          if (accountInfo) {
-            ({nominator, accumulatedRewards} = accountInfo);
-          } else {
-            //prettier-ignore
-            ({ nominator, accumulatedRewards } = await getAccountInfoParams(config, publicKey));
-          }
-
-          const lockedStakeStr = lockedStake
-            ? ethers.utils.formatEther(lockedStake)
+          const lockedStakeStr = accountInfo.lockedStake
+            ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
           const nodeStatus =
             state === 'standby'
@@ -271,11 +254,11 @@ export function registerNodeCommands(program: Command) {
               stakeRequirement: stakeRequired
                 ? ethers.utils.formatEther(stakeRequired)
                 : '',
-              nominatorAddress: nominator,
+              nominatorAddress: accountInfo.nominator,
               nomineeAddress: publicKey,
               performance,
               currentRewards: ethers.utils.formatEther(
-                accumulatedRewards.toString()
+                accountInfo.accumulatedRewards.toString()
               ),
               lockedStake: lockedStakeStr,
               nodeInfo: nodeInfo,
@@ -296,10 +279,10 @@ export function registerNodeCommands(program: Command) {
             stakeRequirement: stakeRequired
               ? ethers.utils.formatEther(stakeRequired)
               : '',
-            lockedStake: lockedStake
-              ? ethers.utils.formatEther(lockedStake)
+            lockedStake: accountInfo.lockedStake
+              ? ethers.utils.formatEther(accountInfo.lockedStake)
               : '',
-            nominatorAddress: nominator,
+            nominatorAddress: accountInfo.nominator,
             currentRewards: accountInfo
               ? ethers.utils.formatEther(
                   accountInfo.accumulatedRewards.toString()
