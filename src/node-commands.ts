@@ -172,7 +172,7 @@ export function registerNodeCommands(program: Command) {
     .description(
       'Show if validator is running or not; also the port and URL to connect to it'
     )
-    .action(() => {
+    .action(async () => {
       pm2.describe('validator', async (err, descriptions) => {
         // PM2 not reachable
         if (err) {
@@ -239,7 +239,7 @@ export function registerNodeCommands(program: Command) {
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
           const nodeStatus =
-            nodeInfo.status === 'null'
+            nodeInfo.status === null
               ? lockedStakeStr === '0.0'
                 ? 'need-stake'
                 : 'standby'

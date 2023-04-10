@@ -193,7 +193,7 @@ export async function fetchNodeInfo(config: configType) {
     );
   }
 
-  return nodeInfo.data.nodeInfo;
+  return nodeInfo.nodeInfo;
 }
 
 async function fetchNetworkStats(config: configType) {
