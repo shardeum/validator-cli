@@ -682,69 +682,69 @@ export function registerNodeCommands(program: Command) {
     .command('set')
     .description('command to set various config parameters');
 
-  setCommand
-    .command('external_port')
-    .arguments('<port>')
-    .description('Set the external port for the validator')
-    .action(port => {
-      config.server.ip.externalPort = parseInt(port);
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      fs.writeFile(
-        path.join(__dirname, `../${File.CONFIG}`),
-        JSON.stringify(config, undefined, 2),
-        err => {
-          if (err) console.error(err);
-        }
-      );
-    });
+  // setCommand
+  //   .command('external_port')
+  //   .arguments('<port>')
+  //   .description('Set the external port for the validator')
+  //   .action(port => {
+  //     config.server.ip.externalPort = parseInt(port);
+  //     // eslint-disable-next-line security/detect-non-literal-fs-filename
+  //     fs.writeFile(
+  //       path.join(__dirname, `../${File.CONFIG}`),
+  //       JSON.stringify(config, undefined, 2),
+  //       err => {
+  //         if (err) console.error(err);
+  //       }
+  //     );
+  //   });
 
-  setCommand
-    .command('internal_port')
-    .arguments('<port>')
-    .description('Set the internal port for the validator')
-    .action(port => {
-      config.server.ip.internalPort = parseInt(port);
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      fs.writeFile(
-        path.join(__dirname, `../${File.CONFIG}`),
-        JSON.stringify(config, undefined, 2),
-        err => {
-          if (err) console.error(err);
-        }
-      );
-    });
+  // setCommand
+  //   .command('internal_port')
+  //   .arguments('<port>')
+  //   .description('Set the internal port for the validator')
+  //   .action(port => {
+  //     config.server.ip.internalPort = parseInt(port);
+  //     // eslint-disable-next-line security/detect-non-literal-fs-filename
+  //     fs.writeFile(
+  //       path.join(__dirname, `../${File.CONFIG}`),
+  //       JSON.stringify(config, undefined, 2),
+  //       err => {
+  //         if (err) console.error(err);
+  //       }
+  //     );
+  //   });
 
-  setCommand
-    .command('external_ip')
-    .arguments('<ip>')
-    .description('Set the external ip for the validator')
-    .action(ip => {
-      config.server.ip.externalIp = ip;
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      fs.writeFile(
-        path.join(__dirname, `../${File.CONFIG}`),
-        JSON.stringify(config, undefined, 2),
-        err => {
-          if (err) console.error(err);
-        }
-      );
-    });
+  // setCommand
+  //   .command('external_ip')
+  //   .arguments('<ip>')
+  //   .description('Set the external ip for the validator')
+  //   .action(ip => {
+  //     config.server.ip.externalIp = ip;
+  //     // eslint-disable-next-line security/detect-non-literal-fs-filename
+  //     fs.writeFile(
+  //       path.join(__dirname, `../${File.CONFIG}`),
+  //       JSON.stringify(config, undefined, 2),
+  //       err => {
+  //         if (err) console.error(err);
+  //       }
+  //     );
+  //   });
 
-  setCommand
-    .command('internal_ip')
-    .arguments('<ip>')
-    .description('Set the internal ip for the validator')
-    .action(ip => {
-      config.server.ip.internalIp = ip;
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      fs.writeFile(
-        path.join(__dirname, `../${File.CONFIG}`),
-        JSON.stringify(config, undefined, 2),
-        err => {
-          if (err) console.error(err);
-        }
-      );
-    });
+  // setCommand
+  //   .command('internal_ip')
+  //   .arguments('<ip>')
+  //   .description('Set the internal ip for the validator')
+  //   .action(ip => {
+  //     config.server.ip.internalIp = ip;
+  //     // eslint-disable-next-line security/detect-non-literal-fs-filename
+  //     fs.writeFile(
+  //       path.join(__dirname, `../${File.CONFIG}`),
+  //       JSON.stringify(config, undefined, 2),
+  //       err => {
+  //         if (err) console.error(err);
+  //       }
+  //     );
+  //   });
 
   setCommand
     .command('rpc_url')
