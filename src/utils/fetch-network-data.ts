@@ -66,7 +66,7 @@ async function fetchDataFromNetwork(
     return {data: null, status: 500};
   });
 
-  while ((callback(data.data) || data.status === 500) && retries--) {
+  while ((data.status === 500 || callback(data.data)) && retries--) {
     try {
       await getNewActiveNode(config);
     } catch (e) {
