@@ -150,6 +150,27 @@ if (process.env.APP_IP) {
     {arrayMerge: (target, source) => source}
   );
 }
+
+if (process.env.SHMEXT) {
+  config = merge(config, {
+    server: {
+      ip: {
+        externalPort: process.env.SHMEXT,
+      },
+    },
+  });
+}
+
+if (process.env.SHMINT) {
+  config = merge(config, {
+    server: {
+      ip: {
+        internalPort: process.env.SHMINT,
+      },
+    },
+  });
+}
+
 const dashboardPackageJson = JSON.parse(
   readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
 );
