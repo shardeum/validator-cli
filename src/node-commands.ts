@@ -134,16 +134,27 @@ if (process.env.APP_MONITOR) {
   );
 }
 
-if (process.env.APP_IP) {
+if (process.env.EXT_IP) {
   config = merge(
     config,
     {
       server: {
         ip: {
-          externalIp:
-            process.env.APP_IP === 'auto' ? '127.0.0.1' : process.env.APP_IP,
-          internalIp:
-            process.env.APP_IP === 'auto' ? '127.0.0.1' : process.env.APP_IP,
+          externalIp: process.env.EXT_IP,
+        },
+      },
+    },
+    {arrayMerge: (target, source) => source}
+  );
+}
+
+if (process.env.INT_IP) {
+  config = merge(
+    config,
+    {
+      server: {
+        ip: {
+          internalIp: process.env.INT_IP,
         },
       },
     },
