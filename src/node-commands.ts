@@ -140,7 +140,8 @@ if (process.env.EXT_IP) {
     {
       server: {
         ip: {
-          externalIp: process.env.EXT_IP,
+          externalIp:
+            process.env.EXT_IP === 'auto' ? '127.0.0.1' : process.env.EXT_IP,
         },
       },
     },
@@ -154,7 +155,8 @@ if (process.env.INT_IP) {
     {
       server: {
         ip: {
-          internalIp: process.env.INT_IP,
+          internalIp:
+            process.env.INT_IP === 'auto' ? '127.0.0.1' : process.env.EXT_IP,
         },
       },
     },
