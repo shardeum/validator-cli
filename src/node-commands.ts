@@ -168,7 +168,7 @@ if (process.env.SHMEXT) {
   config = merge(config, {
     server: {
       ip: {
-        externalPort: process.env.SHMEXT,
+        externalPort: parseInt(process.env.SHMEXT),
       },
     },
   });
@@ -178,7 +178,7 @@ if (process.env.SHMINT) {
   config = merge(config, {
     server: {
       ip: {
-        internalPort: process.env.SHMINT,
+        internalPort: parseInt(process.env.SHMINT),
       },
     },
   });
