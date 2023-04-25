@@ -157,7 +157,10 @@ async function fetchNodeParameters(config: configType, nodePubKey: string) {
 }
 
 async function fetchNodeLoad(config: configType) {
-  const url = `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/load`;
+  const url = `http://${config.server.ip.externalIp.replace(
+    'auto',
+    '127.0.0.1'
+  )}:${config.server.ip.externalPort}/load`;
   const nodeLoad = await axios.get(url);
 
   if (nodeLoad === null || nodeLoad.data === null) {
@@ -169,7 +172,10 @@ async function fetchNodeLoad(config: configType) {
 }
 
 async function fetchNodeTxStats(config: configType) {
-  const url = `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/tx-stats`;
+  const url = `http://${config.server.ip.externalIp.replace(
+    'auto',
+    '127.0.0.1'
+  )}:${config.server.ip.externalPort}/tx-stats`;
   const txStats = await axios.get(url);
 
   if (txStats === null || txStats.data === null) {
@@ -181,7 +187,10 @@ async function fetchNodeTxStats(config: configType) {
 }
 
 export async function fetchNodeInfo(config: configType) {
-  const url = `http://${config.server.ip.externalIp}:${config.server.ip.externalPort}/nodeinfo`;
+  const url = `http://${config.server.ip.externalIp.replace(
+    'auto',
+    '127.0.0.1'
+  )}:${config.server.ip.externalPort}/nodeinfo`;
   const nodeInfo = await axios
     .get(url, {timeout: 2000})
     .then(res => res.data)
