@@ -29,8 +29,10 @@ import {
   cache,
   File,
   fetchNodeInfo,
+  getUserInput,
 } from './utils';
 import * as readline from 'readline';
+import {isValidPrivate} from 'ethereumjs-util';
 
 type VersionStats = {
   runningCliVersion: string;
@@ -474,19 +476,19 @@ export function registerNodeCommands(program: Command) {
         return;
       }
 
-      if (!process.env.PRIV_KEY) {
-        console.error(
-          'Please set private key as PRIV_KEY environment variable'
-        );
-        return;
+      // Take input from user for PRIVATE KEY
+      let privateKey = await getUserInput('Please enter your private key: ');
+      while (
+        privateKey.length !== 64 ||
+        !isValidPrivate(Buffer.from(privateKey, 'hex'))
+      ) {
+        console.log('Invalid private key entered.');
+        privateKey = await getUserInput('Please enter your private key: ');
       }
 
       const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
 
-      const walletWithProvider = new ethers.Wallet(
-        process.env.PRIV_KEY,
-        provider
-      );
+      const walletWithProvider = new ethers.Wallet(privateKey, provider);
 
       const [{stakeRequired}, eoaData] = await Promise.all([
         fetchStakeParameters(config),
@@ -557,18 +559,21 @@ export function registerNodeCommands(program: Command) {
     .action(async options => {
       //TODO should we handle partial unstakes?
 
-      if (!process.env.PRIV_KEY) {
-        console.error(
-          'Please set private key as PRIV_KEY environment variable'
-        );
-        return;
+      // Take input from user for PRIVATE KEY
+      let privateKey = await getUserInput('Please enter your private key: ');
+      while (
+        privateKey.length !== 64 ||
+        !isValidPrivate(Buffer.from(privateKey, 'hex'))
+      ) {
+        console.log('Invalid private key entered.');
+        privateKey = await getUserInput('Please enter your private key: ');
       }
 
       try {
         const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
 
         const walletWithProvider = new ethers.Wallet(
-          process.env.PRIV_KEY,
+          privateKey,
           provider
         );
 

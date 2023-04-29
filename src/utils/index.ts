@@ -10,10 +10,11 @@ export enum File {
   EXIT_SUMMARY = 'exit-summary.json',
   START_SUMMARY = 'start-summary.json',
   NODE_PROGRESS = 'node-progress.json',
-  ENVIRONMENT_CONFIG = 'environment.config.js'
+  ENVIRONMENT_CONFIG = 'environment.config.js',
 }
 
 export * from './fetch-network-data';
 export * from './fetch-node-data';
 export * from './performance-stats';
 export * from './project-data';
+export * from './userInput';
