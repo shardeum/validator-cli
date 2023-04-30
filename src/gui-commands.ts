@@ -87,6 +87,8 @@ export function registerGuiCommands(program: Command) {
     .description('Set the GUI server port')
     .action(port => {
       config.gui.port = parseInt(port);
+      process.env.DASHPORT = port; // set the DASHPORT environment variable
+
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, `../${File.GUI_CONFIG}`),
