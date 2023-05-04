@@ -130,7 +130,7 @@ export async function fetchInitialParameters(config: configType) {
   const initialParams = await fetchDataFromNetwork(
     config,
     `/account/${networkAccount}?type=5`,
-    data => data.account == null
+    data => data?.account == null
   );
 
   const response = initialParams?.account?.data?.current;
@@ -153,10 +153,10 @@ async function fetchNodeParameters(config: configType, nodePubKey: string) {
   const nodeParams = await fetchDataFromNetwork(
     config,
     `/account/${nodePubKey}?type=9`,
-    data => data.account == null
+    data => data?.account == null
   );
 
-  return nodeParams.account ? nodeParams.account.data : nodeParams.account;
+  return nodeParams?.account?.data ?? nodeParams?.account;
 }
 
 async function fetchNodeLoad(config: configType) {
@@ -242,7 +242,7 @@ export async function fetchEOADetails(config: configType, eoaAddress: string) {
     data => data?.account == null
   );
 
-  return eoaParams.account;
+  return eoaParams?.account;
 }
 
 export async function fetchValidatorVersions(config: configType) {
