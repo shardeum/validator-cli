@@ -133,7 +133,7 @@ export async function fetchInitialParameters(config: configType) {
     data => data.account == null
   );
 
-  const response = initialParams.account.data.current;
+  const response = initialParams?.account?.data?.current;
   const nodeRewardAmount = new BN(response.nodeRewardAmountUsd, 16);
   const nodeRewardInterval = new BN(response.nodeRewardInterval);
 
