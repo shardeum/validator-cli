@@ -26,7 +26,7 @@ let savedActiveNode:
  *
  * @returns {boolean} True if active node is already defined, false if not
  */
-function readActiveNode() {
+function readActiveNode(): boolean {
   // Check if savedActiveNode is already defined
   if (savedActiveNode !== undefined) {
     return true;
@@ -92,7 +92,7 @@ async function fetchDataFromNetwork(
  * @returns {Promise<void>}
  * @throws {Error} If unable to fetch list of nodes in the network
  */
-export async function getNewActiveNode(config: configType) {
+export async function getNewActiveNode(config: configType): Promise<void> {
   const randomArchiver =
     config.server.p2p.existingArchivers[
       Math.floor(Math.random() * config.server.p2p.existingArchivers.length)
