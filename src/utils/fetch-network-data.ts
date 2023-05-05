@@ -130,7 +130,7 @@ export async function fetchInitialParameters(config: configType) {
   const initialParams = await fetchDataFromNetwork(
     config,
     `/account/${networkAccount}?type=5`,
-    data => data.account === null
+    data => data.account == null
   );
 
   const response = initialParams.account.data.current;
@@ -150,7 +150,7 @@ async function fetchNodeParameters(config: configType, nodePubKey: string) {
   const nodeParams = await fetchDataFromNetwork(
     config,
     `/account/${nodePubKey}?type=9`,
-    data => data.account === null
+    data => data.account == null
   );
 
   return nodeParams.account ? nodeParams.account.data : nodeParams.account;
@@ -163,7 +163,7 @@ async function fetchNodeLoad(config: configType) {
   )}:${config.server.ip.externalPort}/load`;
   const nodeLoad = await axios.get(url);
 
-  if (nodeLoad === null || nodeLoad.data === null) {
+  if (nodeLoad?.data == null) {
     throw new Error(
       'Node not active in the network. Unable to fetch node load'
     );
@@ -178,7 +178,7 @@ async function fetchNodeTxStats(config: configType) {
   )}:${config.server.ip.externalPort}/tx-stats`;
   const txStats = await axios.get(url);
 
-  if (txStats === null || txStats.data === null) {
+  if (txStats?.data == null) {
     throw new Error(
       'Node not active in the network. Unable to fetch node tx-stats'
     );
@@ -196,7 +196,7 @@ export async function fetchNodeInfo(config: configType) {
     .then(res => res.data)
     .catch(res => console.error(res));
 
-  if (nodeInfo === null || nodeInfo.nodeInfo === null) {
+  if (nodeInfo?.nodeInfo == null) {
     throw new Error(
       'Node not active in the network. Unable to fetch node-info'
     );
@@ -209,10 +209,10 @@ async function fetchNetworkStats(config: configType) {
   const networkStats = await fetchDataFromNetwork(
     config,
     '/network-stats',
-    data => data === null
+    data => data == null
   );
 
-  if (networkStats === null) {
+  if (networkStats == null) {
     throw new Error('Unable to fetch network-stats');
   }
   return networkStats;
@@ -257,7 +257,7 @@ export async function fetchValidatorVersions(config: configType) {
   const validatorVersions = await fetchDataFromNetwork(
     config,
     '/nodeinfo',
-    data => data === null
+    data => data == null
   );
 
   return validatorVersions.nodeInfo.appData;

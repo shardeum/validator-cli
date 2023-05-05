@@ -279,7 +279,7 @@ export function registerNodeCommands(program: Command) {
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
           const nodeStatus =
-            nodeInfo.status === null
+            nodeInfo.status == null
               ? lockedStakeStr === '0.0'
                 ? 'need-stake'
                 : 'standby'
@@ -471,7 +471,7 @@ export function registerNodeCommands(program: Command) {
         fs.readFileSync(path.join(__dirname, `../${File.SECRETS}`)).toString()
       );
 
-      if (secrets.publicKey === null) {
+      if (secrets.publicKey == null) {
         console.error('Unable to find public key in secrets.json');
         return;
       }
@@ -500,7 +500,7 @@ export function registerNodeCommands(program: Command) {
           ethers.utils.parseEther(stakeValue)
         )
       ) {
-        if (eoaData === null) {
+        if (eoaData == null) {
           /*prettier-ignore*/
           console.error(`Stake amount must be greater than ${ethers.utils.formatEther(stakeRequired)} SHM`);
           return;
@@ -583,7 +583,7 @@ export function registerNodeCommands(program: Command) {
         );
 
         if (
-          eoaData.operatorAccountInfo.nominee === null ||
+          eoaData.operatorAccountInfo.nominee == null ||
           eoaData.operatorAccountInfo.stake === '00'
         ) {
           console.error('No stake found');
@@ -640,7 +640,7 @@ export function registerNodeCommands(program: Command) {
         (error, stdout, stderr) => {
           console.log(stdout);
           console.log(stderr);
-          if (error !== null) {
+          if (error != null) {
             console.log(`exec error: ${error}`);
           }
         }
@@ -652,7 +652,7 @@ export function registerNodeCommands(program: Command) {
         (error, stdout, stderr) => {
           console.log(stdout);
           console.log(stderr);
-          if (error !== null) {
+          if (error != null) {
             console.log(`exec error: ${error}`);
           }
         }

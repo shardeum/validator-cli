@@ -21,7 +21,7 @@ export async function getExitInformation() {
   // don't show exit reason if the validator is running or was never started
   const showExitReason =
     exitSummary?.exitTime > startSummary?.startTime ||
-    (startSummary?.startTime === null && exitSummary?.exitTime !== null);
+    (startSummary?.startTime == null && exitSummary?.exitTime != null);
   const exitMessage = showExitReason ? exitSummary?.message : undefined;
   const exitStatus = showExitReason ? exitSummary?.status : undefined;
   return {exitMessage, exitStatus};

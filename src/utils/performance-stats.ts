@@ -4,7 +4,7 @@ import {cpuUsage, freememPercentage} from 'os-utils';
 function getUsedDiskPercentage() {
   return new Promise<number>((resolve, reject) =>
     check('/', (err, result) => {
-      if (err !== null) {
+      if (err != null) {
         reject(err);
       } else {
         resolve((result.used / +result.total) * 100);
