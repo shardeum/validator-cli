@@ -1,15 +1,11 @@
 const path = require('path');
-const fs = require('fs');
-
-const nodeConfig = JSON.parse(fs.readFileSync(path.join(__dirname, './build/nodeConfig.json')).toString());
 
 module.exports = [
   {
-    script: path.join(__dirname, '../validator/dist/src/index.js'),
-    stop_exit_codes: [1],
     name: 'validator',
+    script: path.join(__dirname, 'auto-restart-controller.js'),
     output: path.join(__dirname, './validator-logs.txt'),
-    cwd: path.join(__dirname, './build'),
-    autorestart: nodeConfig.autorestart,
+    // cwd: path.join(__dirname, './build'),
+    autorestart: false, // set this to false because we have our own restart controller
   },
 ];
