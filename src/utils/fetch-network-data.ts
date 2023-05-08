@@ -214,25 +214,25 @@ export async function getNetworkParams(
   config: configType,
   description: ProcessDescription
 ) {
-  const networkStats = await fetchNetworkStats(config);
-  let result = {...networkStats};
-
-  // Check if description is undefined
-  if (!description) {
-    return result;
-  }
-
   try {
+    const networkStats = await fetchNetworkStats(config);
+    let result = {...networkStats};
+
+    // Check if description is undefined
+    if (!description) {
+      return result;
+    }
+
     const status: Pm2ProcessStatus = statusFromPM2(description);
     if (status?.status && status.status !== 'stopped') {
       const nodeLoad = await fetchNodeLoad(config);
       const nodeTxStats = await fetchNodeTxStats(config);
       result = {...result, ...nodeLoad, ...nodeTxStats};
     }
+    return result;
   } catch (e) {
     console.error(e);
   }
-  return result;
 }
 
 export async function fetchEOADetails(config: configType, eoaAddress: string) {
