@@ -134,6 +134,9 @@ export async function fetchInitialParameters(config: configType) {
   );
 
   const response = initialParams?.account?.data?.current;
+  if (!response) {
+    throw new Error("Fetched initial parameters, but account data isn't found");
+  }
   const nodeRewardAmount = new BN(response.nodeRewardAmountUsd, 16);
   const nodeRewardInterval = new BN(response.nodeRewardInterval);
 
