@@ -364,9 +364,7 @@ export function registerNodeCommands(program: Command) {
                   String(parseInt(eoaData.operatorAccountInfo.stake, 16))
                 )
               : '',
-            nominee: eoaData?.operatorAccountInfo
-              ? eoaData.operatorAccountInfo.nominee
-              : '',
+            nominee: eoaData?.operatorAccountInfo?.nominee ?? '',
           })
         );
       } catch (error) {
@@ -608,8 +606,8 @@ export function registerNodeCommands(program: Command) {
         );
 
         if (
-          eoaData.operatorAccountInfo.nominee == null ||
-          eoaData.operatorAccountInfo.stake === '00'
+          eoaData?.operatorAccountInfo?.nominee == null ||
+          eoaData?.operatorAccountInfo?.stake === '00'
         ) {
           console.error('No stake found');
           return;
@@ -626,7 +624,7 @@ export function registerNodeCommands(program: Command) {
           internalTXType: 7,
           nominator: walletWithProvider.address.toLowerCase(),
           timestamp: Date.now(),
-          nominee: eoaData.operatorAccountInfo.nominee,
+          nominee: eoaData?.operatorAccountInfo?.nominee,
           force: options.force ?? false,
         };
         console.log(unstakeData);
