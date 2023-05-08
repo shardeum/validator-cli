@@ -259,14 +259,15 @@ export async function getAccountInfoParams(
   config: configType,
   nodePubKey: string
 ) {
+  const params = {
+    lockedStake: '',
+    nominator: '',
+    accumulatedRewards: new BN(0),
+  };
   if (nodePubKey === '') {
     // Public key not found. This can happen in the primitive case when
     // the node has not been started for the first time.
-    return {
-      lockedStake: '',
-      nominator: '',
-      accumulatedRewards: new BN(0),
-    };
+    return params;
   }
 
   // prettier-ignore
@@ -275,11 +276,15 @@ export async function getAccountInfoParams(
     nodeRewardInterval
   } = await fetchInitialParameters(config);
 
-  let lockedStake, nodeActiveDuration, nominator, previousRewards;
+  let nodeActiveDuration, previousRewards;
 
   try {
     const nodeData = await fetchNodeParameters(config, nodePubKey);
-    lockedStake = new BN(nodeData.stakeLock, 16).toString();
+    if (!nodeData) {
+      return params
+    }
+
+    params.lockedStake = new BN(nodeData.stakeLock, 16).toString();
     previousRewards = new BN(nodeData.reward, 16);
     const startTime = nodeData.rewardStartTime * 1000;
     const endTime = nodeData.rewardEndTime * 1000;
@@ -296,23 +301,20 @@ export async function getAccountInfoParams(
     } else {
       nodeActiveDuration = 0;
     }
-    nominator = nodeData.nominator;
+    params.nominator = nodeData.nominator;
   } catch (err) {
-    lockedStake = new BN(0).toString();
+    params.lockedStake = new BN(0).toString();
     nodeActiveDuration = 0;
-    nominator = '';
+    params.nominator = '';
     previousRewards = new BN(0);
   }
 
   const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration));
+  params.accumulatedRewards = previousRewards.add(
+    totalReward.div(nodeRewardInterval)
+  );
 
-  return {
-    lockedStake,
-    nominator,
-    accumulatedRewards: previousRewards.add(
-      totalReward.div(nodeRewardInterval)
-    ),
-  };
+  return params;
 }
 
 export async function fetchStakeParameters(config: configType) {
