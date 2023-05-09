@@ -74,10 +74,11 @@ async function fetchDataFromNetwork(
     }
 
     const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
-    data = await axios.get(url, {timeout: 2000}).catch(() => {
-      // console.error(err);
-      return {data: null, status: 500};
-    });
+    try {
+      data = await axios.get(url, {timeout: 2000});
+    } catch (_) {
+      data = {data: null, status: 500};
+    }
   }
 
   return data.data;
