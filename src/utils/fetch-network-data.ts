@@ -81,7 +81,11 @@ async function fetchDataFromNetwork(
     }
   }
 
-  return data.data;
+  if (retries <= 0) {
+    throw new Error('Unable to fetch data from network (out of retries).');
+  } else {
+    return data.data;
+  }
 }
 
 /**
