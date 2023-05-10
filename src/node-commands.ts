@@ -71,6 +71,13 @@ if (fs.existsSync(path.join(__dirname, `../${File.NODE_CONFIG}`))) {
   nodeConfig = merge(nodeConfig, fileConfig, {
     arrayMerge: (target, source) => source,
   });
+} else {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  fs.writeFileSync(
+    path.join(__dirname, `../${File.NODE_CONFIG}`),
+    JSON.stringify(nodeConfig, undefined, 2),
+    {encoding: 'utf8', mode: 0o600}
+  );
 }
 
 // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -198,12 +205,6 @@ const dashboardPackageJson = JSON.parse(
 fs.writeFileSync(
   path.join(__dirname, `../${File.CONFIG}`),
   JSON.stringify(config, undefined, 2)
-);
-
-// eslint-disable-next-line security/detect-non-literal-fs-filename
-fs.writeFileSync(
-  path.join(__dirname, `../${File.NODE_CONFIG}`),
-  JSON.stringify(nodeConfig, undefined, 2)
 );
 
 export function registerNodeCommands(program: Command) {
@@ -572,10 +573,7 @@ export function registerNodeCommands(program: Command) {
       try {
         const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
 
-        const walletWithProvider = new ethers.Wallet(
-          privateKey,
-          provider
-        );
+        const walletWithProvider = new ethers.Wallet(privateKey, provider);
 
         const eoaData = await fetchEOADetails(
           config,
@@ -822,6 +820,7 @@ export function registerNodeCommands(program: Command) {
       fs.writeFile(
         path.join(__dirname, `../${File.NODE_CONFIG}`),
         JSON.stringify(nodeConfig, undefined, 2),
+        {encoding: 'utf8', mode: 0o600},
         err => {
           if (err) console.error(err);
         }
