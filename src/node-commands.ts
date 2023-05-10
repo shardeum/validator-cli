@@ -263,6 +263,7 @@ export function registerNodeCommands(program: Command) {
               lockedStake: accountInfo.lockedStake
                 ? ethers.utils.formatEther(accountInfo.lockedStake)
                 : '',
+              autorestart: nodeConfig.autoRestart,
             })
           );
           cache.writeMaps();
@@ -305,6 +306,7 @@ export function registerNodeCommands(program: Command) {
                 accountInfo.accumulatedRewards.toString()
               ),
               lockedStake: lockedStakeStr,
+              autorestart: nodeConfig.autoRestart,
               nodeInfo: nodeInfo,
               // TODO: Add fetching node info when in standby
             })
@@ -332,6 +334,7 @@ export function registerNodeCommands(program: Command) {
                   accountInfo.accumulatedRewards.toString()
                 )
               : '',
+            autorestart: nodeConfig.autoRestart,
           })
         );
         cache.writeMaps();
