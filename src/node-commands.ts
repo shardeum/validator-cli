@@ -405,13 +405,6 @@ export function registerNodeCommands(program: Command) {
       );
     });
 
-  function stopNode() {
-    pm2.stop('validator', err => {
-      if (err) console.error(err);
-      return pm2.disconnect();
-    });
-  }
-
   program
     .command('stop')
     .description('Stops the validator')
@@ -420,6 +413,13 @@ export function registerNodeCommands(program: Command) {
       'stops the node without prompting for confirmation even if it is participating and could get slashed'
     )
     .action(options => {
+      function stopNode() {
+        pm2.stop('validator', err => {
+          if (err) console.error(err);
+          return pm2.disconnect();
+        });
+      }
+
       // Exec PM2 to stop the shardeum validator
       pm2.connect(err => {
         if (err) {
@@ -435,9 +435,14 @@ export function registerNodeCommands(program: Command) {
 
           const description = descriptions[0];
           const status: Pm2ProcessStatus = statusFromPM2(description);
-          const {state} = await fetchNodeProgress().then(getProgressData);
-          if (status.status !== 'stopped' && state !== 'standby') {
-            if (!options.force) {
+          if (status.status === 'stopped') {
+            console.error('Node is not running');
+            return pm2.disconnect();
+          }
+
+          if (!options.force) {
+            const nodeInfo = await fetchNodeInfo(config);
+            if (nodeInfo.status === 'syncing' || nodeInfo.status === 'active') {
               const rl = readline.createInterface({
                 input: process.stdin,
                 output: process.stdout,
