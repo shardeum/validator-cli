@@ -189,6 +189,12 @@ async function fetchNodeTxStats(config: configType) {
   return txStats.data;
 }
 
+/**
+ *
+ * @param config node config to get url and port
+ * @throws {AxiosError} Status 404. If unable to fetch node-info
+ * @returns nodeInfo
+ */
 export async function fetchNodeInfo(config: configType) {
   const url = `http://${config.server.ip.externalIp.replace(
     'auto',
@@ -197,13 +203,9 @@ export async function fetchNodeInfo(config: configType) {
   const nodeInfo = await axios
     .get(url, {timeout: 2000})
     .then(res => res.data)
-    .catch(res => console.error(res));
-
-  if (nodeInfo?.nodeInfo == null) {
-    throw new Error(
-      'Node not active in the network. Unable to fetch node-info'
-    );
-  }
+    .catch(error => {
+      throw error;
+    });
 
   return nodeInfo.nodeInfo;
 }

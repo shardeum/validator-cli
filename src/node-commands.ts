@@ -275,13 +275,18 @@ export function registerNodeCommands(program: Command) {
         if (status.status !== 'stopped') {
           // Node is started and active
 
-          const nodeInfo = await fetchNodeInfo(config);
+          let nodeInfo;
+          try {
+            nodeInfo = await fetchNodeInfo(config);
+          } catch (e) {
+            nodeInfo = null;
+          }
 
           const lockedStakeStr = accountInfo.lockedStake
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
           const nodeStatus =
-            nodeInfo.status == null
+            nodeInfo?.status == null
               ? lockedStakeStr === '0.0'
                 ? 'need-stake'
                 : 'standby'
