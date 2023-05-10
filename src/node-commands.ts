@@ -441,13 +441,29 @@ export function registerNodeCommands(program: Command) {
           }
 
           if (!options.force) {
-            const nodeInfo = await fetchNodeInfo(config);
-            if (nodeInfo.status === 'syncing' || nodeInfo.status === 'active') {
-              const rl = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout,
-              });
+            const rl = readline.createInterface({
+              input: process.stdin,
+              output: process.stdout,
+            });
 
+            let nodeInfo;
+            try {
+              nodeInfo = await fetchNodeInfo(config);
+            } catch (error) {
+              rl.question(
+                'Unable to verify node status. If the node is active, stopping it could result in losing the stake amount. ' +
+                  'Confirm if you would like to force the node to stop (y/n): ',
+                answer => {
+                  rl.close();
+                  if (answer.toLowerCase() === 'y') {
+                    return stopNode();
+                  }
+                  return pm2.disconnect();
+                }
+              );
+            }
+
+            if (nodeInfo.status === 'syncing' || nodeInfo.status === 'active') {
               rl.question(
                 'The node is active and stopping it could result in losing the stake amount. ' +
                   'Confirm if you would like to force the node to stop (y/n): ',
