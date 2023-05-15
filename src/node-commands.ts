@@ -604,10 +604,14 @@ export function registerNodeCommands(program: Command) {
           config,
           walletWithProvider.address
         );
+        if (!eoaData) {
+          console.error("Couldn't unstake (`eoaData` is null)");
+          return;
+        }
 
         if (
-          eoaData?.operatorAccountInfo?.nominee == null ||
-          eoaData?.operatorAccountInfo?.stake === '00'
+          eoaData.operatorAccountInfo?.nominee == null ||
+          eoaData.operatorAccountInfo?.stake === '00'
         ) {
           console.error('No stake found');
           return;
