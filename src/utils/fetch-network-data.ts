@@ -1,5 +1,5 @@
 import {configType} from '../config/default-network-config';
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import {BN} from 'ethereumjs-util';
 import {ProcessDescription} from 'pm2';
 import {Pm2ProcessStatus, statusFromPM2} from '../pm2';
@@ -60,26 +60,24 @@ async function fetchDataFromNetwork(
     throw new Error('Unable to fetch active node');
   }
 
-  const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
-  let data = await axios.get(url, {timeout: 2000}).catch(() => {
-    // console.error(err);
-    return {data: null, status: 500};
-  });
-
-  while ((data.status === 500 || callback(data.data)) && retries--) {
+  let data = {data: null, status: 500};
+  do {
     try {
       await getNewActiveNode(config);
     } catch (e) {
       continue;
     }
 
+    // `savedActiveNode` may mutate between loop iterations, so `url` must be
+    // set for each loop iteration
     const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
+
     try {
       data = await axios.get(url, {timeout: 2000});
     } catch (_) {
       data = {data: null, status: 500};
     }
-  }
+  } while ((data.status === 500 || callback(data.data)) && retries--);
 
   if (retries <= 0) {
     throw new Error('Unable to fetch data from network (out of retries).');
@@ -286,7 +284,7 @@ export async function getAccountInfoParams(
   try {
     const nodeData = await fetchNodeParameters(config, nodePubKey);
     if (!nodeData) {
-      return params
+      return params;
     }
 
     params.lockedStake = new BN(nodeData.stakeLock, 16).toString();
