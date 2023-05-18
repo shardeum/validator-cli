@@ -49,7 +49,7 @@ function readActiveNode(): boolean {
 async function fetchDataFromNetwork(
   config: configType,
   query: string,
-  callback: (response: {[id: string]: string}) => boolean
+  callback: (response: {[id: string]: string} | null) => boolean
 ) {
   let retries = 3;
   if (!readActiveNode()) {
