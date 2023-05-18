@@ -74,7 +74,18 @@ async function fetchDataFromNetwork(
 
     try {
       data = await axios.get(url, {timeout: 2000});
-    } catch (_) {
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        if (e.response) {
+          console.error(`Error occurred with status ${e.response.status}:`, e.response);
+        } else if (e.request) {
+          console.error('No response received:', e.request);
+        } else {
+          console.error('Error setting up request:', e.message);
+        }
+      }
+
+      // set data to null and status to 500 to indicate that the request failed
       data = {data: null, status: 500};
     }
   } while ((data.status === 500 || callback(data.data)) && retries--);
