@@ -33,6 +33,7 @@ import {
 } from './utils';
 import * as readline from 'readline';
 import {isValidPrivate} from 'ethereumjs-util';
+import logger from './utils/logger';
 
 type VersionStats = {
   runningCliVersion: string;
@@ -279,6 +280,7 @@ export function registerNodeCommands(program: Command) {
           try {
             nodeInfo = await fetchNodeInfo(config);
           } catch (e) {
+            logger.error('Unable to fetch node info: ' + e);
             nodeInfo = null;
           }
 
