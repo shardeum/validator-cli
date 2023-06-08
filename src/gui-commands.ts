@@ -7,13 +7,14 @@ import merge from 'deepmerge';
 import {defaultGuiConfig} from './config/default-gui-config';
 import fs from 'fs';
 import * as yaml from 'js-yaml';
-import * as crypto from '@shardus/crypto-utils';
+import * as cryptoShardus from '@shardus/crypto-utils';
 import {getInstalledGuiVersion} from './utils/project-data';
 import {File} from './utils'
+import crypto from 'crypto';
 
 let config = defaultGuiConfig;
 
-crypto.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
+cryptoShardus.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
 
 // eslint-disable-next-line security/detect-non-literal-fs-filename
 if (fs.existsSync(path.join(__dirname, `../${File.GUI_CONFIG}`))) {
@@ -103,8 +104,12 @@ export function registerGuiCommands(program: Command) {
     .command('password')
     .arguments('<password>')
     .description('Set the GUI server password')
-    .action(password => {
-      config.gui.pass = crypto.hash(password);
+    .option('-h', 'Changes how the password is hashed. For internal use only')
+    .action((password, options) => {
+      if(!options.h) {
+        password = crypto.createHash('sha256').update(password).digest('hex');
+      }
+      config.gui.pass = cryptoShardus.hash(password);
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, `../${File.GUI_CONFIG}`),
