@@ -46,11 +46,11 @@ function readActiveNode(): boolean {
   }
 }
 
-async function fetchDataFromNetwork(
+async function fetchDataFromNetwork<T>(
   config: configType,
   query: string,
   callback: (response: {[id: string]: string} | null) => boolean
-) {
+): Promise<T | null> {
   let retries = 3;
   if (!readActiveNode()) {
     await getNewActiveNode(config);
@@ -130,7 +130,20 @@ export async function getNewActiveNode(config: configType): Promise<void> {
   );
 }
 
-export async function fetchInitialParameters(config: configType) {
+type InitialParameters = {
+  account: {
+    data: {
+      current: {
+        nodeRewardAmountUsd: string;
+        nodeRewardInterval: string;
+      };
+    };
+  };
+};
+
+export async function fetchInitialParameters(
+  config: configType
+): Promise<{nodeRewardAmount: BN; nodeRewardInterval: BN}> {
   const value = cache.get('initialParameters');
 
   if (value) {
@@ -141,7 +154,7 @@ export async function fetchInitialParameters(config: configType) {
     };
   }
 
-  const initialParams = await fetchDataFromNetwork(
+  const initialParams: InitialParameters | null = await fetchDataFromNetwork(
     config,
     `/account/${networkAccount}?type=5`,
     data => data?.account == null
@@ -163,14 +176,31 @@ export async function fetchInitialParameters(config: configType) {
   return {nodeRewardAmount, nodeRewardInterval};
 }
 
-async function fetchNodeParameters(config: configType, nodePubKey: string) {
-  const nodeParams = await fetchDataFromNetwork(
-    config,
-    `/account/${nodePubKey}?type=9`,
-    data => data?.account == null
-  );
+type NodeData = {
+  stakeLock: string;
+  reward: string;
+  rewardStartTime: number;
+  rewardEndTime: number;
+  nominator: unknown;
+};
 
-  return nodeParams?.account?.data ?? nodeParams?.account;
+async function fetchNodeParameters(
+  config: configType,
+  nodePubKey: string
+): Promise<NodeData | null> {
+  const nodeParams = await fetchDataFromNetwork<{
+    account: {data: NodeData} | NodeData;
+  }>(config, `/account/${nodePubKey}?type=9`, data => data?.account == null);
+
+  if (nodeParams?.account) {
+    if ('data' in nodeParams.account) {
+      return nodeParams.account.data;
+    } else {
+      return nodeParams.account;
+    }
+  } else {
+    return null;
+  }
 }
 
 async function fetchNodeLoad(config: configType) {
@@ -247,26 +277,35 @@ export async function getNetworkParams(
   } catch (e) {
     console.error(e);
   }
+
+  return null;
 }
 
 export async function fetchEOADetails(config: configType, eoaAddress: string) {
-  const eoaParams = await fetchDataFromNetwork(
-    config,
-    `/account/${eoaAddress}`,
-    data => data?.account == null
-  );
+  const eoaParams = await fetchDataFromNetwork<{
+    account: {
+      data: unknown;
+      operatorAccountInfo: {
+        stake: string;
+        nominee: string;
+      };
+    };
+  }>(config, `/account/${eoaAddress}`, data => data?.account == null);
 
   return eoaParams?.account;
 }
 
 export async function fetchValidatorVersions(config: configType) {
-  const validatorVersions = await fetchDataFromNetwork(
-    config,
-    '/nodeinfo',
-    data => data == null
-  );
+  const validatorVersions = await fetchDataFromNetwork<{
+    nodeInfo: {
+      appData: {
+        minVersion: string;
+        activeVersion: string;
+      };
+    };
+  }>(config, '/nodeinfo', data => data == null);
 
-  return validatorVersions.nodeInfo.appData;
+  return validatorVersions?.nodeInfo.appData;
 }
 
 export async function getAccountInfoParams(
@@ -339,11 +378,9 @@ export async function fetchStakeParameters(config: configType) {
     };
   }
 
-  const stakeParams = await fetchDataFromNetwork(
-    config,
-    '/stake',
-    data => !data
-  );
+  const stakeParams = await fetchDataFromNetwork<{
+    stakeRequired: string;
+  }>(config, '/stake', data => !data);
   if (!stakeParams) {
     throw new Error("Couldn't fetch stake parameters");
   }
@@ -357,11 +394,9 @@ export async function fetchStakeParameters(config: configType) {
 }
 
 export async function fetchCycleDuration(config: configType) {
-  const latestCycle = await fetchDataFromNetwork(
-    config,
-    '/sync-newest-cycle',
-    data => !data
-  );
+  const latestCycle = await fetchDataFromNetwork<{
+    newestCycle: {duration: number};
+  }>(config, '/sync-newest-cycle', data => !data);
   if (!latestCycle) {
     throw new Error("Couldn't fetch latest cycle");
   }
