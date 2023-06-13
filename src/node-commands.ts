@@ -693,6 +693,9 @@ export function registerNodeCommands(program: Command) {
     )
     .action(async () => {
       const validatorVersions = await fetchValidatorVersions(config);
+      if (!validatorVersions) {
+        throw new Error("Couldn't fetch validator versions");
+      }
 
       let versions: VersionStats = {
         runningCliVersion: dashboardPackageJson.version,

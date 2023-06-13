@@ -344,6 +344,9 @@ export async function fetchStakeParameters(config: configType) {
     '/stake',
     data => !data
   );
+  if (!stakeParams) {
+    throw new Error("Couldn't fetch stake parameters");
+  }
 
   const stakeRequired = new BN(stakeParams.stakeRequired, 16).toString();
   const cycleDuration = await fetchCycleDuration(config);
@@ -359,6 +362,9 @@ export async function fetchCycleDuration(config: configType) {
     '/sync-newest-cycle',
     data => !data
   );
+  if (!latestCycle) {
+    throw new Error("Couldn't fetch latest cycle");
+  }
 
   return latestCycle.newestCycle.duration;
 }
