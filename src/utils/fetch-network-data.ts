@@ -61,6 +61,7 @@ async function fetchDataFromNetwork<T>(
   }
 
   let data = {data: null, status: 500};
+  let finalError: AxiosError | null = null;
   do {
     try {
       await getNewActiveNode(config);
@@ -76,13 +77,7 @@ async function fetchDataFromNetwork<T>(
       data = await axios.get(url, {timeout: 2000});
     } catch (e) {
       if (e instanceof AxiosError) {
-        if (e.response) {
-          console.error(`Error occurred with status ${e.response.status}:`, e.response);
-        } else if (e.request) {
-          console.error('No response received:', e.request);
-        } else {
-          console.error('Error setting up request:', e.message);
-        }
+        finalError = e;
       }
 
       // set data to null and status to 500 to indicate that the request failed
@@ -91,7 +86,20 @@ async function fetchDataFromNetwork<T>(
   } while ((data.status === 500 || callback(data.data)) && retries--);
 
   if (retries <= 0) {
-    throw new Error('Unable to fetch data from network (out of retries).');
+    // figure out why we ran out of retries before throwing our error
+    let reason = 'unknown reason';
+    if (finalError != null) {
+      if (finalError.response) {
+        reason = `status ${finalError.response.status}`;
+      } else if (finalError.request) {
+        reason = 'no response received';
+      } else {
+        reason = `setting up request: ${finalError.message}`;
+      }
+    }
+    throw new Error(
+      `Unable to fetch data from network (out of retries: ${reason}).`
+    );
   } else {
     return data.data;
   }
