@@ -181,7 +181,7 @@ type NodeData = {
   reward: string;
   rewardStartTime: number;
   rewardEndTime: number;
-  nominator: unknown;
+  nominator: string;
 };
 
 async function fetchNodeParameters(
