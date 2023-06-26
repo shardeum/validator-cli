@@ -190,7 +190,7 @@ async function fetchNodeTxStats(config: configType) {
  * @returns nodeInfo
  */
 export async function fetchNodeInfo(config: configType) {
-  const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo`;
+  const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo?reportIntermediateStatus=true`;
   const response = await axios.get(url, { timeout: 2000 });
   const nodeInfo = response.data;
 
