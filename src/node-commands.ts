@@ -31,7 +31,6 @@ import {
   fetchNodeInfo,
   getUserInput,
 } from './utils';
-import * as readline from 'readline';
 import {isValidPrivate} from 'ethereumjs-util';
 import logger from './utils/logger';
 
@@ -435,40 +434,32 @@ export function registerNodeCommands(program: Command) {
           }
 
           if (!options.force) {
-            const rl = readline.createInterface({
-              input: process.stdin,
-              output: process.stdout,
-            });
-
             let nodeInfo;
             try {
               nodeInfo = await fetchNodeInfo(config);
             } catch (error) {
-              rl.question(
+              const answer = await getUserInput(
                 'Unable to verify node status. If the node is active, stopping it could result in losing the stake amount. ' +
-                  'Confirm if you would like to force the node to stop (y/n): ',
-                answer => {
-                  rl.close();
-                  if (answer.toLowerCase() === 'y') {
-                    return stopNode();
-                  }
-                  return pm2.disconnect();
-                }
+                  'Confirm if you would like to force the node to stop (y/N): '
               );
+
+              if (answer.toLowerCase() === 'y') {
+                return stopNode();
+              }
+              return pm2.disconnect();
             }
 
-            if (nodeInfo.status === 'syncing' || nodeInfo.status === 'active') {
-              rl.question(
+            if (
+              nodeInfo != null &&
+              (nodeInfo.status === 'syncing' || nodeInfo.status === 'active')
+            ) {
+              const answer = await getUserInput(
                 'The node is active and stopping it could result in losing the stake amount. ' +
-                  'Confirm if you would like to force the node to stop (y/n): ',
-                answer => {
-                  rl.close();
-                  if (answer.toLowerCase() === 'y') {
-                    return stopNode();
-                  }
-                  return pm2.disconnect();
-                }
+                  'Confirm if you would like to force the node to stop (y/N): '
               );
+              if (answer.toLowerCase() === 'y') {
+                return stopNode();
+              }
             }
           }
           return stopNode();
