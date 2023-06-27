@@ -386,13 +386,37 @@ export function registerNodeCommands(program: Command) {
               console.error(err);
               throw 'Unable to connect to PM2';
             }
-            pm2.start(
-              path.join(__dirname, `../../${File.ENVIRONMENT_CONFIG}`),
-              err => {
-                if (err) console.error(err);
-                return pm2.disconnect();
-              }
+            const scriptPath = path.join(
+              __dirname,
+              `../../${File.ENVIRONMENT_CONFIG}`
             );
+            pm2.start(scriptPath, err => {
+              if (err) throw err;
+
+              // Obtain the name of the script from the path for use in pm2.describe()
+              const scriptName = path.basename(scriptPath);
+              pm2.describe(scriptName, (err, processDescription) => {
+                if (err) {
+                  pm2.disconnect();
+                  throw err;
+                }
+
+                if (processDescription && processDescription.length > 0) {
+                  const processInfo = processDescription[0];
+                  if (processInfo.pm2_env?.status === 'online') {
+                    console.log('Node process started');
+                  } else {
+                    throw new Error(
+                      `The process is not running. Status: ${processInfo.pm2_env?.status}`
+                    );
+                  }
+                } else {
+                  throw new Error("Node process wasn't started");
+                }
+
+                pm2.disconnect();
+              });
+            });
           });
         }
       );
