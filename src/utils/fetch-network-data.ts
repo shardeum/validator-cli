@@ -85,7 +85,7 @@ async function fetchDataFromNetwork<T>(
     }
   } while ((data.status === 500 || callback(data.data)) && retries--);
 
-  if (retries <= 0) {
+  if (retries < 0) {
     // figure out why we ran out of retries before throwing our error
     let reason = 'unknown reason';
     if (finalError != null) {
@@ -243,7 +243,7 @@ async function fetchNodeTxStats(config: configType) {
  */
 export async function fetchNodeInfo(config: configType) {
   const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo?reportIntermediateStatus=true`;
-  const response = await axios.get(url, { timeout: 2000 });
+  const response = await axios.get(url, {timeout: 2000});
   return response.data.nodeInfo;
 }
 
