@@ -393,9 +393,7 @@ export function registerNodeCommands(program: Command) {
             pm2.start(scriptPath, err => {
               if (err) throw err;
 
-              // Obtain the name of the script from the path for use in pm2.describe()
-              const scriptName = path.basename(scriptPath);
-              pm2.describe(scriptName, (err, processDescription) => {
+              pm2.describe('validator', (err, processDescription) => {
                 if (err) {
                   pm2.disconnect();
                   throw err;
