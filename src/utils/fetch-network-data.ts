@@ -244,9 +244,7 @@ async function fetchNodeTxStats(config: configType) {
 export async function fetchNodeInfo(config: configType) {
   const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo?reportIntermediateStatus=true`;
   const response = await axios.get(url, { timeout: 2000 });
-  const nodeInfo = response.data;
-
-  return nodeInfo.nodeInfo;
+  return response.data.nodeInfo;
 }
 
 async function fetchNetworkStats(config: configType) {
