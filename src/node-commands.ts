@@ -566,7 +566,7 @@ export function registerNodeCommands(program: Command) {
 
         const txDetails = {
           from,
-          to: '0x0000000000000000000000000000000000000001',
+          to: '0x0000000000000000000000000000000000010000',
           gasPrice,
           gasLimit: 30000000,
           value,
@@ -648,7 +648,7 @@ export function registerNodeCommands(program: Command) {
 
         const txDetails = {
           from,
-          to: '0x0000000000000000000000000000000000000001',
+          to: '0x0000000000000000000000000000000000010000',
           gasPrice,
           gasLimit: 30000000,
           data: ethers.utils.hexlify(
