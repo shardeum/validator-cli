@@ -5,8 +5,9 @@ import {Command} from 'commander';
 import path from 'path';
 import {exec} from 'child_process';
 import merge from 'deepmerge';
-import {defaultConfig} from './config/default-network-config';
-import {defaultNodeConfig, nodeConfigType} from './config/default-node-config';
+import {defaultNetworkConfig, networkConfigType, networkConfigSchema} from './config/default-network-config';
+import {defaultNodeConfig, nodeConfigType, nodeConfigSchema} from './config/default-node-config';
+import {rpcConfigType, rpcConfigSchema} from './config/default-rpc-config';
 import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
 import {
@@ -33,6 +34,8 @@ import {
 } from './utils';
 import {isValidPrivate} from 'ethereumjs-util';
 import logger from './utils/logger';
+import {isIP} from 'net';
+import Ajv from "ajv"
 
 type VersionStats = {
   runningCliVersion: string;
@@ -46,31 +49,52 @@ type VersionStats = {
   runnningValidatorVersion?: string | undefined;
 };
 
-let config = defaultConfig;
+let config = defaultNetworkConfig;
 let nodeConfig: nodeConfigType = defaultNodeConfig;
 
 let rpcServer = {
   url: 'https://sphinx.shardeum.org',
 };
 
-// eslint-disable-next-line security/detect-non-literal-fs-filename
-if (fs.existsSync(path.join(__dirname, `../${File.CONFIG}`))) {
-  const fileConfig = JSON.parse(
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    fs.readFileSync(path.join(__dirname, `../${File.CONFIG}`)).toString()
-  );
-  config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
+const validateNetworkConfig = new Ajv().compile(networkConfigSchema)
+const validateNodeConfig = new Ajv().compile(nodeConfigSchema)
+const validateRpcConfig = new Ajv().compile(rpcConfigSchema)
+
+const networkConfigPath = path.join(__dirname, `../${File.CONFIG}`)
+if (fs.existsSync(networkConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  const fileConfig = JSON.parse(fs.readFileSync(networkConfigPath).toString());
+  if (validateNetworkConfig(fileConfig)) {
+    // check IP formats
+    const networkConfig = fileConfig as networkConfigType;
+    // `as networkConfigType` above is valid because validateNetworkConfig() passed
+    let good = true
+    for (const archiver of networkConfig.server.p2p.existingArchivers) {
+      if (!isIP(archiver.ip)) {
+        console.warn(`warning: config has been ignored due to invalid IP address: ${archiver.ip}`)
+        console.warn(`${networkConfigPath}`)
+        good = false
+      }
+    }
+    if (good)
+      config = merge(config, networkConfig, {arrayMerge: (target, source) => source});
+  } else {
+    console.warn(`warning: config has been ignored due to invalid JSON schema:`)
+    console.warn(`${networkConfigPath}`)
+  }
 }
 
-// eslint-disable-next-line security/detect-non-literal-fs-filename
-if (fs.existsSync(path.join(__dirname, `../${File.NODE_CONFIG}`))) {
-  const fileConfig = JSON.parse(
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    fs.readFileSync(path.join(__dirname, `../${File.NODE_CONFIG}`)).toString()
-  );
-  nodeConfig = merge(nodeConfig, fileConfig, {
-    arrayMerge: (target, source) => source,
-  });
+const nodeConfigPath = path.join(__dirname, `../${File.NODE_CONFIG}`)
+if (fs.existsSync(nodeConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  const fileConfig = JSON.parse(fs.readFileSync(nodeConfigPath).toString());
+  if (validateNodeConfig(fileConfig)) {
+    nodeConfig = merge(nodeConfig, fileConfig as nodeConfigType, {arrayMerge: (target, source) => source});
+    // `as nodeConfigType` above is valid because validateNodeConfig() passed
+  } else {
+    console.warn(`warning: config has been ignored due to invalid JSON schema:`)
+    console.warn(`${nodeConfigPath}`)
+  }
 } else {
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   fs.writeFileSync(
@@ -80,15 +104,17 @@ if (fs.existsSync(path.join(__dirname, `../${File.NODE_CONFIG}`))) {
   );
 }
 
-// eslint-disable-next-line security/detect-non-literal-fs-filename
-if (fs.existsSync(path.join(__dirname, `../${File.RPC_SERVER}`))) {
-  const fileConfig = JSON.parse(
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    fs.readFileSync(path.join(__dirname, `../${File.RPC_SERVER}`)).toString()
-  );
-  rpcServer = merge(rpcServer, fileConfig, {
-    arrayMerge: (target, source) => source,
-  });
+const rpcConfigPath = path.join(__dirname, `../${File.RPC_SERVER}`)
+if (fs.existsSync(rpcConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  const fileConfig = JSON.parse(fs.readFileSync(rpcConfigPath).toString());
+  if (validateRpcConfig(fileConfig)) {
+    rpcServer = merge(rpcServer, fileConfig as rpcConfigType, {arrayMerge: (target, source) => source});
+    // `as rpcConfigType` above is valid because validateRpcConfig() passed
+  } else {
+    console.warn(`warning: config has been ignored due to invalid JSON schema:`)
+    console.warn(`${rpcConfigPath}`)
+  }
 }
 
 if (process.env.APP_SEEDLIST) {

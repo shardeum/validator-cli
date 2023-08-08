@@ -4,25 +4,32 @@ import path = require('path');
 import {timingSafeEqual} from 'crypto';
 import {Pm2ProcessStatus, statusFromPM2} from './pm2';
 import merge from 'deepmerge';
-import {defaultGuiConfig} from './config/default-gui-config';
+import {defaultGuiConfig, guiConfigType, guiConfigSchema} from './config/default-gui-config';
 import fs from 'fs';
 import * as yaml from 'js-yaml';
 import * as cryptoShardus from '@shardus/crypto-utils';
 import {getInstalledGuiVersion} from './utils/project-data';
 import {File} from './utils'
 import crypto from 'crypto';
+import Ajv from "ajv"
 
 let config = defaultGuiConfig;
 
+const validateGuiConfig = new Ajv().compile(guiConfigSchema)
+
 cryptoShardus.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
 
-// eslint-disable-next-line security/detect-non-literal-fs-filename
-if (fs.existsSync(path.join(__dirname, `../${File.GUI_CONFIG}`))) {
-  const fileConfig = JSON.parse(
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    fs.readFileSync(path.join(__dirname, `../${File.GUI_CONFIG}`)).toString()
-  );
-  config = merge(config, fileConfig, {arrayMerge: (target, source) => source});
+const guiConfigPath = path.join(__dirname, `../${File.GUI_CONFIG}`)
+if (fs.existsSync(guiConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  const fileConfig = JSON.parse(fs.readFileSync(guiConfigPath).toString())
+  if (validateGuiConfig(fileConfig)) {
+    config = merge(config, fileConfig as guiConfigType, {arrayMerge: (target, source) => source})
+    // `as guiConfigType` above is valid because validateGuiConfig() passed
+  } else {
+    console.warn(`warning: config has been ignored due to invalid JSON schema:`)
+    console.warn(`${guiConfigPath}`)
+  }
 }
 
 export function registerGuiCommands(program: Command) {

@@ -1,4 +1,4 @@
-export const defaultConfig = {
+export const defaultNetworkConfig = {
   server: {
     baseDir: '.',
     p2p: {
@@ -44,6 +44,91 @@ export const defaultConfig = {
   },
 };
 
+export type networkConfigType = typeof defaultNetworkConfig;
+
+export const networkConfigSchema = {
+  type: "object",
+  properties: {
+    server: {
+      type: "object",
+      properties: {
+        baseDir: {
+          type: "string"
+        },
+        p2p: {
+          type: "object",
+          properties: {
+            existingArchivers: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  ip: {
+                    type: "string",
+                  },
+                  port: {
+                    type: "integer",
+                    minimum: 1024,
+                    maximum: 65535
+                  },
+                  publicKey: {
+                    type: "string"
+                  }
+                },
+                required: ["ip", "port", "publicKey"]
+              }
+            }
+          },
+          required: ["existingArchivers"]
+        },
+        ip: {
+          type: "object",
+          properties: {
+            externalIp: {
+              type: "string",
+            },
+            externalPort: {
+              type: "integer",
+              minimum: 1024,
+              maximum: 65535
+            },
+            internalIp: {
+              type: "string",
+            },
+            internalPort: {
+              type: "integer",
+              minimum: 1024,
+              maximum: 65535
+            }
+          },
+          required: ["externalIp", "externalPort", "internalIp", "internalPort"]
+        },
+        reporting: {
+          type: "object",
+          properties: {
+            report: {
+              type: "boolean"
+            },
+            recipient: {
+              type: "string",
+            },
+            interval: {
+              type: "integer",
+              minimum: 1
+            },
+            console: {
+              type: "boolean"
+            }
+          },
+          required: ["report", "recipient", "interval", "console"]
+        }
+      },
+      required: ["baseDir", "p2p", "ip", "reporting"]
+    }
+  },
+  required: ["server"],
+};
+
 export type nodeProgressType = {
   nodeInfo: {
     id: string;
@@ -63,5 +148,3 @@ export type nodeProgressType = {
   lastActiveTime: number;
   totalActiveTime: number;
 };
-
-export type configType = typeof defaultConfig;

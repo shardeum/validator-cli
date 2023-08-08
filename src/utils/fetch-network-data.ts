@@ -1,4 +1,4 @@
-import {configType} from '../config/default-network-config';
+import {networkConfigType} from '../config/default-network-config';
 import axios, {AxiosError} from 'axios';
 import {BN} from 'ethereumjs-util';
 import {ProcessDescription} from 'pm2';
@@ -47,7 +47,7 @@ function readActiveNode(): boolean {
 }
 
 async function fetchDataFromNetwork<T>(
-  config: configType,
+  config: networkConfigType,
   query: string,
   callback: (response: {[id: string]: string} | null) => boolean
 ): Promise<T | null> {
@@ -114,7 +114,7 @@ async function fetchDataFromNetwork<T>(
  * @returns {Promise<void>}
  * @throws {Error} If unable to fetch list of nodes in the network
  */
-export async function getNewActiveNode(config: configType): Promise<void> {
+export async function getNewActiveNode(config: networkConfigType): Promise<void> {
   const randomArchiver =
     config.server.p2p.existingArchivers[
       Math.floor(Math.random() * config.server.p2p.existingArchivers.length)
@@ -150,7 +150,7 @@ type InitialParameters = {
 };
 
 export async function fetchInitialParameters(
-  config: configType
+  config: networkConfigType
 ): Promise<{nodeRewardAmount: BN; nodeRewardInterval: BN}> {
   const value = cache.get('initialParameters');
 
@@ -193,7 +193,7 @@ type NodeData = {
 };
 
 async function fetchNodeParameters(
-  config: configType,
+  config: networkConfigType,
   nodePubKey: string
 ): Promise<NodeData | null> {
   const nodeParams = await fetchDataFromNetwork<{
@@ -211,7 +211,7 @@ async function fetchNodeParameters(
   }
 }
 
-async function fetchNodeLoad(config: configType) {
+async function fetchNodeLoad(config: networkConfigType) {
   const url = `http://localhost:${config.server.ip.externalPort}/load`;
   const nodeLoad = await axios.get(url);
 
@@ -223,7 +223,7 @@ async function fetchNodeLoad(config: configType) {
   return nodeLoad.data;
 }
 
-async function fetchNodeTxStats(config: configType) {
+async function fetchNodeTxStats(config: networkConfigType) {
   const url = `http://localhost:${config.server.ip.externalPort}/tx-stats`;
   const txStats = await axios.get(url);
 
@@ -241,13 +241,13 @@ async function fetchNodeTxStats(config: configType) {
  * @throws {AxiosError} Status 404. If unable to fetch node-info
  * @returns nodeInfo
  */
-export async function fetchNodeInfo(config: configType) {
+export async function fetchNodeInfo(config: networkConfigType) {
   const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo?reportIntermediateStatus=true`;
   const response = await axios.get(url, {timeout: 2000});
   return response.data.nodeInfo;
 }
 
-async function fetchNetworkStats(config: configType) {
+async function fetchNetworkStats(config: networkConfigType) {
   const networkStats = await fetchDataFromNetwork(
     config,
     '/network-stats',
@@ -261,7 +261,7 @@ async function fetchNetworkStats(config: configType) {
 }
 
 export async function getNetworkParams(
-  config: configType,
+  config: networkConfigType,
   description: ProcessDescription
 ) {
   try {
@@ -287,7 +287,7 @@ export async function getNetworkParams(
   return null;
 }
 
-export async function fetchEOADetails(config: configType, eoaAddress: string) {
+export async function fetchEOADetails(config: networkConfigType, eoaAddress: string) {
   const eoaParams = await fetchDataFromNetwork<{
     account: {
       data: unknown;
@@ -301,7 +301,7 @@ export async function fetchEOADetails(config: configType, eoaAddress: string) {
   return eoaParams?.account;
 }
 
-export async function fetchValidatorVersions(config: configType) {
+export async function fetchValidatorVersions(config: networkConfigType) {
   const validatorVersions = await fetchDataFromNetwork<{
     nodeInfo: {
       appData: {
@@ -315,7 +315,7 @@ export async function fetchValidatorVersions(config: configType) {
 }
 
 export async function getAccountInfoParams(
-  config: configType,
+  config: networkConfigType,
   nodePubKey: string
 ) {
   const params = {
@@ -376,7 +376,7 @@ export async function getAccountInfoParams(
   return params;
 }
 
-export async function fetchStakeParameters(config: configType) {
+export async function fetchStakeParameters(config: networkConfigType) {
   const value = cache.get('stakeParams');
   if (value) {
     return {
@@ -399,7 +399,7 @@ export async function fetchStakeParameters(config: configType) {
   };
 }
 
-export async function fetchCycleDuration(config: configType) {
+export async function fetchCycleDuration(config: networkConfigType) {
   const latestCycle = await fetchDataFromNetwork<{
     newestCycle: {duration: number};
   }>(config, '/sync-newest-cycle', data => !data);
