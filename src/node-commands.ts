@@ -5,8 +5,16 @@ import {Command} from 'commander';
 import path from 'path';
 import {exec} from 'child_process';
 import merge from 'deepmerge';
-import {defaultNetworkConfig, networkConfigType, networkConfigSchema} from './config/default-network-config';
-import {defaultNodeConfig, nodeConfigType, nodeConfigSchema} from './config/default-node-config';
+import {
+  defaultNetworkConfig,
+  networkConfigType,
+  networkConfigSchema,
+} from './config/default-network-config';
+import {
+  defaultNodeConfig,
+  nodeConfigType,
+  nodeConfigSchema,
+} from './config/default-node-config';
 import {rpcConfigType, rpcConfigSchema} from './config/default-rpc-config';
 import fs, {readFileSync} from 'fs';
 import {ethers} from 'ethers';
@@ -35,7 +43,7 @@ import {
 import {isValidPrivate} from 'ethereumjs-util';
 import logger from './utils/logger';
 import {isIP} from 'net';
-import Ajv from "ajv"
+import Ajv from 'ajv';
 
 type VersionStats = {
   runningCliVersion: string;
@@ -56,44 +64,56 @@ let rpcServer = {
   url: 'https://sphinx.shardeum.org',
 };
 
-const validateNetworkConfig = new Ajv().compile(networkConfigSchema)
-const validateNodeConfig = new Ajv().compile(nodeConfigSchema)
-const validateRpcConfig = new Ajv().compile(rpcConfigSchema)
+const validateNetworkConfig = new Ajv().compile(networkConfigSchema);
+const validateNodeConfig = new Ajv().compile(nodeConfigSchema);
+const validateRpcConfig = new Ajv().compile(rpcConfigSchema);
 
-const networkConfigPath = path.join(__dirname, `../${File.CONFIG}`)
-if (fs.existsSync(networkConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
+const networkConfigPath = path.join(__dirname, `../${File.CONFIG}`);
+if (fs.existsSync(networkConfigPath)) {
+  // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   const fileConfig = JSON.parse(fs.readFileSync(networkConfigPath).toString());
   if (validateNetworkConfig(fileConfig)) {
     // check IP formats
     const networkConfig = fileConfig as networkConfigType;
     // `as networkConfigType` above is valid because validateNetworkConfig() passed
-    let good = true
+    let good = true;
     for (const archiver of networkConfig.server.p2p.existingArchivers) {
       if (!isIP(archiver.ip)) {
-        console.warn(`warning: config has been ignored due to invalid IP address: ${archiver.ip}`)
-        console.warn(`${networkConfigPath}`)
-        good = false
+        console.warn(
+          `warning: config has been ignored due to invalid IP address: ${archiver.ip}`
+        );
+        console.warn(`${networkConfigPath}`);
+        good = false;
       }
     }
     if (good)
-      config = merge(config, networkConfig, {arrayMerge: (target, source) => source});
+      config = merge(config, networkConfig, {
+        arrayMerge: (target, source) => source,
+      });
   } else {
-    console.warn(`warning: config has been ignored due to invalid JSON schema:`)
-    console.warn(`${networkConfigPath}`)
+    console.warn(
+      `warning: config has been ignored due to invalid JSON schema:`
+    );
+    console.warn(`${networkConfigPath}`);
   }
 }
 
-const nodeConfigPath = path.join(__dirname, `../${File.NODE_CONFIG}`)
-if (fs.existsSync(nodeConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
+const nodeConfigPath = path.join(__dirname, `../${File.NODE_CONFIG}`);
+if (fs.existsSync(nodeConfigPath)) {
+  // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   const fileConfig = JSON.parse(fs.readFileSync(nodeConfigPath).toString());
   if (validateNodeConfig(fileConfig)) {
-    nodeConfig = merge(nodeConfig, fileConfig as nodeConfigType, {arrayMerge: (target, source) => source});
+    nodeConfig = merge(nodeConfig, fileConfig as nodeConfigType, {
+      arrayMerge: (target, source) => source,
+    });
     // `as nodeConfigType` above is valid because validateNodeConfig() passed
   } else {
-    console.warn(`warning: config has been ignored due to invalid JSON schema:`)
-    console.warn(`${nodeConfigPath}`)
+    console.warn(
+      `warning: config has been ignored due to invalid JSON schema:`
+    );
+    console.warn(`${nodeConfigPath}`);
   }
 } else {
   // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -104,16 +124,21 @@ if (fs.existsSync(nodeConfigPath)) { // eslint-disable-line security/detect-non-
   );
 }
 
-const rpcConfigPath = path.join(__dirname, `../${File.RPC_SERVER}`)
-if (fs.existsSync(rpcConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
+const rpcConfigPath = path.join(__dirname, `../${File.RPC_SERVER}`);
+if (fs.existsSync(rpcConfigPath)) {
+  // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   const fileConfig = JSON.parse(fs.readFileSync(rpcConfigPath).toString());
   if (validateRpcConfig(fileConfig)) {
-    rpcServer = merge(rpcServer, fileConfig as rpcConfigType, {arrayMerge: (target, source) => source});
+    rpcServer = merge(rpcServer, fileConfig as rpcConfigType, {
+      arrayMerge: (target, source) => source,
+    });
     // `as rpcConfigType` above is valid because validateRpcConfig() passed
   } else {
-    console.warn(`warning: config has been ignored due to invalid JSON schema:`)
-    console.warn(`${rpcConfigPath}`)
+    console.warn(
+      `warning: config has been ignored due to invalid JSON schema:`
+    );
+    console.warn(`${rpcConfigPath}`);
   }
 }
 
@@ -614,6 +639,76 @@ export function registerNodeCommands(program: Command) {
       }
     });
 
+  async function unstake(options: {force: boolean}) {
+    // Take input from user for PRIVATE KEY
+    let privateKey = await getUserInput('Please enter your private key: ');
+    while (
+      privateKey.length !== 64 ||
+      !isValidPrivate(Buffer.from(privateKey, 'hex'))
+    ) {
+      console.log('Invalid private key entered.');
+      privateKey = await getUserInput('Please enter your private key: ');
+    }
+
+    try {
+      const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
+
+      const walletWithProvider = new ethers.Wallet(privateKey, provider);
+
+      const eoaData = await fetchEOADetails(config, walletWithProvider.address);
+      if (!eoaData) {
+        console.error("Couldn't unstake (`eoaData` is null)");
+        return;
+      }
+
+      if (
+        eoaData.operatorAccountInfo?.nominee == null ||
+        eoaData.operatorAccountInfo?.stake === '00'
+      ) {
+        console.error('No stake found');
+        return;
+      }
+
+      const [gasPrice, from, nonce] = await Promise.all([
+        walletWithProvider.getGasPrice(),
+        walletWithProvider.getAddress(),
+        walletWithProvider.getTransactionCount(),
+      ]);
+
+      const unstakeData = {
+        isInternalTx: true,
+        internalTXType: 7,
+        nominator: walletWithProvider.address.toLowerCase(),
+        timestamp: Date.now(),
+        nominee: eoaData?.operatorAccountInfo?.nominee,
+        force: options.force ?? false,
+      };
+      console.log(unstakeData);
+
+      const txDetails = {
+        from,
+        to: '0x0000000000000000000000000000000000000001',
+        gasPrice,
+        gasLimit: 30000000,
+        data: ethers.utils.hexlify(
+          ethers.utils.toUtf8Bytes(JSON.stringify(unstakeData))
+        ),
+        nonce,
+      };
+      console.log(txDetails);
+
+      const {hash, data, wait} = await walletWithProvider.sendTransaction(
+        txDetails
+      );
+
+      console.log('TX RECEIPT: ', {hash, data});
+      const txConfirmation = await wait();
+      console.log('TX CONFRIMED: ', txConfirmation);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   program
     .command('unstake')
     .description('Remove staked SHM')
@@ -622,78 +717,23 @@ export function registerNodeCommands(program: Command) {
       'Force unstake in case the node is stuck, will forfeit rewards'
     )
     .action(async options => {
-      //TODO should we handle partial unstakes?
-
-      // Take input from user for PRIVATE KEY
-      let privateKey = await getUserInput('Please enter your private key: ');
-      while (
-        privateKey.length !== 64 ||
-        !isValidPrivate(Buffer.from(privateKey, 'hex'))
-      ) {
-        console.log('Invalid private key entered.');
-        privateKey = await getUserInput('Please enter your private key: ');
-      }
-
-      try {
-        const provider = new ethers.providers.JsonRpcProvider(rpcServer.url);
-
-        const walletWithProvider = new ethers.Wallet(privateKey, provider);
-
-        const eoaData = await fetchEOADetails(
-          config,
-          walletWithProvider.address
-        );
-        if (!eoaData) {
-          console.error("Couldn't unstake (`eoaData` is null)");
-          return;
+      if (!options.force) {
+        let nodeInfo;
+        try {
+          nodeInfo = await fetchNodeInfo(config);
+        } catch (error: unknown) {
+          // Error while fetching nodeInfo - presuming node is not active
         }
 
-        if (
-          eoaData.operatorAccountInfo?.nominee == null ||
-          eoaData.operatorAccountInfo?.stake === '00'
-        ) {
-          console.error('No stake found');
-          return;
+        if (nodeInfo != null && nodeInfo.status !== 'waiting') {
+          throw (
+            'Node is currently running and participating in the network. ' +
+            "Please wait for the node to enter status 'waiting' before unstaking."
+          );
         }
-
-        const [gasPrice, from, nonce] = await Promise.all([
-          walletWithProvider.getGasPrice(),
-          walletWithProvider.getAddress(),
-          walletWithProvider.getTransactionCount(),
-        ]);
-
-        const unstakeData = {
-          isInternalTx: true,
-          internalTXType: 7,
-          nominator: walletWithProvider.address.toLowerCase(),
-          timestamp: Date.now(),
-          nominee: eoaData?.operatorAccountInfo?.nominee,
-          force: options.force ?? false,
-        };
-        console.log(unstakeData);
-
-        const txDetails = {
-          from,
-          to: '0x0000000000000000000000000000000000000001',
-          gasPrice,
-          gasLimit: 30000000,
-          data: ethers.utils.hexlify(
-            ethers.utils.toUtf8Bytes(JSON.stringify(unstakeData))
-          ),
-          nonce,
-        };
-        console.log(txDetails);
-
-        const {hash, data, wait} = await walletWithProvider.sendTransaction(
-          txDetails
-        );
-
-        console.log('TX RECEIPT: ', {hash, data});
-        const txConfirmation = await wait();
-        console.log('TX CONFRIMED: ', txConfirmation);
-      } catch (error) {
-        console.error(error);
       }
+
+      await unstake(options);
     });
 
   program
