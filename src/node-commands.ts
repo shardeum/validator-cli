@@ -717,7 +717,16 @@ export function registerNodeCommands(program: Command) {
       'Force unstake in case the node is stuck, will forfeit rewards'
     )
     .action(async options => {
-      if (!options.force) {
+      if (options.force) {
+        const answer = await getUserInput(
+          'Node is currently participating in the network, unstaking could result in a penalty. ' +
+            'Confirm if you would like to force unstake (y/N): '
+        );
+
+        if (answer.toLowerCase() !== 'y') {
+          return;
+        }
+      } else {
         let nodeInfo;
         try {
           nodeInfo = await fetchNodeInfo(config);
@@ -725,7 +734,12 @@ export function registerNodeCommands(program: Command) {
           // Error while fetching nodeInfo - presuming node is not active
         }
 
-        if (nodeInfo != null && nodeInfo.status !== 'waiting') {
+        const nodeStatus = nodeInfo?.status;
+        if (
+          nodeStatus === 'standby' ||
+          nodeStatus === 'syncing' ||
+          nodeStatus === 'active'
+        ) {
           throw (
             'Node is currently running and participating in the network. ' +
             "Please wait for the node to enter status 'waiting' before unstaking."
