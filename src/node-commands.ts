@@ -200,10 +200,7 @@ if (process.env.EXT_IP) {
     {
       server: {
         ip: {
-          externalIp:
-            process.env.EXT_IP === 'auto'
-              ? process.env.SERVERIP
-              : process.env.EXT_IP,
+          externalIp: process.env.EXT_IP,
         },
       },
     },
@@ -217,10 +214,7 @@ if (process.env.INT_IP) {
     {
       server: {
         ip: {
-          internalIp:
-            process.env.INT_IP === 'auto'
-              ? process.env.SERVERIP
-              : process.env.INT_IP,
+          internalIp: process.env.INT_IP,
         },
       },
     },
@@ -337,8 +331,13 @@ export function registerNodeCommands(program: Command) {
           const lockedStakeStr = accountInfo.lockedStake
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
-          let nodeStatus = nodeInfo.status;
-          if (nodeStatus === 'initializing') nodeStatus = 'need-stake';
+          let nodeStatus;
+          if (nodeInfo.status === null && lockedStakeStr === '0.0')
+            nodeStatus = 'need-stake';
+          else
+            nodeStatus = nodeInfo.status
+              ? nodeInfo.status
+              : 'waiting-for-network';
 
           console.log(
             yaml.dump({

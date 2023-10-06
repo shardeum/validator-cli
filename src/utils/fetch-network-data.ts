@@ -114,7 +114,9 @@ async function fetchDataFromNetwork<T>(
  * @returns {Promise<void>}
  * @throws {Error} If unable to fetch list of nodes in the network
  */
-export async function getNewActiveNode(config: networkConfigType): Promise<void> {
+export async function getNewActiveNode(
+  config: networkConfigType
+): Promise<void> {
   const randomArchiver =
     config.server.p2p.existingArchivers[
       Math.floor(Math.random() * config.server.p2p.existingArchivers.length)
@@ -242,7 +244,8 @@ async function fetchNodeTxStats(config: networkConfigType) {
  * @returns nodeInfo
  */
 export async function fetchNodeInfo(config: networkConfigType) {
-  const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo?reportIntermediateStatus=true`;
+  // const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo?reportIntermediateStatus=true`;
+  const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo`;
   const response = await axios.get(url, {timeout: 2000});
   return response.data.nodeInfo;
 }
@@ -287,7 +290,10 @@ export async function getNetworkParams(
   return null;
 }
 
-export async function fetchEOADetails(config: networkConfigType, eoaAddress: string) {
+export async function fetchEOADetails(
+  config: networkConfigType,
+  eoaAddress: string
+) {
   const eoaParams = await fetchDataFromNetwork<{
     account: {
       data: unknown;
