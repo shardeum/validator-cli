@@ -4,25 +4,19 @@ export const defaultNetworkConfig = {
     p2p: {
       existingArchivers: [
         {
-          ip: '3.127.57.166',
+          ip: '45.79.16.146',
           port: 4000,
           publicKey:
             '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
         },
         {
-          ip: '139.144.189.238',
+          ip: '45.56.92.103',
           port: 4000,
           publicKey:
-            '840e7b59a95d3c5f5044f4bc62ab9fa94bc107d391001141410983502e3cde63',
+            '2db7c949632d26b87d7e7a5a4ad41c306f63ee972655121a37c5e4f52b00a542',
         },
         {
-          ip: '194.195.220.150',
-          port: 4000,
-          publicKey:
-            '616f720f4b6145373acd95b068cb674ff3a24ba738cfff5da568ec36873859f6',
-        },
-        {
-          ip: '45.79.113.106',
+          ip: '170.187.134.16',
           port: 4000,
           publicKey:
             '7af699dd711074eb96a8d1103e32b589e511613ebb0c6a789a9e8791b2b05f34',
@@ -47,86 +41,91 @@ export const defaultNetworkConfig = {
 export type networkConfigType = typeof defaultNetworkConfig;
 
 export const networkConfigSchema = {
-  type: "object",
+  type: 'object',
   properties: {
     server: {
-      type: "object",
+      type: 'object',
       properties: {
         baseDir: {
-          type: "string"
+          type: 'string',
         },
         p2p: {
-          type: "object",
+          type: 'object',
           properties: {
             existingArchivers: {
-              type: "array",
+              type: 'array',
               items: {
-                type: "object",
+                type: 'object',
                 properties: {
                   ip: {
-                    type: "string",
+                    type: 'string',
                   },
                   port: {
-                    type: "integer",
+                    type: 'integer',
                     minimum: 1024,
-                    maximum: 65535
+                    maximum: 65535,
                   },
                   publicKey: {
-                    type: "string"
-                  }
+                    type: 'string',
+                  },
                 },
-                required: ["ip", "port", "publicKey"]
-              }
-            }
+                required: ['ip', 'port', 'publicKey'],
+              },
+            },
           },
-          required: ["existingArchivers"]
+          required: ['existingArchivers'],
         },
         ip: {
-          type: "object",
+          type: 'object',
           properties: {
             externalIp: {
-              type: "string",
+              type: 'string',
             },
             externalPort: {
-              type: "integer",
+              type: 'integer',
               minimum: 1024,
-              maximum: 65535
+              maximum: 65535,
             },
             internalIp: {
-              type: "string",
+              type: 'string',
             },
             internalPort: {
-              type: "integer",
+              type: 'integer',
               minimum: 1024,
-              maximum: 65535
-            }
+              maximum: 65535,
+            },
           },
-          required: ["externalIp", "externalPort", "internalIp", "internalPort"]
+          required: [
+            'externalIp',
+            'externalPort',
+            'internalIp',
+            'internalPort',
+          ],
         },
         reporting: {
-          type: "object",
+          type: 'object',
           properties: {
             report: {
-              type: "boolean"
+              type: 'boolean',
             },
             recipient: {
-              type: "string",
+              type: 'string',
             },
             interval: {
-              type: "integer",
-              minimum: 1
+              type: 'integer',
+              minimum: 1,
             },
             console: {
-              type: "boolean"
-            }
+              type: 'boolean',
+            },
           },
-          required: ["report", "recipient", "interval", "console"]
-        }
+          required: ['report', 'recipient', 'interval', 'console'],
+        },
       },
-      required: ["baseDir", "p2p", "ip", "reporting"]
-    }
+      required: ['baseDir', 'p2p', 'ip', 'reporting'],
+    },
   },
-  required: ["server"],
+  required: ['server'],
 };
 
 export type nodeProgressType = {
