@@ -338,7 +338,7 @@ export function registerNodeCommands(program: Command) {
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
           let nodeStatus;
-          if (nodeInfo.status === null && lockedStakeStr === '0.0')
+          if (nodeInfo.status == null && lockedStakeStr === '0.0')
             nodeStatus = 'need-stake';
           else
             nodeStatus = nodeInfo.status
