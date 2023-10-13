@@ -7,7 +7,7 @@ export const defaultNetworkConfig = {
           ip: '45.79.16.146',
           port: 4000,
           publicKey:
-            '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
+            '840e7b59a95d3c5f5044f4bc62ab9fa94bc107d391001141410983502e3cde63',
         },
         {
           ip: '45.56.92.103',
