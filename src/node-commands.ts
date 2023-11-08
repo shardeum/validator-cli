@@ -337,11 +337,10 @@ export function registerNodeCommands(program: Command) {
           const lockedStakeStr = accountInfo.lockedStake
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
-          let nodeStatus;
+          let nodeStatus = nodeInfo.status;
           if (nodeStatus === 'initializing')
             nodeStatus =
               lockedStakeStr === '0.0' ? 'need-stake' : 'waiting-for-network';
-          else nodeStatus = nodeInfo.status;
 
           console.log(
             yaml.dump({
