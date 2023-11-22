@@ -68,7 +68,8 @@ const validateNetworkConfig = new Ajv().compile(networkConfigSchema);
 const validateNodeConfig = new Ajv().compile(nodeConfigSchema);
 const validateRpcConfig = new Ajv().compile(rpcConfigSchema);
 
-const networkConfigPath = path.join(__dirname, `../${File.CONFIG}`);
+const networkConfigPath = path.resolve(__dirname, `../${File.CONFIG}`);
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 if (fs.existsSync(networkConfigPath)) {
   // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -100,6 +101,7 @@ if (fs.existsSync(networkConfigPath)) {
 }
 
 const nodeConfigPath = path.join(__dirname, `../${File.NODE_CONFIG}`);
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 if (fs.existsSync(nodeConfigPath)) {
   // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -125,6 +127,7 @@ if (fs.existsSync(nodeConfigPath)) {
 }
 
 const rpcConfigPath = path.join(__dirname, `../${File.RPC_SERVER}`);
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 if (fs.existsSync(rpcConfigPath)) {
   // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
