@@ -68,7 +68,7 @@ const validateNetworkConfig = new Ajv().compile(networkConfigSchema);
 const validateNodeConfig = new Ajv().compile(nodeConfigSchema);
 const validateRpcConfig = new Ajv().compile(rpcConfigSchema);
 
-const networkConfigPath = path.resolve(__dirname, `../${File.CONFIG}`);
+const networkConfigPath = path.join(__dirname, `../${File.CONFIG}`);
 // eslint-disable-next-line security/detect-non-literal-fs-filename
 if (fs.existsSync(networkConfigPath)) {
   // eslint-disable-line security/detect-non-literal-fs-filename
