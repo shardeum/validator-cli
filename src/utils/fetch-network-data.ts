@@ -175,7 +175,7 @@ export async function fetchInitialParameters(
     throw new Error("Fetched initial parameters, but account data isn't found");
   }
   const nodeRewardAmount = new BN(response.nodeRewardAmountUsd, 16);
-  const nodeRewardInterval = new BN(response.nodeRewardInterval);
+  const nodeRewardInterval = new BN(response.nodeRewardInterval, 16);
 
   const cycleDuration = await fetchCycleDuration(config);
   cache.set(
@@ -357,13 +357,8 @@ export async function getAccountInfoParams(
     if (startTime > 0 && endTime === 0) {
       // Node is earning rewards
       nodeActiveDuration = Date.now() - startTime;
-    } else if (startTime > 0 && endTime > 0) {
-      // Node has earned rewards but is in standby
-      nodeActiveDuration = endTime - startTime;
-    } else if (startTime === 0 && endTime === 0) {
-      // Node has not earned rewards and is in standby
-      nodeActiveDuration = 0;
     } else {
+      // Node is not earning rewards or has already earned rewards
       nodeActiveDuration = 0;
     }
     params.nominator = nodeData.nominator;
@@ -374,7 +369,7 @@ export async function getAccountInfoParams(
     previousRewards = new BN(0);
   }
 
-  const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration));
+  const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration, 16));
   params.accumulatedRewards = previousRewards.add(
     totalReward.div(nodeRewardInterval)
   );
