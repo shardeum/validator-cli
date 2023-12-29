@@ -2,3 +2,10 @@ include:
   - remote: 'https://gitlab.com/pod_security/shared-ci/-/raw/main/security.yml'
 stages:
   - appsec
+  - build
+
+build_project:
+  stage: build
+  image: node:18.16.1
+  script:
+    - npm ci

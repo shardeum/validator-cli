@@ -20,7 +20,8 @@ const validateGuiConfig = new Ajv().compile(guiConfigSchema)
 cryptoShardus.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
 
 function isNumber(n: string) {
-  return !isNaN(parseInt(n)) && isFinite(n);
+  const parsedN = parseInt(n);
+  return !isNaN(parsedN) && isFinite(parsedN);
 }
 
 const guiConfigPath = path.join(__dirname, `../${File.GUI_CONFIG}`)
