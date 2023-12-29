@@ -19,6 +19,10 @@ const validateGuiConfig = new Ajv().compile(guiConfigSchema)
 
 cryptoShardus.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
 
+function isNumber(n: string) {
+  return !isNaN(parseInt(n)) && isFinite(n);
+}
+
 const guiConfigPath = path.join(__dirname, `../${File.GUI_CONFIG}`)
 if (fs.existsSync(guiConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -94,6 +98,15 @@ export function registerGuiCommands(program: Command) {
     .arguments('<port>')
     .description('Set the GUI server port')
     .action(port => {
+      if (!isNumber(port)) {
+        console.error("Port is not a number");
+        return;
+      }
+      port = parseInt(port);
+      if(port < 1024) {
+        console.error("Port is reserved");
+        return;
+      }
       config.gui.port = parseInt(port);
       process.env.DASHPORT = port; // set the DASHPORT environment variable
 
