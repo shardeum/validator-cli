@@ -61,7 +61,7 @@ let config = defaultNetworkConfig;
 let nodeConfig: nodeConfigType = defaultNodeConfig;
 
 let rpcServer = {
-  url: 'http://127.0.0.1:8081',
+  url: 'https://sphinx.shardeum.org',
 };
 
 const validateNetworkConfig = new Ajv().compile(networkConfigSchema);
