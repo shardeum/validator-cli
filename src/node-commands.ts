@@ -61,7 +61,7 @@ let config = defaultNetworkConfig;
 let nodeConfig: nodeConfigType = defaultNodeConfig;
 
 let rpcServer = {
-  url: 'https://sphinx.shardeum.org',
+  url: 'http://127.0.0.1:8081',
 };
 
 const validateNetworkConfig = new Ajv().compile(networkConfigSchema);
@@ -722,8 +722,10 @@ export function registerNodeCommands(program: Command) {
       'Force unstake in case the node is stuck, will forfeit rewards'
     )
     .action(async options => {
-      if (options.force) {
-        const answer = await getUserInput(
+      try{
+
+        if (options.force) {
+          const answer = await getUserInput(
           'Node is currently participating in the network, unstaking could result in a penalty. ' +
             'Confirm if you would like to force unstake (y/N): '
         );
@@ -738,21 +740,25 @@ export function registerNodeCommands(program: Command) {
         } catch (error: unknown) {
           // Error while fetching nodeInfo - presuming node is not active
         }
-
+        
         const nodeStatus = nodeInfo?.status;
         if (
           nodeStatus === 'standby' ||
           nodeStatus === 'syncing' ||
           nodeStatus === 'active'
-        ) {
-          throw (
-            'Node is currently running and participating in the network. ' +
-            "Please wait for the node to enter status 'waiting' before unstaking."
-          );
+          ) {
+            throw (
+              'Node is currently running and participating in the network. ' +
+              "Please wait for the node to enter status 'waiting' before unstaking."
+              );
+            }
+          }
+          
+          await unstake(options);
         }
-      }
-
-      await unstake(options);
+        catch(error){
+          console.error(error);
+        }
     });
 
   program
