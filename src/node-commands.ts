@@ -39,6 +39,9 @@ import {
   File,
   fetchNodeInfo,
   getUserInput,
+  getBranchNameForCLI,
+  getBranchNameForGUI,
+  getBranchNameForValidator,
 } from './utils';
 import {isValidPrivate} from 'ethereumjs-util';
 import logger from './utils/logger';
@@ -47,6 +50,7 @@ import Ajv from 'ajv';
 
 type VersionStats = {
   runningCliVersion: string;
+  runningCliBranch: string;
   minimumCliVersion: string;
   latestCliVersion: string;
   minShardeumVersion: string;
@@ -54,7 +58,9 @@ type VersionStats = {
   minimumGuiVersion?: string;
   latestGuiVersion?: string;
   runningGuiVersion?: string | undefined;
+  runningGuiBranch?: string | undefined;
   runnningValidatorVersion?: string | undefined;
+  runningValidatorBranch?: string | undefined;
 };
 
 let config = defaultNetworkConfig;
@@ -803,6 +809,7 @@ export function registerNodeCommands(program: Command) {
 
       let versions: VersionStats = {
         runningCliVersion: dashboardPackageJson.version,
+        runningCliBranch: await getBranchNameForCLI(),
         minimumCliVersion: '0.1.0', //TODO query from some official online source
         latestCliVersion: await getLatestCliVersion(),
         minShardeumVersion: validatorVersions.minVersion,
@@ -813,6 +820,7 @@ export function registerNodeCommands(program: Command) {
         versions = {
           ...versions,
           runningGuiVersion: getInstalledGuiVersion(),
+          runningGuiBranch: await getBranchNameForGUI(),
           minimumGuiVersion: '0.1.0', //TODO query from some official online source
           latestGuiVersion: await getLatestGuiVersion(),
         };
@@ -822,6 +830,7 @@ export function registerNodeCommands(program: Command) {
         versions = {
           ...versions,
           runnningValidatorVersion: getInstalledValidatorVersion(),
+          runningValidatorBranch: await getBranchNameForValidator(),
         };
       }
       console.log(yaml.dump(versions));
