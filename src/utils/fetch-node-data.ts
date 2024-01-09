@@ -18,11 +18,20 @@ export async function fetchNodeProgress(): Promise<nodeProgressType | null> {
 export async function getExitInformation() {
   const exitSummary = fetchExitSummary();
   const startSummary = fetchStartSummary();
+
+  const interceptExitMessage = (message: string) => {
+    if (message.includes('Fatal: submitJoin: our node')) {
+      return 'Unable to access external or internal ports. Please provide proper port access to the external and internal ports of shardeum  (9001 / 10001 are the defaults)';
+    }
+    return message;
+  };
   // don't show exit reason if the validator is running or was never started
   const showExitReason =
     exitSummary?.exitTime > startSummary?.startTime ||
     (startSummary?.startTime == null && exitSummary?.exitTime != null);
-  const exitMessage = showExitReason ? exitSummary?.message : undefined;
+  const exitMessage = showExitReason
+    ? interceptExitMessage(exitSummary?.message)
+    : undefined;
   const exitStatus = showExitReason ? exitSummary?.status : undefined;
   return {exitMessage, exitStatus};
 }
