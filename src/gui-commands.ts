@@ -37,6 +37,20 @@ if (fs.existsSync(guiConfigPath)) { // eslint-disable-line security/detect-non-l
   }
 }
 
+function getHashSalt() {
+  if(config.gui.hashSalt) {
+    return config.gui.hashSalt;
+  }
+
+  let hashSalt = process.env.HASH_SALT;
+  if (!hashSalt) {
+    console.warn('HASH_SALT environment variable not set generating random hash salt');
+    hashSalt = crypto.randomBytes(16).toString('hex');
+  }
+
+  return hashSalt;
+}
+
 export function registerGuiCommands(program: Command) {
   const gui = program.command('gui').description('GUI related commands');
 
@@ -127,8 +141,9 @@ export function registerGuiCommands(program: Command) {
     .description('Set the GUI server password')
     .option('-h', 'Changes how the password is hashed. For internal use only')
     .action((password, options) => {
+      config.gui.hashSalt = getHashSalt();
       if(!options.h) {
-        password = crypto.createHash('sha256').update(password).digest('hex');
+        password = crypto.createHash('sha256').update(password + config.gui.hashSalt).digest('hex');
       }
       config.gui.pass = cryptoShardus.hash(password);
       // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -170,7 +185,7 @@ export function registerGuiCommands(program: Command) {
             cwd: `${path.join(__dirname, '../../../gui')}`,
             script: 'npm',
             args: 'start',
-            env: {PORT: `${config.gui.port}`},
+            env: {PORT: `${config.gui.port}`, HASH_SALT: getHashSalt()},
           },
           err => {
             if (err) {

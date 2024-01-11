@@ -2,6 +2,7 @@ export const defaultGuiConfig = {
   gui: {
     port: 8080,
     pass: '',
+    hashSalt: '',
   },
 };
 
@@ -21,8 +22,11 @@ export const guiConfigSchema = {
         pass: {
           type: "string"
         },
+        hashSalt: {
+          type: "string"
+        },
       },
-      required: ["port", "pass"],
+      required: ["port", "pass", "hashSalt"],
       additionalProperties: false,
     }
   },
