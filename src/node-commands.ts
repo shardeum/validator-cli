@@ -728,43 +728,40 @@ export function registerNodeCommands(program: Command) {
       'Force unstake in case the node is stuck, will forfeit rewards'
     )
     .action(async options => {
-      try{
-
+      try {
         if (options.force) {
           const answer = await getUserInput(
-          'Node is currently participating in the network, unstaking could result in a penalty. ' +
-            'Confirm if you would like to force unstake (y/N): '
-        );
+            'Node is currently participating in the network, unstaking could result in a penalty. ' +
+              'Confirm if you would like to force unstake (y/N): '
+          );
 
-        if (answer.toLowerCase() !== 'y') {
-          return;
-        }
-      } else {
-        let nodeInfo;
-        try {
-          nodeInfo = await fetchNodeInfo(config);
-        } catch (error: unknown) {
-          // Error while fetching nodeInfo - presuming node is not active
-        }
-        
-        const nodeStatus = nodeInfo?.status;
-        if (
-          nodeStatus === 'standby' ||
-          nodeStatus === 'syncing' ||
-          nodeStatus === 'active'
+          if (answer.toLowerCase() !== 'y') {
+            return;
+          }
+        } else {
+          let nodeInfo;
+          try {
+            nodeInfo = await fetchNodeInfo(config);
+          } catch (error: unknown) {
+            // Error while fetching nodeInfo - presuming node is not active
+          }
+          const nodeStatus = nodeInfo?.status;
+          if (
+            nodeStatus === 'initializing' ||
+            nodeStatus === 'standby' ||
+            nodeStatus === 'syncing' ||
+            nodeStatus === 'active'
           ) {
             throw (
-              'Node is currently running and participating in the network. ' +
-              "Please wait for the node to enter status 'waiting' before unstaking."
-              );
-            }
+              "Please stop your node before unstaking."
+            );
           }
-          
-          await unstake(options);
         }
-        catch(error){
-          console.error(error);
-        }
+
+        await unstake(options);
+      } catch (error) {
+        console.error(error);
+      }
     });
 
   program
