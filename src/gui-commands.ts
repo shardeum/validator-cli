@@ -143,9 +143,9 @@ export function registerGuiCommands(program: Command) {
     .action((password, options) => {
       config.gui.hashSalt = getHashSalt();
       if(!options.h) {
-        password = crypto.createHash('sha256').update(password).digest('hex');
+        password = crypto.createHash('sha256').update(password + config.gui.hashSalt).digest('hex');
       }
-      config.gui.pass = cryptoShardus.hash(password + config.gui.hashSalt);
+      config.gui.pass = cryptoShardus.hash(password);
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, `../${File.GUI_CONFIG}`),
