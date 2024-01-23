@@ -162,7 +162,7 @@ export function registerGuiCommands(program: Command) {
     .description('verify GUI password')
     .action(password => {
       if (
-        !timingSafeEqual(Buffer.from(cryptoShardus.hash(password + getHashSalt())), Buffer.from(config.gui.pass))
+        !timingSafeEqual(Buffer.from(password), Buffer.from(config.gui.pass))
       ) {
         console.log(yaml.dump({login: 'unauthorized'}));
         return;
