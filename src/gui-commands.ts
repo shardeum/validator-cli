@@ -193,6 +193,38 @@ export function registerGuiCommands(program: Command) {
   
       console.log(yaml.dump({login: 'authorized'}));
     });
+    gui
+  .command('unblock')
+  .arguments('<ip>')
+  .description('Unblock a given IP address')
+  .action((ip: string) => {
+    let failedAttempts: FailedAttempt[] = config.gui.failedAttempts;
+
+    // Check if IP is in the failedAttempts array
+    const isBlocked = failedAttempts.some(record => record.ip === ip);
+    if (!isBlocked) {
+      console.log(`IP ${ip} is not blocked.`);
+      return;
+    }
+
+    // Remove the IP from the failedAttempts array
+    failedAttempts = failedAttempts.filter(record => record.ip !== ip);
+    config.gui.failedAttempts = failedAttempts;
+
+    // Write updated config to file
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.writeFile(
+      path.join(__dirname, `../${File.GUI_CONFIG}`),
+      JSON.stringify(config, undefined, 2),
+      err => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log(`IP ${ip} has been unblocked.`);
+        }
+      }
+    );
+  });
 
   function startGui() {
     // Exec PM2 to start the GUI server
