@@ -3,7 +3,7 @@ import pm2 from 'pm2';
 import * as yaml from 'js-yaml';
 import {Command} from 'commander';
 import path from 'path';
-import {exec} from 'child_process';
+import {exec, execFile} from 'child_process';
 import merge from 'deepmerge';
 import {
   defaultNetworkConfig,
@@ -47,7 +47,7 @@ import {isValidPrivate} from 'ethereumjs-util';
 import logger from './utils/logger';
 import {isIP} from 'net';
 import Ajv from 'ajv';
-
+import {VALIDATOR_CLEAN_PATH} from './projectFlags';
 type VersionStats = {
   runningCliVersion: string;
   runningCliBranch: string;
@@ -67,7 +67,7 @@ let config = defaultNetworkConfig;
 let nodeConfig: nodeConfigType = defaultNodeConfig;
 
 let rpcServer = {
-  url: 'https://sphinx.shardeum.org',
+  url: process.env.RPC_SERVER_URL,
 };
 
 const validateNetworkConfig = new Ajv().compile(networkConfigSchema);
@@ -439,8 +439,9 @@ export function registerNodeCommands(program: Command) {
     .action(() => {
       // Run the validators clean script
 
-      exec(
-        `node ${path.join(__dirname, '../../../validator/scripts/clean.js')}`,
+      execFile(
+        `node`,
+        [`${path.join(__dirname, VALIDATOR_CLEAN_PATH)}`],
         () => {
           // Exec PM2 to start the shardeum validator
           pm2.connect(err => {
