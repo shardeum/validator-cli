@@ -30,11 +30,13 @@ fs.watch(configFilePath, (eventType, filename) => {
 });
 
 const startApp = () => {
+  console.log(`STARTING validator node with autoRestart: ${shouldAutoRestart}`)
   const app = fork(path.join(__dirname, '../validator/dist/src/index.js'), {
     cwd: path.join(__dirname, './build'),
   });
 
   app.on('exit', code => {
+    console.log(`STOPPED validator node with code: ${code}`)
     console.log(
       `Child process exited with code ${code}. shouldAutoRestart: `,
       shouldAutoRestart

@@ -351,56 +351,56 @@ export function registerNodeCommands(program: Command) {
             nodeStatus =
               lockedStakeStr === '0.0' ? 'need-stake' : 'waiting-for-network';
 
-          console.log(
-            yaml.dump({
-              state: nodeStatus,
-              exitMessage,
-              exitStatus,
-              totalTimeRunning: status.uptimeInSeconds,
-              totalTimeValidating: totalTimeValidating,
-              lastActive: lastActive,
-              lastRotationIndex: lastRotationIndex,
-              stakeRequirement: stakeRequired
-                ? ethers.utils.formatEther(stakeRequired)
-                : '',
-              nominatorAddress: accountInfo.nominator,
-              nomineeAddress: publicKey,
-              performance,
-              currentRewards: ethers.utils.formatEther(
-                accountInfo.accumulatedRewards.toString()
-              ),
-              lockedStake: lockedStakeStr,
-              autorestart: nodeConfig.autoRestart,
-              nodeInfo: nodeInfo,
-              // TODO: Add fetching node info when in standby
-            })
-          );
+          // console.log(
+          //   yaml.dump({
+          //     state: nodeStatus,
+          //     exitMessage,
+          //     exitStatus,
+          //     totalTimeRunning: status.uptimeInSeconds,
+          //     totalTimeValidating: totalTimeValidating,
+          //     lastActive: lastActive,
+          //     lastRotationIndex: lastRotationIndex,
+          //     stakeRequirement: stakeRequired
+          //       ? ethers.utils.formatEther(stakeRequired)
+          //       : '',
+          //     nominatorAddress: accountInfo.nominator,
+          //     nomineeAddress: publicKey,
+          //     performance,
+          //     currentRewards: ethers.utils.formatEther(
+          //       accountInfo.accumulatedRewards.toString()
+          //     ),
+          //     lockedStake: lockedStakeStr,
+          //     autorestart: nodeConfig.autoRestart,
+          //     nodeInfo: nodeInfo,
+          //     // TODO: Add fetching node info when in standby
+          //   })
+          // );
           cache.writeMaps();
           return pm2.disconnect();
         }
 
         // Node was started but is currently inactive
-        console.log(
-          yaml.dump({
-            state: 'stopped',
-            exitMessage,
-            exitStatus,
-            performance,
-            stakeRequirement: stakeRequired
-              ? ethers.utils.formatEther(stakeRequired)
-              : '',
-            lockedStake: accountInfo.lockedStake
-              ? ethers.utils.formatEther(accountInfo.lockedStake)
-              : '',
-            nominatorAddress: accountInfo.nominator,
-            currentRewards: accountInfo
-              ? ethers.utils.formatEther(
-                  accountInfo.accumulatedRewards.toString()
-                )
-              : '',
-            autorestart: nodeConfig.autoRestart,
-          })
-        );
+        // console.log(
+        //   yaml.dump({
+        //     state: 'stopped',
+        //     exitMessage,
+        //     exitStatus,
+        //     performance,
+        //     stakeRequirement: stakeRequired
+        //       ? ethers.utils.formatEther(stakeRequired)
+        //       : '',
+        //     lockedStake: accountInfo.lockedStake
+        //       ? ethers.utils.formatEther(accountInfo.lockedStake)
+        //       : '',
+        //     nominatorAddress: accountInfo.nominator,
+        //     currentRewards: accountInfo
+        //       ? ethers.utils.formatEther(
+        //           accountInfo.accumulatedRewards.toString()
+        //         )
+        //       : '',
+        //     autorestart: nodeConfig.autoRestart,
+        //   })
+        // );
         cache.writeMaps();
         return pm2.disconnect();
       });
