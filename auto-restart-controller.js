@@ -16,6 +16,29 @@ const updateAutoRestartStatus = () => {
   }
 };
 
+const updateExitSummaryWithAutoRestart = (autoRestartStatus) => {
+  const exitSummaryFileName = 'exit-summary.json';
+  const logsDirectory = './build/logs';
+  const exitSummaryDataPath = path.join(__dirname, logsDirectory, exitSummaryFileName);
+
+  try {
+    console.log('Adding auto restart status to exit summary...');
+
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const exitSummaryData = fs.readFileSync(exitSummaryDataPath).toString();
+    const exitSummaryDataJson = JSON.parse(exitSummaryData);
+
+    exitSummaryDataJson.autoRestart = autoRestartStatus;
+
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.writeFileSync(exitSummaryDataPath, JSON.stringify(exitSummaryDataJson, null, 2));
+
+    console.log('Successfully updated exit summary with auto restart status.');
+  } catch (error) {
+    console.error(`Error adding auto restart status to exit summary: ${error}`);
+  }
+};
+
 // Initialize shouldAutoRestart
 updateAutoRestartStatus();
 
@@ -39,6 +62,7 @@ const startApp = () => {
       `Child process exited with code ${code}. shouldAutoRestart: `,
       shouldAutoRestart
     );
+    updateExitSummaryWithAutoRestart(shouldAutoRestart);
     if (shouldAutoRestart && code === 0) {
       console.log('Restarting validator');
       startApp();
