@@ -57,7 +57,7 @@ export function registerGuiCommands(program: Command) {
         }
         const description = descriptions[0];
         const status: Pm2ProcessStatus = statusFromPM2(description);
-        status.link = `http://localhost:${config.gui.port}/`;
+        status.link = `https://localhost:${config.gui.port}/`;
         console.log(yaml.dump(status));
         return pm2.disconnect();
       });
