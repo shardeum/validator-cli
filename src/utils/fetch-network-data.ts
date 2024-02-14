@@ -9,6 +9,7 @@ import tcache from './tcache';
 import {File} from '../utils';
 
 export const cache = new tcache();
+export const networkAccount = '0'.repeat(64);
 let savedActiveNode:
   | {
       id: string;
@@ -165,7 +166,7 @@ export async function fetchInitialParameters(
 
   const initialParams: InitialParameters | null = await fetchDataFromNetwork(
     config,
-    `/get-network-account?hash=false`,
+    `/account/${networkAccount}?type=5`,
     data => data?.account == null
   );
 
