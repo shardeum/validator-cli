@@ -329,6 +329,9 @@ export function registerNodeCommands(program: Command) {
               lockedStake: accountInfo.lockedStake
                 ? ethers.utils.formatEther(accountInfo.lockedStake)
                 : '',
+              totalPenalty: accountInfo.totalPenalty
+                ? ethers.utils.formatEther(accountInfo.totalPenalty)
+                : '',
               autorestart: nodeConfig.autoRestart,
             })
           );
@@ -376,6 +379,9 @@ export function registerNodeCommands(program: Command) {
                 accountInfo.accumulatedRewards.toString()
               ),
               lockedStake: lockedStakeStr,
+              totalPenalty: accountInfo.totalPenalty
+                ? ethers.utils.formatEther(accountInfo.totalPenalty)
+                : '',
               autorestart: nodeConfig.autoRestart,
               nodeInfo: nodeInfo,
               // TODO: Add fetching node info when in standby
@@ -403,6 +409,9 @@ export function registerNodeCommands(program: Command) {
               ? ethers.utils.formatEther(
                   accountInfo.accumulatedRewards.toString()
                 )
+              : '',
+            totalPenalty: accountInfo.totalPenalty
+              ? ethers.utils.formatEther(accountInfo.totalPenalty)
               : '',
             autorestart: nodeConfig.autoRestart,
           })
@@ -759,9 +768,7 @@ export function registerNodeCommands(program: Command) {
             nodeStatus === 'syncing' ||
             nodeStatus === 'active'
           ) {
-            throw (
-              "Please stop your node before unstaking."
-            );
+            throw 'Please stop your node before unstaking.';
           }
         }
 

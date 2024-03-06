@@ -193,6 +193,9 @@ type NodeData = {
   rewardStartTime: number;
   rewardEndTime: number;
   nominator: string;
+  nodeAccountStats: {
+    totalPenalty: string;
+  };
 };
 
 async function fetchNodeParameters(
@@ -329,6 +332,7 @@ export async function getAccountInfoParams(
     lockedStake: '',
     nominator: '',
     accumulatedRewards: new BN(0),
+    totalPenalty: '',
   };
   if (nodePubKey === '') {
     // Public key not found. This can happen in the primitive case when
@@ -363,11 +367,16 @@ export async function getAccountInfoParams(
       nodeActiveDuration = 0;
     }
     params.nominator = nodeData.nominator;
+    params.totalPenalty = new BN(
+      nodeData.nodeAccountStats.totalPenalty,
+      16
+    ).toString();
   } catch (err) {
     params.lockedStake = new BN(0).toString();
     nodeActiveDuration = 0;
     params.nominator = '';
     previousRewards = new BN(0);
+    params.totalPenalty = new BN(0).toString();
   }
 
   const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration, 16));
