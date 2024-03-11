@@ -67,11 +67,31 @@ export function getBranchNameForValidator() {
   return getBranchNameFor(VALIDATOR_LOCAL_PATH);
 }
 
+export function getCommitHashForCLI() {
+  return getCommitHash(CLI_LOCAL_PATH);
+}
+
+export function getCommitHashForGUI() {
+  return getCommitHash(GUI_LOCAL_PATH);
+}
+
+export function getCommitHashForValidator() {
+  return getCommitHash(VALIDATOR_LOCAL_PATH);
+}
+
 const getBranchNameFor = (dirPath: string): Promise<string> =>
   new Promise(resolve => {
     // eslint-disable-next-line security/detect-child-process
     exec(
       `git -C ${path.join(dirPath)} branch --show-current`,
       (error, stdout) => resolve(!error ? stdout.trim() : 'unknown')
+    );
+  });
+
+const getCommitHash = (dirPath: string): Promise<string> =>
+  new Promise(resolve => {
+    // eslint-disable-next-line security/detect-child-process
+    exec(`git -C ${path.join(dirPath)} rev-parse HEAD`, (error, stdout) =>
+      resolve(!error ? stdout.trim() : 'unknown')
     );
   });

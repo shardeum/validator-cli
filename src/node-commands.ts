@@ -42,6 +42,9 @@ import {
   getBranchNameForCLI,
   getBranchNameForGUI,
   getBranchNameForValidator,
+  getCommitHashForCLI,
+  getCommitHashForGUI,
+  getCommitHashForValidator
 } from './utils';
 import {isValidPrivate} from 'ethereumjs-util';
 import logger from './utils/logger';
@@ -51,6 +54,7 @@ import {VALIDATOR_CLEAN_PATH} from './projectFlags';
 type VersionStats = {
   runningCliVersion: string;
   runningCliBranch: string;
+  runningCliCommitHash?:string | undefined;
   minimumCliVersion: string;
   latestCliVersion: string;
   minShardeumVersion: string;
@@ -59,8 +63,10 @@ type VersionStats = {
   latestGuiVersion?: string;
   runningGuiVersion?: string | undefined;
   runningGuiBranch?: string | undefined;
+  runningGuiBranchCommitHash?:string | undefined;
   runnningValidatorVersion?: string | undefined;
   runningValidatorBranch?: string | undefined;
+  runningValidatorBranchCommitHash?: string | undefined;
 };
 
 let config = defaultNetworkConfig;
@@ -808,10 +814,12 @@ export function registerNodeCommands(program: Command) {
       let versions: VersionStats = {
         runningCliVersion: dashboardPackageJson.version,
         runningCliBranch: await getBranchNameForCLI(),
+        runningCliCommitHash: await getCommitHashForCLI(),
         minimumCliVersion: '0.1.0', //TODO query from some official online source
         latestCliVersion: await getLatestCliVersion(),
         minShardeumVersion: validatorVersions.minVersion,
         activeShardeumVersion: validatorVersions.activeVersion,
+        
       };
 
       if (isGuiInstalled()) {
@@ -819,6 +827,7 @@ export function registerNodeCommands(program: Command) {
           ...versions,
           runningGuiVersion: getInstalledGuiVersion(),
           runningGuiBranch: await getBranchNameForGUI(),
+          runningGuiBranchCommitHash: await getCommitHashForGUI(),
           minimumGuiVersion: '0.1.0', //TODO query from some official online source
           latestGuiVersion: await getLatestGuiVersion(),
         };
@@ -829,6 +838,7 @@ export function registerNodeCommands(program: Command) {
           ...versions,
           runnningValidatorVersion: getInstalledValidatorVersion(),
           runningValidatorBranch: await getBranchNameForValidator(),
+          runningValidatorBranchCommitHash:await getCommitHashForValidator()
         };
       }
       console.log(yaml.dump(versions));
