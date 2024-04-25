@@ -3,22 +3,20 @@ import path from 'path';
 import fs from 'fs';
 import {exec} from 'child_process';
 
-const CLI_PROJECT_PATH = 'https://gitlab.com/shardeum/validator/cli/';
-const GUI_PROJECT_PATH = 'https://gitlab.com/shardeum/validator/gui/';
 
 const CLI_LOCAL_PATH = path.join(__dirname, '../../');
 const GUI_LOCAL_PATH = path.join(__dirname, '../../../../gui');
 const VALIDATOR_LOCAL_PATH = path.join(__dirname, '../../../../validator');
 
 export async function getLatestCliVersion() {
-  const packageJsonPath = `${CLI_PROJECT_PATH}-/raw/main/package.json`;
-  const json = await axios.get<{version: string}>(packageJsonPath);
+  const packageJsonURI = `https://raw.githubusercontent.com/shardeum/validator-cli/main/package.json`;
+  const json = await axios.get<{version: string}>(packageJsonURI);
   return json.data.version;
 }
 
 export async function getLatestGuiVersion() {
-  const packageJsonPath = `${GUI_PROJECT_PATH}-/raw/main/package.json`;
-  const json = await axios.get<{version: string}>(packageJsonPath);
+  const packageJsonURI = `https://raw.githubusercontent.com/shardeum/validator-gui/main/package.json`;
+  const json = await axios.get<{version: string}>(packageJsonURI);
   return json.data.version;
 }
 
