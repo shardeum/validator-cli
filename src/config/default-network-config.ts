@@ -6,20 +6,17 @@ export const defaultNetworkConfig = {
         {
           ip: '45.79.16.146',
           port: 4000,
-          publicKey:
-            '840e7b59a95d3c5f5044f4bc62ab9fa94bc107d391001141410983502e3cde63',
+          publicKey: '840e7b59a95d3c5f5044f4bc62ab9fa94bc107d391001141410983502e3cde63',
         },
         {
           ip: '45.56.92.103',
           port: 4000,
-          publicKey:
-            '2db7c949632d26b87d7e7a5a4ad41c306f63ee972655121a37c5e4f52b00a542',
+          publicKey: '2db7c949632d26b87d7e7a5a4ad41c306f63ee972655121a37c5e4f52b00a542',
         },
         {
           ip: '170.187.134.16',
           port: 4000,
-          publicKey:
-            '7af699dd711074eb96a8d1103e32b589e511613ebb0c6a789a9e8791b2b05f34',
+          publicKey: '7af699dd711074eb96a8d1103e32b589e511613ebb0c6a789a9e8791b2b05f34',
         },
       ],
     },
@@ -36,9 +33,9 @@ export const defaultNetworkConfig = {
       console: false,
     },
   },
-};
+}
 
-export type networkConfigType = typeof defaultNetworkConfig;
+export type networkConfigType = typeof defaultNetworkConfig
 
 export const networkConfigSchema = {
   type: 'object',
@@ -95,12 +92,7 @@ export const networkConfigSchema = {
               maximum: 65535,
             },
           },
-          required: [
-            'externalIp',
-            'externalPort',
-            'internalIp',
-            'internalPort',
-          ],
+          required: ['externalIp', 'externalPort', 'internalIp', 'internalPort'],
         },
         reporting: {
           type: 'object',
@@ -126,24 +118,24 @@ export const networkConfigSchema = {
     },
   },
   required: ['server'],
-};
+}
 
 export type nodeProgressType = {
   nodeInfo: {
-    id: string;
-    publicKey: string;
-    curvePublicKay: string;
-    externalIP: string;
-    internalIP: string;
-    externalPort: number;
-    internalPort: number;
-    status: string;
-  };
+    id: string
+    publicKey: string
+    curvePublicKay: string
+    externalIP: string
+    internalIP: string
+    externalPort: number
+    internalPort: number
+    status: string
+  }
   lastRotationIndex: {
-    idx: number;
-    total: number;
-  };
-  activeNodes: number;
-  lastActiveTime: number;
-  totalActiveTime: number;
-};
+    idx: number
+    total: number
+  }
+  activeNodes: number
+  lastActiveTime: number
+  totalActiveTime: number
+}
