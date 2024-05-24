@@ -1,35 +1,38 @@
-import pm2 from 'pm2';
-import {Command} from 'commander';
-import path = require('path');
-import {timingSafeEqual} from 'crypto';
-import {Pm2ProcessStatus, statusFromPM2} from './pm2';
-import merge from 'deepmerge';
-import {defaultGuiConfig, guiConfigType, guiConfigSchema} from './config/default-gui-config';
-import fs from 'fs';
-import * as yaml from 'js-yaml';
-import * as cryptoShardus from '@shardus/crypto-utils';
-import {getInstalledGuiVersion} from './utils/project-data';
-import {File} from './utils'
-import crypto from 'crypto';
-import Ajv from "ajv"
-
-let config = defaultGuiConfig;
+import pm2 from 'pm2'
+import { Command } from 'commander'
+import path = require('path')
+import { timingSafeEqual } from 'crypto'
+import { Pm2ProcessStatus, statusFromPM2 } from './pm2'
+import merge from 'deepmerge'
+import { defaultGuiConfig, guiConfigType, guiConfigSchema } from './config/default-gui-config'
+import fs from 'fs'
+import * as yaml from 'js-yaml'
+import * as cryptoShardus from '@shardus/crypto-utils'
+import { getInstalledGuiVersion } from './utils/project-data'
+import { File } from './utils'
+import crypto from 'crypto'
+import Ajv from 'ajv'
+import { FailedAttempt } from './config/default-gui-config'
+let config = defaultGuiConfig
 
 const validateGuiConfig = new Ajv().compile(guiConfigSchema)
 
-cryptoShardus.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
+const MAX_ATTEMPTS = 3 // Maximum allowed attempts
+
+cryptoShardus.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347')
 
 function isNumber(n: string) {
-  const parsedN = parseInt(n);
-  return !isNaN(parsedN) && isFinite(parsedN);
+  const parsedN = parseInt(n)
+  return !isNaN(parsedN) && isFinite(parsedN)
 }
 
 const guiConfigPath = path.join(__dirname, `../${File.GUI_CONFIG}`)
-if (fs.existsSync(guiConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
+if (fs.existsSync(guiConfigPath)) {
+  // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   const fileConfig = JSON.parse(fs.readFileSync(guiConfigPath).toString())
   if (validateGuiConfig(fileConfig)) {
-    config = merge(config, fileConfig as guiConfigType, {arrayMerge: (target, source) => source})
+    config = merge(config, fileConfig as guiConfigType, { arrayMerge: (target, source) => source })
     // `as guiConfigType` above is valid because validateGuiConfig() passed
   } else {
     console.warn(`warning: config has been ignored due to invalid JSON schema:`)
@@ -38,88 +41,84 @@ if (fs.existsSync(guiConfigPath)) { // eslint-disable-line security/detect-non-l
 }
 
 export function registerGuiCommands(program: Command) {
-  const gui = program.command('gui').description('GUI related commands');
+  const gui = program.command('gui').description('GUI related commands')
 
   gui
     .command('status')
-    .description(
-      'Show if GUI is running or not; also the port and URL to connect to it'
-    )
+    .description('Show if GUI is running or not; also the port and URL to connect to it')
     .action(() => {
       pm2.describe('operator-gui', (err, descriptions) => {
         if (err) {
-          console.error(err);
-          return pm2.disconnect();
+          console.error(err)
+          return pm2.disconnect()
         }
         if (descriptions.length === 0) {
-          console.log('operator gui not running!');
-          return pm2.disconnect();
+          console.log('operator gui not running!')
+          return pm2.disconnect()
         }
-        const description = descriptions[0];
-        const status: Pm2ProcessStatus = statusFromPM2(description);
-        status.link = `https://localhost:${config.gui.port}/`;
-        console.log(yaml.dump(status));
-        return pm2.disconnect();
-      });
-    });
+        const description = descriptions[0]
+        const status: Pm2ProcessStatus = statusFromPM2(description)
+        status.link = `https://localhost:${config.gui.port}/`
+        console.log(yaml.dump(status))
+        return pm2.disconnect()
+      })
+    })
 
   gui
     .command('start')
     .description('Starts the GUI server')
-    .action(async () => await startGui());
+    .action(async () => await startGui())
 
   gui
     .command('restart')
     .description('Restarts the GUI server')
     .action(async () => {
-      await stopGui();
-      await startGui();
-    });
+      await stopGui()
+      await startGui()
+    })
 
   gui
     .command('version')
     .description('Show the GUI version')
     .action(() => {
-      console.log(getInstalledGuiVersion());
-    });
+      console.log(getInstalledGuiVersion())
+    })
 
   gui
     .command('stop')
     .description('Stops the GUI server')
     .action(async () => {
-      await stopGui();
-    });
+      await stopGui()
+    })
 
-  const setCommand = gui
-    .command('set')
-    .description('command to set various config parameters');
+  const setCommand = gui.command('set').description('command to set various config parameters')
 
   setCommand
     .command('port')
     .arguments('<port>')
     .description('Set the GUI server port')
-    .action(port => {
+    .action((port) => {
       if (!isNumber(port)) {
-        console.error("Port is not a number");
-        return;
+        console.error('Port is not a number')
+        return
       }
-      port = parseInt(port);
-      if(port < 1024) {
-        console.error("Port is reserved");
-        return;
+      port = parseInt(port)
+      if (port < 1024) {
+        console.error('Port is reserved')
+        return
       }
-      config.gui.port = parseInt(port);
-      process.env.DASHPORT = port; // set the DASHPORT environment variable
+      config.gui.port = parseInt(port)
+      process.env.DASHPORT = port // set the DASHPORT environment variable
 
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, `../${File.GUI_CONFIG}`),
         JSON.stringify(config, undefined, 2),
-        err => {
-          if (err) console.log(err);
+        (err) => {
+          if (err) console.log(err)
         }
-      );
-    });
+      )
+    })
 
   setCommand
     .command('password')
@@ -127,41 +126,110 @@ export function registerGuiCommands(program: Command) {
     .description('Set the GUI server password')
     .option('-h', 'Changes how the password is hashed. For internal use only')
     .action((password, options) => {
-      if(!options.h) {
-        password = crypto.createHash('sha256').update(password).digest('hex');
+      if (!options.h) {
+        password = crypto.createHash('sha256').update(password).digest('hex')
       }
-      config.gui.pass = cryptoShardus.hash(password);
+      config.gui.pass = cryptoShardus.hash(password)
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, `../${File.GUI_CONFIG}`),
         JSON.stringify(config, undefined, 2),
-        err => {
-          if (err) console.error(err);
+        (err) => {
+          if (err) console.error(err)
         }
-      );
-    });
-
+      )
+    })
   gui
     .command('login')
     .arguments('<password>')
+    .arguments('<ip>')
     .description('verify GUI password')
-    .action(password => {
-      if (
-        !timingSafeEqual(Buffer.from(password), Buffer.from(config.gui.pass))
-      ) {
-        console.log(yaml.dump({login: 'unauthorized'}));
-        return;
+    .action((password: string, ip: string) => {
+      let failedAttempts: FailedAttempt[] = config.gui.failedAttempts
+
+      const attemptRecord = failedAttempts.find((record) => record.ip === ip)
+      // Check if IP is already blocked
+      if (attemptRecord && attemptRecord.count >= MAX_ATTEMPTS) {
+        console.log(yaml.dump({ login: 'blocked' }))
+        return
       }
-      console.log(yaml.dump({login: 'authorized'}));
-    });
+      if (!timingSafeEqual(Buffer.from(password), Buffer.from(config.gui.pass))) {
+        if (attemptRecord) {
+          attemptRecord.count += 1
+        } else {
+          failedAttempts.push({ ip: ip, count: 1 })
+        }
+        // Write updated config to file
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        fs.writeFile(
+          path.join(__dirname, `../${File.GUI_CONFIG}`),
+          JSON.stringify(config, undefined, 2),
+          (err) => {
+            if (err) console.log(err)
+          }
+        )
+        console.log(yaml.dump({ login: 'unauthorized' }))
+        return
+      }
+
+      // Reset failed attempt count on successful login
+      if (attemptRecord) {
+        failedAttempts = failedAttempts.filter((record) => record.ip !== ip)
+        config.gui.failedAttempts = failedAttempts
+
+        // Write updated config to file
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        fs.writeFile(
+          path.join(__dirname, `../${File.GUI_CONFIG}`),
+          JSON.stringify(config, undefined, 2),
+          (err) => {
+            if (err) console.log(err)
+          }
+        )
+      }
+
+      console.log(yaml.dump({ login: 'authorized' }))
+    })
+  gui
+    .command('unblock')
+    .arguments('<ip>')
+    .description('Unblock a given IP address')
+    .action((ip: string) => {
+      let failedAttempts: FailedAttempt[] = config.gui.failedAttempts
+
+      // Check if IP is in the failedAttempts array
+      const isBlocked = failedAttempts.some((record) => record.ip === ip)
+      if (!isBlocked) {
+        console.log(`IP ${ip} is not blocked.`)
+        return
+      }
+
+      // Remove the IP from the failedAttempts array
+      failedAttempts = failedAttempts.filter((record) => record.ip !== ip)
+      config.gui.failedAttempts = failedAttempts
+
+      // Write updated config to file
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      fs.writeFile(
+        path.join(__dirname, `../${File.GUI_CONFIG}`),
+        JSON.stringify(config, undefined, 2),
+        (err) => {
+          if (err) {
+            console.log(err)
+          } else {
+            console.log(`IP ${ip} has been unblocked.`)
+          }
+        }
+      )
+    })
 
   function startGui() {
     // Exec PM2 to start the GUI server
     return new Promise<void>((resolve, reject) =>
-      pm2.connect(err => {
+      pm2.connect((err) => {
         if (err) {
-          console.error(err);
-          reject('Unable to connect to PM2');
+          console.error(err)
+          reject('Unable to connect to PM2')
         }
         // Start next.js front end on port 3000
         pm2.start(
@@ -170,47 +238,47 @@ export function registerGuiCommands(program: Command) {
             cwd: `${path.join(__dirname, '../../../gui')}`,
             script: 'npm',
             args: 'start',
-            env: {PORT: `${config.gui.port}`},
+            env: { PORT: `${config.gui.port}` },
           },
-          err => {
+          (err) => {
             if (err) {
-              console.error(err);
-              reject('Unable to start GUI');
+              console.error(err)
+              reject('Unable to start GUI')
             }
-            pm2.disconnect();
-            resolve();
+            pm2.disconnect()
+            resolve()
           }
-        );
+        )
       })
-    );
+    )
   }
 
   function stopGui() {
     return new Promise<void>((resolve, reject) => {
-      pm2.connect(err => {
+      pm2.connect((err) => {
         if (err) {
-          console.error(err);
-          reject('Unable to connect to PM2');
+          console.error(err)
+          reject('Unable to connect to PM2')
         }
 
-        pm2.stop('operator-gui', err => {
+        pm2.stop('operator-gui', (err) => {
           if (err) {
-            console.log(err);
-            reject('Unable to stop gui');
+            console.log(err)
+            reject('Unable to stop gui')
           }
-          pm2.disconnect();
-          resolve();
-        });
+          pm2.disconnect()
+          resolve()
+        })
 
-        pm2.delete('operator-gui', err => {
+        pm2.delete('operator-gui', (err) => {
           if (err) {
-            console.log(err);
-            reject('Unable to delete gui');
+            console.log(err)
+            reject('Unable to delete gui')
           }
-          pm2.disconnect();
-          resolve();
-        });
-      });
-    });
+          pm2.disconnect()
+          resolve()
+        })
+      })
+    })
   }
 }
