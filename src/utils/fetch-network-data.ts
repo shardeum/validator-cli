@@ -396,13 +396,12 @@ export async function fetchStakeParameters(config: networkConfigType) {
   }
 
   const stakeParams = await fetchDataFromNetwork<{
-    stakeRequired: string;
+    stakeRequired: {value: string};
   }>(config, '/stake', data => !data);
   if (!stakeParams) {
     throw new Error("Couldn't fetch stake parameters");
   }
-
-  const stakeRequired = new BN(stakeParams.stakeRequired, 16).toString();
+  const stakeRequired = new BN(stakeParams.stakeRequired.value, 16).toString();
   const cycleDuration = await fetchCycleDuration(config);
   cache.set('stakeParams', stakeRequired, cycleDuration * 1000);
   return {
