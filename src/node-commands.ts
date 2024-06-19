@@ -273,13 +273,21 @@ fs.writeFileSync(
   JSON.stringify(config, undefined, 2)
 );
 
+function validateNoUnexpectedArgs(command: Command, expectedArgs: number, errorMessage: string) {
+  if (command.args.length > expectedArgs) {
+    console.error(`Error: Unexpected arguments provided. ${errorMessage}`);
+    process.exit(1);
+  }
+}
+
 export function registerNodeCommands(program: Command) {
   program
     .command('status')
     .description(
       'Show if validator is running or not; also the port and URL to connect to it'
     )
-    .action(async () => {
+    .action(async (options, command) => {
+      validateNoUnexpectedArgs(command, 0, 'The "status" command does not accept any additional arguments.');
       pm2.describe('validator', async (err, descriptions) => {
         // PM2 not reachable
         if (err) {
@@ -425,7 +433,8 @@ export function registerNodeCommands(program: Command) {
     .command('stake_info')
     .description('Show staking info for a particular EOA account')
     .argument('<address>', 'The EOA address to fetch stake info for')
-    .action(async address => {
+    .action(async (options, command, address) => {
+      validateNoUnexpectedArgs(command, 0, 'The "stake_info" command does not accept any additional arguments.');
       if (!ethers.utils.isAddress(address)) {
         console.error('Invalid address entered');
         return;
@@ -451,7 +460,8 @@ export function registerNodeCommands(program: Command) {
   program
     .command('start')
     .description('Starts the validator')
-    .action(() => {
+    .action((options, command) => {
+      validateNoUnexpectedArgs(command, 0, 'The "start" command does not accept any additional arguments.');
       // Run the validators clean script
 
       execFile(
@@ -505,7 +515,8 @@ export function registerNodeCommands(program: Command) {
       '-f, --force',
       'stops the node without prompting for confirmation even if it is participating and could get slashed'
     )
-    .action(options => {
+    .action((options, command) => {
+      validateNoUnexpectedArgs(command, 0, 'The "stop" command only accepts the "-f" or "--force" option.');
       function stopNode() {
         pm2.stop('validator', err => {
           if (err) console.error(err);
@@ -573,7 +584,8 @@ export function registerNodeCommands(program: Command) {
     .description(
       'Stake the set amount of SHM at the stake address. Rewards will be sent to set reward address.'
     )
-    .action(async stakeValue => {
+    .action(async(options, command, stakeValue) => {
+      validateNoUnexpectedArgs(command, 0, 'The "stake" command only accepts a single argument for the stake value.');
       //TODO should we handle consecutive stakes?
 
       // Fetch the public key from secrets.json
@@ -743,7 +755,8 @@ export function registerNodeCommands(program: Command) {
       '-f, --force',
       'Force unstake in case the node is stuck, will forfeit rewards'
     )
-    .action(async options => {
+    .action(async (options, command) => {
+      validateNoUnexpectedArgs(command, 0, 'The "unstake" command only accepts the "-f" or "--force" option.');
       try {
         if (options.force) {
           const answer = await getUserInput(
@@ -781,7 +794,8 @@ export function registerNodeCommands(program: Command) {
   program
     .command('update')
     .description('Update the CLI and the GUI')
-    .action(() => {
+    .action((options, command) => {
+      validateNoUnexpectedArgs(command, 0, 'The "update" command does not accept any additional arguments.');
       exec(
         'sh update.sh',
         {cwd: path.join(__dirname, '../..')},
@@ -812,7 +826,8 @@ export function registerNodeCommands(program: Command) {
     .description(
       'Shows the installed version, latest version and minimum version of the operator dashboard'
     )
-    .action(async () => {
+    .action(async (options, command) => {
+      validateNoUnexpectedArgs(command, 0, 'The "version" command does not accept any additional arguments.');
       const validatorVersions = await fetchValidatorVersions(config);
       if (!validatorVersions) {
         throw new Error("Couldn't fetch validator versions");
@@ -856,7 +871,8 @@ export function registerNodeCommands(program: Command) {
     .description(
       'Show statistics like TPS, active nodes etc. about the network'
     )
-    .action(async () => {
+    .action(async (options, command) => {
+      validateNoUnexpectedArgs(command, 0, 'The "network-stats" command does not accept any additional arguments.');
       pm2.describe('validator', async (err, [descriptions]) => {
         if (!err) {
           const networkStats = await getNetworkParams(config, descriptions);
@@ -870,7 +886,8 @@ export function registerNodeCommands(program: Command) {
   program
     .command('node-settings')
     .description('Display node settings')
-    .action(() => {
+    .action((options, command) => {
+      validateNoUnexpectedArgs(command, 0, 'The "node-settings" command does not accept any additional arguments.');
       const settings = getNodeSettings();
       console.log(
         yaml.dump({
@@ -969,7 +986,8 @@ export function registerNodeCommands(program: Command) {
     .description(
       'To autostart the node after being rotated out. Set autostart to true or false'
     )
-    .action((autostart: string) => {
+    .action(async (options, command, autostart: string) => {
+      validateNoUnexpectedArgs(command, 0, 'The "auto_restart" command does not accept any additional arguments.');
       const input = autostart.toLowerCase();
       if (input !== 'true' && input !== 'false') {
         console.error('Invalid input. Please enter true or false');
