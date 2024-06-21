@@ -1,6 +1,6 @@
 # Overview
 
-The Shardus CLI is a command line tool for managing a Shardeum validator instance used by the Shardeum Validator dashboard. The shardus CLI tool lets you create and manage local test networks running your app. It also collects debug data from a running Shardus app network.
+The Operator CLI is a command line tool for managing a validator instance on a Shardeum network. The Operator CLI tool also collects debug data from running Shardus app network.
 
 ## Getting Started with Local Development
 
@@ -15,6 +15,13 @@ git clone git@github.com:shardeum/validator-cli.git
 cd validator-cli
 ```
 
+The validator CLI typically requires a symlink to the Shardeum repo at a specific path. If you're running the CLI manually, ensure the symlink is set up correctly:
+
+```bash
+ln -s /path/to/shardeum/repo ../validator
+ls ../validator                                # Should print the shardeum repo
+```
+
 ### Installing Dependencies
 
 Install the necessary dependencies and link the CLI for global accessibility:
@@ -25,7 +32,7 @@ npm ci && npm link
 
 ### Utilizing the Shardus CLI
 
-You can customize network configuration in [default-network-config.ts](./src/config/default-network-config.ts) file. After confihuring, make sure to compile again using `npm run compile`.
+You can customize network configuration in [default-network-config.ts](./src/config/default-network-config.ts) file. After configuring, make sure to compile again using `npm run compile`.
 
 #### Starting the CLI
 
