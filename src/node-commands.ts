@@ -44,7 +44,7 @@ import {
   getBranchNameForValidator,
   getCommitHashForCLI,
   getCommitHashForGUI,
-  getCommitHashForValidator
+  getCommitHashForValidator,
 } from './utils';
 import {isValidPrivate} from 'ethereumjs-util';
 import logger from './utils/logger';
@@ -54,7 +54,7 @@ import {VALIDATOR_CLEAN_PATH} from './projectFlags';
 type VersionStats = {
   runningCliVersion: string;
   runningCliBranch: string;
-  runningCliCommitHash?:string | undefined;
+  runningCliCommitHash?: string | undefined;
   minimumCliVersion: string;
   latestCliVersion: string;
   minShardeumVersion: string;
@@ -63,7 +63,7 @@ type VersionStats = {
   latestGuiVersion?: string;
   runningGuiVersion?: string | undefined;
   runningGuiBranch?: string | undefined;
-  runningGuiBranchCommitHash?:string | undefined;
+  runningGuiBranchCommitHash?: string | undefined;
   runnningValidatorVersion?: string | undefined;
   runningValidatorBranch?: string | undefined;
   runningValidatorBranchCommitHash?: string | undefined;
@@ -437,7 +437,7 @@ export function registerNodeCommands(program: Command) {
           yaml.dump({
             stake: eoaData?.operatorAccountInfo
               ? ethers.utils.formatEther(
-                  String(parseInt(eoaData.operatorAccountInfo.stake, 16))
+                  String(parseInt(eoaData.operatorAccountInfo.stake.value, 16))
                 )
               : '',
             nominee: eoaData?.operatorAccountInfo?.nominee ?? '',
@@ -690,7 +690,7 @@ export function registerNodeCommands(program: Command) {
 
       if (
         eoaData.operatorAccountInfo?.nominee == null ||
-        eoaData.operatorAccountInfo?.stake === '00'
+        eoaData.operatorAccountInfo?.stake?.value === '00'
       ) {
         console.error('No stake found');
         return;
@@ -826,7 +826,6 @@ export function registerNodeCommands(program: Command) {
         latestCliVersion: await getLatestCliVersion(),
         minShardeumVersion: validatorVersions.minVersion,
         activeShardeumVersion: validatorVersions.activeVersion,
-        
       };
 
       if (isGuiInstalled()) {
@@ -845,7 +844,7 @@ export function registerNodeCommands(program: Command) {
           ...versions,
           runnningValidatorVersion: getInstalledValidatorVersion(),
           runningValidatorBranch: await getBranchNameForValidator(),
-          runningValidatorBranchCommitHash:await getCommitHashForValidator()
+          runningValidatorBranchCommitHash: await getCommitHashForValidator(),
         };
       }
       console.log(yaml.dump(versions));
