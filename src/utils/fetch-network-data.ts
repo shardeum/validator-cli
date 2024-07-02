@@ -314,7 +314,7 @@ export async function fetchEOADetails(
     account: {
       data: unknown;
       operatorAccountInfo: {
-        stake: string;
+        stake: {value: string};
         nominee: string;
       };
     };
