@@ -185,10 +185,7 @@ export async function fetchInitialParameters(
     stripHexPrefix(response.nodeRewardAmountUsd),
     16
   );
-  const nodeRewardInterval = new BN(
-    stripHexPrefix(response.nodeRewardInterval),
-    16
-  );
+  const nodeRewardInterval = new BN(response.nodeRewardInterval);
 
   const cycleDuration = await fetchCycleDuration(config);
   cache.set(
