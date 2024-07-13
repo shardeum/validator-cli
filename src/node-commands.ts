@@ -435,7 +435,7 @@ export function registerNodeCommands(program: Command) {
         const eoaData = await fetchEOADetails(config, address);
         console.log(
           yaml.dump({
-            stake: eoaData?.operatorAccountInfo
+            stake: eoaData?.operatorAccountInfo?.stake?.value
               ? ethers.utils.formatEther(
                   String(parseInt(eoaData.operatorAccountInfo.stake.value, 16))
                 )

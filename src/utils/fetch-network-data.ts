@@ -159,16 +159,18 @@ export async function fetchInitialParameters(
 
   if (value) {
     const parsedValue = JSON.parse(value);
-    return {
-      nodeRewardAmount: new BN(
-        stripHexPrefix(parsedValue.nodeRewardAmount),
-        16
-      ),
-      nodeRewardInterval: new BN(
-        stripHexPrefix(parsedValue.nodeRewardInterval),
-        16
-      ),
-    };
+    if (parsedValue.nodeRewardAmount && parsedValue.nodeRewardInterval) {
+      return {
+        nodeRewardAmount: new BN(
+          stripHexPrefix(parsedValue.nodeRewardAmount),
+          16
+        ),
+        nodeRewardInterval: new BN(
+          stripHexPrefix(parsedValue.nodeRewardInterval),
+          16
+        ),
+      };
+    }
   }
 
   const initialParams: InitialParameters | null = await fetchDataFromNetwork(
@@ -186,6 +188,10 @@ export async function fetchInitialParameters(
     16
   );
   const nodeRewardInterval = new BN(response.nodeRewardInterval);
+
+  if (!nodeRewardAmount || !nodeRewardInterval) {
+    throw new Error('Fetched initial parameters, but nodeRewardAmount and nodeRewardInterval are not found');
+  }
 
   const cycleDuration = await fetchCycleDuration(config);
   cache.set(
@@ -363,10 +369,12 @@ export async function getAccountInfoParams(
       return params;
     }
 
-    params.lockedStake = new BN(
-      stripHexPrefix(nodeData.stakeLock),
-      16
-    ).toString();
+    params.lockedStake = nodeData.stakeLock
+      ? new BN(
+          stripHexPrefix(nodeData.stakeLock),
+          16
+        ).toString()
+    : ''
     previousRewards = new BN(stripHexPrefix(nodeData.reward), 16);
     const startTime = nodeData.rewardStartTime * 1000;
     const endTime = nodeData.rewardEndTime * 1000;
