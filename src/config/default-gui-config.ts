@@ -1,16 +1,16 @@
 export type FailedAttempt = {
-  ip: string;
-  count: number;
-};
+  ip: string
+  count: number
+}
 export const defaultGuiConfig = {
   gui: {
     port: 8080,
     pass: '',
-    failedAttempts: [{ip:'',count:0}],
+    failedAttempts: [{ ip: '', count: 0 }],
   },
-};
+}
 
-export type guiConfigType = typeof defaultGuiConfig;
+export type guiConfigType = typeof defaultGuiConfig
 
 export const guiConfigSchema = {
   type: 'object',
@@ -32,17 +32,17 @@ export const guiConfigSchema = {
             type: 'object',
             properties: {
               ip: { type: 'string' },
-              count: { type: 'integer' }
+              count: { type: 'integer' },
             },
             required: ['ip', 'count'],
             additionalProperties: false,
-          }
+          },
         },
       },
       required: ['port', 'pass', 'failedAttempts'], // Correct placement for 'required'
       additionalProperties: false,
-    }
+    },
   },
   required: ['gui'],
   additionalProperties: false,
-};
+}

@@ -1,12 +1,12 @@
 import { ProcessDescription } from 'pm2'
 export interface Pm2ProcessStatus {
-  name?: string;
-  uptimeInSeconds?: number;
-  restarts?: number;
-  status?: string;
-  cpuUsagePercent?: number;
-  memUsedInBytes?: number;
-  link?: string;
+  name?: string
+  uptimeInSeconds?: number
+  restarts?: number
+  status?: string
+  cpuUsagePercent?: number
+  memUsedInBytes?: number
+  link?: string
 }
 
 export function statusFromPM2(pm2Description: ProcessDescription): Pm2ProcessStatus {
@@ -19,5 +19,5 @@ export function statusFromPM2(pm2Description: ProcessDescription): Pm2ProcessSta
     status: pm2Description.pm2_env?.status,
     cpuUsagePercent: pm2Description.monit?.cpu,
     memUsedInBytes: pm2Description.monit?.memory,
-  };
+  }
 }
