@@ -12,10 +12,12 @@ import {getInstalledGuiVersion} from './utils/project-data';
 import {File} from './utils'
 import crypto from 'crypto';
 import Ajv from "ajv"
-
+import { FailedAttempt } from './config/default-gui-config';
 let config = defaultGuiConfig;
 
-const validateGuiConfig = new Ajv().compile(guiConfigSchema)
+const validateGuiConfig = new Ajv().compile(guiConfigSchema);
+
+const MAX_ATTEMPTS = 3; // Maximum allowed attempts
 
 cryptoShardus.init('64f152869ca2d473e4ba64ab53f49ccdb2edae22da192c126850970e788af347');
 
@@ -140,18 +142,55 @@ export function registerGuiCommands(program: Command) {
         }
       );
     });
-
-  gui
+    gui
     .command('login')
     .arguments('<password>')
+    .arguments('<ip>')
     .description('verify GUI password')
-    .action(password => {
-      if (
-        !timingSafeEqual(Buffer.from(password), Buffer.from(config.gui.pass))
-      ) {
+    .action((password:string, ip:string) => {
+      let failedAttempts : FailedAttempt[]= config.gui.failedAttempts;
+      
+      const attemptRecord = failedAttempts.find(record => record.ip === ip);
+      // Check if IP is already blocked
+      if (attemptRecord && attemptRecord.count >= MAX_ATTEMPTS) {
+        console.log(yaml.dump({login: 'blocked'}));
+        return;
+      }
+      if (!timingSafeEqual(Buffer.from(password), Buffer.from(config.gui.pass))) {
+        if (attemptRecord) {
+          attemptRecord.count += 1;
+        } else {
+          failedAttempts.push({ ip: ip, count: 1 });
+        }  
+        // Write updated config to file
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        fs.writeFile(
+          path.join(__dirname, `../${File.GUI_CONFIG}`),
+          JSON.stringify(config, undefined, 2),
+          err => {
+            if (err) console.log(err);
+          }
+        );
         console.log(yaml.dump({login: 'unauthorized'}));
         return;
       }
+  
+      // Reset failed attempt count on successful login
+      if (attemptRecord) {
+        failedAttempts = failedAttempts.filter(record => record.ip !== ip);
+        config.gui.failedAttempts= failedAttempts;
+  
+        // Write updated config to file
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        fs.writeFile(
+          path.join(__dirname, `../${File.GUI_CONFIG}`),
+          JSON.stringify(config, undefined, 2),
+          err => {
+            if (err) console.log(err);
+          }
+        );
+      }
+  
       console.log(yaml.dump({login: 'authorized'}));
     });
 
