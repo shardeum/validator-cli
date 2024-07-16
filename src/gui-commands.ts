@@ -190,35 +190,38 @@ export function registerGuiCommands(program: Command) {
 
       console.log(yaml.dump({ login: 'authorized' }))
     })
+  //fucntionality to check ip status of the user
   gui
-    .command('unblock')
+    .command('ipStatus')
     .arguments('<ip>')
-    .description('Unblock a given IP address')
+    .description('Check the status of the IP')
     .action((ip: string) => {
-      let failedAttempts: FailedAttempt[] = config.gui.failedAttempts
+      const failedAttempts: FailedAttempt[] = config.gui.failedAttempts
 
-      // Check if IP is in the failedAttempts array
-      const isBlocked = failedAttempts.some((record) => record.ip === ip)
-      if (!isBlocked) {
-        console.log(`IP ${ip} is not blocked.`)
+      const attemptRecord = failedAttempts.find((record) => record.ip === ip)
+      // Check if IP is already blocked
+      if (attemptRecord && attemptRecord.count >= MAX_ATTEMPTS) {
+        console.log(yaml.dump({ status: 'blocked' }))
         return
       }
-
-      // Remove the IP from the failedAttempts array
+      console.log(yaml.dump({ status: 'unblocked' }))
+    })
+  //functionality to unblock a ip with the input of the ip address from the gui.
+  gui
+    .command('unlock')
+    .arguments('<ip>')
+    .description('Unblock the IP')
+    .action((ip: string) => {
+      let failedAttempts: FailedAttempt[] = config.gui.failedAttempts
       failedAttempts = failedAttempts.filter((record) => record.ip !== ip)
       config.gui.failedAttempts = failedAttempts
-
       // Write updated config to file
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, `../${File.GUI_CONFIG}`),
         JSON.stringify(config, undefined, 2),
         (err) => {
-          if (err) {
-            console.log(err)
-          } else {
-            console.log(`IP ${ip} has been unblocked.`)
-          }
+          if (err) console.log(err)
         }
       )
     })
