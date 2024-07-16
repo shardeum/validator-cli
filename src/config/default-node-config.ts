@@ -1,15 +1,15 @@
 export const defaultNodeConfig = {
   autoRestart: true,
-};
+}
 
-export type nodeConfigType = typeof defaultNodeConfig;
+export type nodeConfigType = typeof defaultNodeConfig
 
 export const nodeConfigSchema = {
-  type: "object",
+  type: 'object',
   properties: {
     autoRestart: {
-      type: "boolean"
-    }
+      type: 'boolean',
+    },
   },
-  required: ["autoRestart"]
+  required: ['autoRestart'],
 }
