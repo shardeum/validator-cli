@@ -421,7 +421,7 @@ export function registerNodeCommands(program: Command) {
       });
     });
 
-    program
+  program
     .command('stake_info')
     .description('Show staking info for a particular EOA account')
     .argument('<address>', 'The EOA address to fetch stake info for')
@@ -432,24 +432,24 @@ export function registerNodeCommands(program: Command) {
       }
 
       try {
-        const eoaData = await fetchEOADetails(config, address);
-        const stakeValue = eoaData?.operatorAccountInfo?.stake?.value;
-        const nominee = eoaData?.operatorAccountInfo?.nominee ?? '';
+        const eoaData = await fetchEOADetails(config, address)
+        const stakeValue = eoaData?.operatorAccountInfo?.stake?.value
+        const nominee = eoaData?.operatorAccountInfo?.nominee ?? ''
 
         // Convert stake value to ether, handling potential hexadecimal input
         const stakeOutput = stakeValue 
           ? ethers.utils.formatEther(
               ethers.BigNumber.from(stakeValue.startsWith('0x') ? stakeValue : '0x' + stakeValue).toString()
             )
-          : '';
+          : ''
       
         console.log(yaml.dump({
           stake: stakeOutput,
           nominee: nominee
         }));
       } catch (error) {
-        console.log(error);
-        console.error(`Error fetching stake details for ${address}: ${error}`);
+        console.log(error)
+        console.error(`Error fetching stake details for ${address}: ${error}`)
       }
     });
 
