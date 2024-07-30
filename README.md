@@ -34,6 +34,38 @@ npm ci && npm link
 
 You can customize network configuration in [default-network-config.ts](./src/config/default-network-config.ts) file. After configuring, make sure to compile again using `npm run compile`.
 
+`default-network-config.ts` config for running a local network node:
+
+```ts
+export const defaultNetworkConfig = {
+  server: {
+    baseDir: '.',
+    p2p: {
+      existingArchivers: [
+        {
+          ip: '127.0.0.1',
+          port: 4000,
+          publicKey:
+            '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
+        },
+      ],
+    },
+    ip: {
+      externalIp: '127.0.0.1',
+      externalPort: 9050,
+      internalIp: '127.0.0.1',
+      internalPort: 10045,
+    },
+    reporting: {
+      report: true,
+      recipient: 'http://localhost:3000/api',
+      interval: 2,
+      console: false,
+    },
+  },
+};
+```
+
 #### Starting the CLI
 
 To initiate the Shardus CLI, run:
