@@ -66,19 +66,83 @@ export const defaultNetworkConfig = {
 };
 ```
 
-#### Starting the CLI
+#### Starting the node through CLI
 
-To initiate the Shardus CLI, run:
+To initiate the node through Shardus CLI, run:
 
 ```bash
 operator-cli start
 ```
 
-#### Checking CLI Status
+#### Checking Node Status through CLI
 
 ```bash
 operator-cli status
 ```
+
+### Checking stake information through CLI
+
+```bash
+operator-cli stake_info [adddress]
+```
+
+### Stop the Node through CLI
+
+```bash
+operator-cli stop --force(optional)
+```
+
+### Stake the Node through CLI
+
+```bash
+operator-cli stake [value]
+```
+The above command will ask you for the private key of the wallet.
+
+### Unstake the Node through CLI
+
+```bash
+operator-cli unstake --force(optional)
+```
+The force flag here represents that the user wants to unstake with or without claiming the rewards.
+This command will also request the private key of the wallet from user.
+
+### Check the version of the CLI and GUI of the Node.
+
+```bash
+operator-cli version
+```
+
+### Check the Network status of the live Network
+
+```bash
+operator-cli network-stats
+```
+
+### Display node setting 
+
+```bash
+operator-cli node-settings
+```
+
+### Check the GUI status
+
+```bash
+operator-cli gui status 
+```
+
+### Start the GUI 
+
+```bash
+operator-cli gui start 
+```
+
+### Stop the GUI
+
+```bash
+operator-cli gui stop 
+```
+
 
 For a complete list of node commands, check the [node-commands.ts](./src/node-commands.ts) file.
 
