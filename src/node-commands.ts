@@ -432,19 +432,24 @@ export function registerNodeCommands(program: Command) {
       }
 
       try {
-        const eoaData = await fetchEOADetails(config, address);
-        console.log(
-          yaml.dump({
-            stake: eoaData?.operatorAccountInfo?.stake?.value
-              ? ethers.utils.formatEther(
-                  String(parseInt(eoaData.operatorAccountInfo.stake.value, 16))
-                )
-              : '',
-            nominee: eoaData?.operatorAccountInfo?.nominee ?? '',
-          })
-        );
+        const eoaData = await fetchEOADetails(config, address)
+        const stakeValue = eoaData?.operatorAccountInfo?.stake?.value
+        const nominee = eoaData?.operatorAccountInfo?.nominee ?? ''
+
+        // Convert stake value to ether, handling potential hexadecimal input
+        const stakeOutput = stakeValue 
+          ? ethers.utils.formatEther(
+              ethers.BigNumber.from(stakeValue.startsWith('0x') ? stakeValue : '0x' + stakeValue).toString()
+            )
+          : ''
+      
+        console.log(yaml.dump({
+          stake: stakeOutput,
+          nominee: nominee
+        }));
       } catch (error) {
-        console.error(error);
+        console.log(error)
+        console.error(`Error fetching stake details for ${address}: ${error}`)
       }
     });
 
