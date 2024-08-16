@@ -1,6 +1,6 @@
 import {networkConfigType} from '../config/default-network-config';
 import axios, {AxiosError} from 'axios';
-import {BN} from 'ethereumjs-util';
+import {BN, stripHexPrefix} from 'ethereumjs-util';
 import {ProcessDescription} from 'pm2';
 import {Pm2ProcessStatus, statusFromPM2} from '../pm2';
 import fs from 'fs';
@@ -159,10 +159,18 @@ export async function fetchInitialParameters(
 
   if (value) {
     const parsedValue = JSON.parse(value);
-    return {
-      nodeRewardAmount: new BN(parsedValue.nodeRewardAmount, 16),
-      nodeRewardInterval: new BN(parsedValue.nodeRewardInterval, 16),
-    };
+    if (parsedValue.nodeRewardAmount && parsedValue.nodeRewardInterval) {
+      return {
+        nodeRewardAmount: new BN(
+          stripHexPrefix(parsedValue.nodeRewardAmount),
+          16
+        ),
+        nodeRewardInterval: new BN(
+          stripHexPrefix(parsedValue.nodeRewardInterval),
+          16
+        ),
+      };
+    }
   }
 
   const initialParams: InitialParameters | null = await fetchDataFromNetwork(
@@ -175,8 +183,15 @@ export async function fetchInitialParameters(
   if (!response) {
     throw new Error("Fetched initial parameters, but account data isn't found");
   }
-  const nodeRewardAmount = new BN(response.nodeRewardAmountUsd, 16);
-  const nodeRewardInterval = new BN(response.nodeRewardInterval, 16);
+  const nodeRewardAmount = new BN(
+    stripHexPrefix(response.nodeRewardAmountUsd),
+    16
+  );
+  const nodeRewardInterval = new BN(response.nodeRewardInterval);
+
+  if (!nodeRewardAmount || !nodeRewardInterval) {
+    throw new Error('Fetched initial parameters, but nodeRewardAmount and nodeRewardInterval are not found');
+  }
 
   const cycleDuration = await fetchCycleDuration(config);
   cache.set(
@@ -302,7 +317,7 @@ export async function fetchEOADetails(
     account: {
       data: unknown;
       operatorAccountInfo: {
-        stake: string;
+        stake: {value: string};
         nominee: string;
       };
     };
@@ -354,8 +369,13 @@ export async function getAccountInfoParams(
       return params;
     }
 
-    params.lockedStake = new BN(nodeData.stakeLock, 16).toString();
-    previousRewards = new BN(nodeData.reward, 16);
+    params.lockedStake = nodeData.stakeLock
+      ? new BN(
+          stripHexPrefix(nodeData.stakeLock),
+          16
+        ).toString()
+    : ''
+    previousRewards = new BN(stripHexPrefix(nodeData.reward), 16);
     const startTime = nodeData.rewardStartTime * 1000;
     const endTime = nodeData.rewardEndTime * 1000;
 
@@ -368,7 +388,7 @@ export async function getAccountInfoParams(
     }
     params.nominator = nodeData.nominator;
     params.totalPenalty = new BN(
-      nodeData.nodeAccountStats.totalPenalty,
+      stripHexPrefix(nodeData.nodeAccountStats.totalPenalty),
       16
     ).toString();
   } catch (err) {
@@ -396,13 +416,15 @@ export async function fetchStakeParameters(config: networkConfigType) {
   }
 
   const stakeParams = await fetchDataFromNetwork<{
-    stakeRequired: string;
+    stakeRequired: {value: string};
   }>(config, '/stake', data => !data);
   if (!stakeParams) {
     throw new Error("Couldn't fetch stake parameters");
   }
-
-  const stakeRequired = new BN(stakeParams.stakeRequired, 16).toString();
+  const stakeRequired = new BN(
+    stripHexPrefix(stakeParams.stakeRequired.value),
+    16
+  ).toString();
   const cycleDuration = await fetchCycleDuration(config);
   cache.set('stakeParams', stakeRequired, cycleDuration * 1000);
   return {
