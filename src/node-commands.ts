@@ -437,12 +437,12 @@ export function registerNodeCommands(program: Command) {
         const nominee = eoaData?.operatorAccountInfo?.nominee ?? ''
 
         // Convert stake value to ether, handling potential hexadecimal input
-        const stakeOutput = stakeValue 
+        const stakeOutput = stakeValue
           ? ethers.utils.formatEther(
               ethers.BigNumber.from(stakeValue.startsWith('0x') ? stakeValue : '0x' + stakeValue).toString()
             )
           : ''
-      
+
         console.log(yaml.dump({
           stake: stakeOutput,
           nominee: nominee
@@ -513,7 +513,14 @@ export function registerNodeCommands(program: Command) {
     .action(options => {
       function stopNode() {
         pm2.stop('validator', err => {
-          if (err) console.error(err);
+          if (err) {
+            console.error(err);
+          } else {
+            nodeConfig.lastStopped = new Date().getTime();
+            console.log('Node process stopped', nodeConfig);
+            writeNodeConfig();
+          }
+
           return pm2.disconnect();
         });
       }
@@ -879,6 +886,7 @@ export function registerNodeCommands(program: Command) {
       console.log(
         yaml.dump({
           autoRestart: settings.autoRestart,
+          lastStopped: settings.lastStopped,
         })
       );
     });
@@ -980,16 +988,21 @@ export function registerNodeCommands(program: Command) {
         return;
       }
       nodeConfig.autoRestart = input === 'true';
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      fs.writeFile(
-        path.join(__dirname, `../${File.NODE_CONFIG}`),
-        JSON.stringify(nodeConfig, undefined, 2),
-        {encoding: 'utf8', mode: 0o600},
-        err => {
-          if (err) console.error(err);
-        }
-      );
+      writeNodeConfig();
     });
+
+  function writeNodeConfig() {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.writeFile(
+      path.join(__dirname, `../${File.NODE_CONFIG}`),
+      JSON.stringify(nodeConfig, undefined, 2),
+      {encoding: 'utf8', mode: 0o600},
+      err => {
+        if (err) console.error(err);
+      }
+    );
+  }
+
 
   // setCommand
   //   .command('archiver')
