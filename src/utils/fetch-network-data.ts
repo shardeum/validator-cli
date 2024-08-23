@@ -382,9 +382,16 @@ export async function getAccountInfoParams(
     if (startTime > 0 && endTime === 0) {
       // Node is earning rewards
       nodeActiveDuration = Date.now() - startTime;
+      
+      // Calculate rewards only if the node is active
+      const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration, 16));
+      params.accumulatedRewards = previousRewards.add(
+        totalReward.div(nodeRewardInterval)
+      );
     } else {
       // Node is not earning rewards or has already earned rewards
       nodeActiveDuration = 0;
+      params.accumulatedRewards = previousRewards;
     }
     params.nominator = nodeData.nominator;
     params.totalPenalty = new BN(
@@ -398,11 +405,6 @@ export async function getAccountInfoParams(
     previousRewards = new BN(0);
     params.totalPenalty = new BN(0).toString();
   }
-
-  const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration, 16));
-  params.accumulatedRewards = previousRewards.add(
-    totalReward.div(nodeRewardInterval)
-  );
 
   return params;
 }
