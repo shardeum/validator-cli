@@ -4,30 +4,18 @@ export const defaultNetworkConfig = {
     p2p: {
       existingArchivers: [
         {
-          ip: '45.79.16.146',
+          ip: '127.0.0.1',
           port: 4000,
           publicKey:
-            '840e7b59a95d3c5f5044f4bc62ab9fa94bc107d391001141410983502e3cde63',
-        },
-        {
-          ip: '45.56.92.103',
-          port: 4000,
-          publicKey:
-            '2db7c949632d26b87d7e7a5a4ad41c306f63ee972655121a37c5e4f52b00a542',
-        },
-        {
-          ip: '170.187.134.16',
-          port: 4000,
-          publicKey:
-            '7af699dd711074eb96a8d1103e32b589e511613ebb0c6a789a9e8791b2b05f34',
+            '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
         },
       ],
     },
     ip: {
       externalIp: '127.0.0.1',
-      externalPort: 9001,
+      externalPort: 9050,
       internalIp: '127.0.0.1',
-      internalPort: 10001,
+      internalPort: 10045,
     },
     reporting: {
       report: true,
