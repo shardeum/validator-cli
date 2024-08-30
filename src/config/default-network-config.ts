@@ -4,10 +4,10 @@ export const defaultNetworkConfig = {
     p2p: {
       existingArchivers: [
         {
-          ip: '127.0.0.1',
+          ip: '198.58.110.213',
           port: 4000,
           publicKey:
-            '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
+            'd34b80a5a6f9638b7c75d6eb6e59d35d9a3e103f1877827eebbe973b8281f794',
         },
       ],
     },
