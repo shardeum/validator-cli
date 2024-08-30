@@ -9,13 +9,25 @@ export const defaultNetworkConfig = {
           publicKey:
             'd34b80a5a6f9638b7c75d6eb6e59d35d9a3e103f1877827eebbe973b8281f794',
         },
+        {
+          ip: '45.56.92.103',
+          port: 4000,
+          publicKey:
+            '2db7c949632d26b87d7e7a5a4ad41c306f63ee972655121a37c5e4f52b00a542',
+        },
+        {
+          ip: '170.187.134.16',
+          port: 4000,
+          publicKey:
+            '7af699dd711074eb96a8d1103e32b589e511613ebb0c6a789a9e8791b2b05f34',
+        },
       ],
     },
     ip: {
       externalIp: '127.0.0.1',
-      externalPort: 9050,
+      externalPort: 9001,
       internalIp: '127.0.0.1',
-      internalPort: 10045,
+      internalPort: 10001,
     },
     reporting: {
       report: true,
