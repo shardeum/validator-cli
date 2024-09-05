@@ -24,6 +24,16 @@ function isNumber(n: string) {
   return !isNaN(parsedN) && isFinite(parsedN);
 }
 
+function validPassword(password: string) {
+  return (
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password) &&
+    /[!@#$%^&*()_+*$]/.test(password)
+  );
+}
+
 const guiConfigPath = path.join(__dirname, `../${File.GUI_CONFIG}`)
 if (fs.existsSync(guiConfigPath)) { // eslint-disable-line security/detect-non-literal-fs-filename
   // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -124,9 +134,14 @@ export function registerGuiCommands(program: Command) {
   setCommand
     .command('password')
     .arguments('<password>')
-    .description('Set the GUI server password')
+    .description('Set the GUI server password, requirements: min 8 characters, at least 1 letter, at least 1 number, at least 1 special character')
     .option('-h', 'Changes how the password is hashed. For internal use only')
     .action((password, options) => {
+      if (!validPassword(password) ){
+        console.error("Invalid password: requirements: min 8 characters, at least 1 letter, at least 1 number, at least 1 special character");
+        return;
+      }
+
       if(!options.h) {
         password = crypto.createHash('sha256').update(password).digest('hex');
       }
