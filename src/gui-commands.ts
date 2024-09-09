@@ -138,7 +138,7 @@ export function registerGuiCommands(program: Command) {
     .option('-h', 'Changes how the password is hashed. For internal use only')
     .action((password, options) => {
       if (!validPassword(password) ){
-        console.error("Invalid password: requirements: min 8 characters, at least 1 letter, at least 1 number, at least 1 special character");
+        console.error("Invalid password: requirements: min 8 characters, at least 1 letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$");
         return;
       }
 
