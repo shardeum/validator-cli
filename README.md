@@ -1,42 +1,53 @@
-# Overview
+# Shardeum Validator CLI
 
-The Operator CLI is a command line tool for managing a validator instance on a Shardeum network. The Operator CLI tool also collects debug data from running Shardus app network.
+## Overview
 
-## Getting Started with Local Development
+The Shardeum Validator CLI is a command-line interface tool designed for managing nodes on the Shardeum network. It provides essential functionality for node management and collects debug data from running the network, making it an imporant part of the Shardeum network toolkit.
 
-Before running Shardus CLI, it's essential to set up the Shardeum server. Detailed instructions for this setup can be found in the [Shardeum README](https://github.com/shardeum/shardeum).
+## Prerequisites
 
-### Cloning and Preparing the CLI
+Before diving into the Validator CLI, ensure you have the following:
 
-Clone the Shardus CLI repository and navigate into the project directory:
+- Node.js (v.18.16.1 recommended)
+- npm (usually comes with Node.js)
+- Git
+
+## Installation and Setup
+
+### 1. Clone the Repository
 
 ```bash
-git clone git@github.com:shardeum/validator-cli.git
-cd validator-cli
+git clone git@github.com:shardeum/validator-cli.git cli
+cd cli
 ```
 
-The validator CLI typically requires a symlink to the Shardeum repo at a specific path. If you're running the CLI manually, ensure the symlink is set up correctly:
+### 2. Set Up Symlink (Local Network Only)
+
+When running a local network, the Validator CLI requires a symlink to the locally running Shardeum repository. 
+Create the symlink by running this command in the cli directory:
 
 ```bash
 ln -s /path/to/shardeum/repo ../validator
-ls ../validator                                # Should print the shardeum repo
+ls ../validator  # Verify the symlink
 ```
 
-### Installing Dependencies
+Replace `/path/to/shardeum/repo` with the actual path to your local Shardeum repository.
 
-Install the necessary dependencies and link the CLI for global accessibility:
+### 3. Install Dependencies
+
+Install the necessary dependencies and link the CLI to the local network:
 
 ```bash
 npm ci && npm link
 ```
 
-### Utilizing the Shardus CLI
+## Configuration
 
-You can customize network configuration in [default-network-config.ts](./src/config/default-network-config.ts) file. After configuring, make sure to compile again using `npm run compile`.
+#### Local Network Configuration
 
-`default-network-config.ts` config for running a local network node:
+For a local network setup, update the configuration in the `src/config/default-network-config.ts` file :
 
-```ts
+```typescript
 export const defaultNetworkConfig = {
   server: {
     baseDir: '.',
@@ -45,8 +56,7 @@ export const defaultNetworkConfig = {
         {
           ip: '127.0.0.1',
           port: 4000,
-          publicKey:
-            '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
+          publicKey: '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
         },
       ],
     },
@@ -66,34 +76,90 @@ export const defaultNetworkConfig = {
 };
 ```
 
-#### Starting the CLI
+#### Live Network Configuration
 
-To initiate the Shardus CLI, run:
+For connecting to a live network, update the `defaultNetworkConfig` object with the details of live archivers. For example:
 
-```bash
-operator-cli start
+```typescript
+export const defaultNetworkConfig = {
+  server: {
+    // ... other settings remain the same
+    p2p: {
+      existingArchivers: [
+        {
+          ip: '198.58.110.213',
+          port: 4000,
+          publicKey: 'd34b80a5a6f9638b7c75d6eb6e59d35d9a3e103f1877827eebbe973b8281f794',
+        },
+        // Add more live archivers as needed
+      ],
+    },
+    // ... rest of the configuration remain the same
+  },
+};
 ```
 
-#### Checking CLI Status
+Remember to replace the example IP, port, and public key with actual values for the version of the network you're connecting to.
+
+After making changes, recompile the CLI:
 
 ```bash
-operator-cli status
+npm run compile
 ```
 
-For a complete list of node commands, check the [node-commands.ts](./src/node-commands.ts) file.
+## Usage
 
-For GUI-related commands, refer to the [gui-commands.ts](./src/gui-commands.ts) file.
+### Basic Commands
+
+1. Start the CLI:
+   ```bash
+   operator-cli start
+   ```
+
+2. Check CLI status:
+   ```bash
+   operator-cli status
+   ```
+
+3. Set GUI password:
+   ```bash
+   operator-cli gui set password <your-password>
+   ```
+
+### Advanced Usage
+
+For a comprehensive list of available commands:
+
+- Node-related commands: Refer to `src/node-commands.ts`
+- GUI-related commands: Check `src/gui-commands.ts`
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. Ensure all prerequisites are correctly installed.
+2. Verify the symlink to the Shardeum repository is correct.
+3. Check for any error messages in the CLI output.
+4. Consult the Shardeum community resources for support.
 
 ## Contributing
 
-Contributions are very welcome! Everyone interacting in our codebases, issue trackers, and any other form of communication, including chat rooms and mailing lists, is expected to follow our [code of conduct](./CODE_OF_CONDUCT.md) so we can all enjoy the effort we put into this project.
+We welcome contributions to the Shardeum Validator CLI! Please adhere to our [code of conduct](./CODE_OF_CONDUCT.md) when participating in our community. To contribute:
 
-## Community
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
-For help, discussion about code, or any other conversation that would benefit from being searchable:
+## Community and Support
 
-[Discuss Shardeum on GitHub](https://github.com/shardeum/shardeum/discussions)
+- For discussions and searchable conversations:
+  [Shardeum GitHub Discussions](https://github.com/shardeum/shardeum/discussions)
 
-For chatting with others using Shardeum:
+- For real-time chat and community interaction:
+  [Shardeum Discord Server](https://discord.com/invite/shardeum)
 
-[Join the Shardeum Discord Server](https://discord.com/invite/shardeum)
+## License
+
+[LICENSE](https://github.com/shardeum/validator-cli/blob/dev/LICENSE)
