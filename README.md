@@ -17,8 +17,8 @@ Before diving into the Validator CLI, ensure you have the following:
 ### 1. Clone the Repository
 
 ```bash
-git clone git@github.com:shardeum/validator-cli.git cli
-cd cli
+git clone git@github.com:shardeum/validator-cli.git
+cd validator-cli
 ```
 
 ### 2. Set Up Symlink (Local Network Only)
@@ -162,4 +162,4 @@ We welcome contributions to the Shardeum Validator CLI! Please adhere to our [co
 
 ## License
 
-[LICENSE](https://github.com/shardeum/validator-cli/blob/dev/LICENSE)
+[LICENSE](./LICENSE)
