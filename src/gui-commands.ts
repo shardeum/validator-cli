@@ -137,12 +137,14 @@ export function registerGuiCommands(program: Command) {
     .description('Set the GUI server password, requirements: min 8 characters, at least 1 lower case letter, at least 1 upper case letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$')
     .option('-h', 'Changes how the password is hashed. For internal use only')
     .action((password, options) => {
-      if (!validPassword(password) ){
-        console.error("Invalid password: requirements: min 8 characters, at least 1 lower case letter, at least 1 upper case letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$");
-        return;
-      }
+      if (!options.h) {
+        if (!validPassword(password)) {
+          console.error(
+            'Invalid password: requirements: min 8 characters, at least 1 lower case letter, at least 1 upper case letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$'
+          );
+          return;
+        }
 
-      if(!options.h) {
         password = crypto.createHash('sha256').update(password).digest('hex');
       }
       config.gui.pass = cryptoShardus.hash(password);
