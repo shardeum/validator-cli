@@ -132,7 +132,15 @@ export async function getNewActiveNode(
   }
   savedActiveNode =
     nodeList.nodeList[Math.floor(Math.random() * nodeList.nodeList.length)];
-
+  if (
+    !savedActiveNode ||
+    !savedActiveNode.id ||
+    !savedActiveNode.ip ||
+    !savedActiveNode.port ||
+    !savedActiveNode.publicKey
+  ) {
+    throw new Error('Bad returned savedActiveNode');
+  }
   //Write savedActiveNode to file
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   fs.writeFileSync(
