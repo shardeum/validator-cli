@@ -9,13 +9,13 @@ const GUI_LOCAL_PATH = path.join(__dirname, '../../../../gui');
 const VALIDATOR_LOCAL_PATH = path.join(__dirname, '../../../../validator');
 
 export async function getLatestCliVersion() {
-  const packageJsonURI = `https://raw.githubusercontent.com/shardeum/validator-cli/main/package.json`;
+  const packageJsonURI = `https://raw.githubusercontent.com/shardeum/validator-cli/dev/package.json`;
   const json = await axios.get<{version: string}>(packageJsonURI);
   return json.data.version;
 }
 
 export async function getLatestGuiVersion() {
-  const packageJsonURI = `https://raw.githubusercontent.com/shardeum/validator-gui/main/package.json`;
+  const packageJsonURI = `https://raw.githubusercontent.com/shardeum/validator-gui/dev/package.json`;
   const json = await axios.get<{version: string}>(packageJsonURI);
   return json.data.version;
 }
