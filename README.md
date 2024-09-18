@@ -122,9 +122,25 @@ npm run compile
    ```
 
 3. Set GUI password:
+   
+   Interactive mode (recommended for direct use):
    ```bash
-   operator-cli gui set password <your-password>
+   operator-cli gui set password
    ```
+   You will be prompted to enter the password securely.
+
+   Non-interactive mode (for scripts or programmatic use):
+   ```bash
+   echo 'YourStr0ng$P@ssw0rd!' | operator-cli gui set password
+   ```
+   Note: Be cautious when using this method as the password will be visible in your command history.
+
+   Password requirements:
+   - Minimum 8 characters
+   - At least 1 lowercase letter
+   - At least 1 uppercase letter
+   - At least 1 number
+   - At least 1 special character from: !@#$%^&*()_+*$
 
 ### Advanced Usage
 

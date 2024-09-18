@@ -12,6 +12,7 @@ import {getInstalledGuiVersion} from './utils/project-data';
 import {File} from './utils'
 import crypto from 'crypto';
 import Ajv from "ajv"
+import readline from 'readline';
 
 let config = defaultGuiConfig;
 
@@ -133,10 +134,33 @@ export function registerGuiCommands(program: Command) {
 
   setCommand
     .command('password')
-    .arguments('<password>')
     .description('Set the GUI server password, requirements: min 8 characters, at least 1 lower case letter, at least 1 upper case letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$')
     .option('-h', 'Changes how the password is hashed. For internal use only')
-    .action((password, options) => {
+    .action(async (options) => {
+      let password: string;
+  
+      if (process.stdin.isTTY) {
+        // Interactive mode
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout
+        });
+  
+        password = await new Promise<string>((resolve) => {
+          rl.question('Enter new password: ', (answer) => {
+            rl.close();
+            resolve(answer);
+          });
+        });
+      } else {
+        // Non-interactive mode (e.g., piped input)
+        password = await new Promise(resolve => {
+          let data = '';
+          process.stdin.on('data', chunk => data += chunk);
+          process.stdin.on('end', () => resolve(data.trim()));
+        });
+      }
+  
       if (!options.h) {
         if (!validPassword(password)) {
           console.error(
@@ -153,7 +177,10 @@ export function registerGuiCommands(program: Command) {
         path.join(__dirname, `../${File.GUI_CONFIG}`),
         JSON.stringify(config, undefined, 2),
         err => {
-          if (err) console.error(err);
+          if (err) {
+            console.error(err);
+          }
+          console.log("Password set successfully.");
         }
       );
     });
