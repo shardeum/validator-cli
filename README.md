@@ -131,7 +131,7 @@ npm run compile
 
    Non-interactive mode (for scripts or programmatic use):
    ```bash
-   echo 'YourStr0ng$P@ssw0rd!' | operator-cli gui set password
+   echo '<Your Password>' | operator-cli gui set password
    ```
    Note: Be cautious when using this method as the password will be visible in your command history.
 
