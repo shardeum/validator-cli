@@ -355,7 +355,7 @@ export function registerNodeCommands(program: Command) {
           const lockedStakeStr = accountInfo.lockedStake
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
-          let nodeStatus = nodeInfo.status;
+          let nodeStatus = nodeInfo?.status;
           if (nodeStatus === 'initializing')
             nodeStatus =
               lockedStakeStr === '0.0' ? 'need-stake' : 'waiting-for-network';
@@ -433,6 +433,13 @@ export function registerNodeCommands(program: Command) {
 
       try {
         const eoaData = await fetchEOADetails(config, address)
+
+        // Handle the case where the account does not exist
+        if (eoaData == null) {
+          const error = new Error(`No stake information found`)
+          throw error;
+        }
+
         const stakeValue = eoaData?.operatorAccountInfo?.stake?.value
         const nominee = eoaData?.operatorAccountInfo?.nominee ?? ''
 

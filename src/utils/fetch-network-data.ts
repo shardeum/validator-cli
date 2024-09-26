@@ -20,6 +20,25 @@ let savedActiveNode:
     }
   | undefined = undefined;
 
+
+  interface OperatorAccountInfo {
+    stake: { value: string };
+    nominee: string;
+  }
+  
+  interface Account {
+    balance: string;
+    codeHash: string;
+    nonce: string;
+    operatorAccountInfo: OperatorAccountInfo | null;
+    storageRoot: string;
+  }
+  
+  interface ResponseData {
+    account?: Account | null;
+    [key: string]: any;
+  }
+
 /**
  * Checks if active node is already defined or present in file. Returns true
  * If active node is not available, returns false
@@ -61,7 +80,7 @@ async function fetchDataFromNetwork<T>(
     throw new Error('Unable to fetch active node');
   }
 
-  let data = {data: null, status: 500};
+  let data: { data: ResponseData | null; status: number } = { data: null, status: 500 };
   let finalError: AxiosError | null = null;
   do {
     try {
@@ -98,11 +117,14 @@ async function fetchDataFromNetwork<T>(
         reason = `setting up request: ${finalError.message}`;
       }
     }
+    if (data.data?.account === null) {
+      reason = 'account not found';
+    }
     throw new Error(
       `Unable to fetch data from network (out of retries: ${reason}).`
     );
   } else {
-    return data.data;
+    return data.data as unknown as T | null;
   }
 }
 
@@ -313,17 +335,27 @@ export async function fetchEOADetails(
   config: networkConfigType,
   eoaAddress: string
 ) {
-  const eoaParams = await fetchDataFromNetwork<{
-    account: {
-      data: unknown;
-      operatorAccountInfo: {
-        stake: {value: string};
-        nominee: string;
+  try {
+    const eoaParams = await fetchDataFromNetwork<{
+      account: {
+        data: unknown;
+        operatorAccountInfo: {
+          stake: {value: string};
+          nominee: string;
+        };
       };
-    };
-  }>(config, `/account/${eoaAddress}`, data => data?.account == null);
+    }>(config, `/account/${eoaAddress}`, data => data?.account == null);
 
-  return eoaParams?.account;
+    // Return null if the account is not found
+    if (!eoaParams?.account) {
+      return null;
+    }
+
+    return eoaParams.account;
+  } catch (error) {
+    console.error(`Error fetching EOA details for ${eoaAddress}:`, error);
+    return null;
+  }
 }
 
 export async function fetchValidatorVersions(config: networkConfigType) {
