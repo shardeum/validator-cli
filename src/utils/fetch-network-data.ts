@@ -36,7 +36,7 @@ let savedActiveNode:
   
   interface ResponseData {
     account?: Account | null;
-    [key: string]: any;
+    [key: string]: string | number | boolean | null | undefined | Account;
   }
 
 /**
@@ -103,7 +103,7 @@ async function fetchDataFromNetwork<T>(
       // set data to null and status to 500 to indicate that the request failed
       data = {data: null, status: 500};
     }
-  } while ((data.status === 500 || callback(data.data)) && retries--);
+  } while ((data.status === 500 || callback(data.data as {[id: string]: string})) && retries--);
 
   if (retries < 0) {
     // figure out why we ran out of retries before throwing our error

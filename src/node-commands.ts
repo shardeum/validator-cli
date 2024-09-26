@@ -434,7 +434,7 @@ export function registerNodeCommands(program: Command) {
       try {
         const eoaData = await fetchEOADetails(config, address)
 
-        // Handle the case where the account does not exist
+        // Case where query does not error and no stake info is found
         if (eoaData == null) {
           const error = new Error(`No stake information found`)
           throw error;
