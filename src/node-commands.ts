@@ -436,7 +436,7 @@ export function registerNodeCommands(program: Command) {
 
         // Case where query does not error and no stake info is found
         if (eoaData == null) {
-          const error = new Error(`No stake information found`)
+          const error = new Error(`No stake information found due to no previous stake or never funded`)
           throw error;
         }
 

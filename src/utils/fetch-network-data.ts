@@ -69,7 +69,7 @@ function readActiveNode(): boolean {
 async function fetchDataFromNetwork<T>(
   config: networkConfigType,
   query: string,
-  callback: (response: {[id: string]: string} | null) => boolean
+  callback: (response: T | null) => boolean
 ): Promise<T | null> {
   let retries = 3;
   if (!readActiveNode()) {
@@ -80,7 +80,7 @@ async function fetchDataFromNetwork<T>(
     throw new Error('Unable to fetch active node');
   }
 
-  let data: { data: ResponseData | null; status: number } = { data: null, status: 500 };
+  let data: { data: T | null; status: number } = { data: null, status: 500 };
   let finalError: AxiosError | null = null;
   do {
     try {
@@ -103,7 +103,7 @@ async function fetchDataFromNetwork<T>(
       // set data to null and status to 500 to indicate that the request failed
       data = {data: null, status: 500};
     }
-  } while ((data.status === 500 || callback(data.data as {[id: string]: string})) && retries--);
+  } while ((data.status === 500 || callback(data.data)) && retries--);
 
   if (retries < 0) {
     // figure out why we ran out of retries before throwing our error
@@ -117,14 +117,15 @@ async function fetchDataFromNetwork<T>(
         reason = `setting up request: ${finalError.message}`;
       }
     }
-    if (data.data?.account === null) {
+    // strict null check intended as no error when queried, and no stake info is found due to no previous stake or never funded
+    if ((data.data as ResponseData)?.account === null && query.includes('account')) {
       reason = 'account not found';
     }
     throw new Error(
       `Unable to fetch data from network (out of retries: ${reason}).`
     );
   } else {
-    return data.data as unknown as T | null;
+    return data.data;
   }
 }
 
@@ -346,12 +347,7 @@ export async function fetchEOADetails(
       };
     }>(config, `/account/${eoaAddress}`, data => data?.account == null);
 
-    // Return null if the account is not found
-    if (!eoaParams?.account) {
-      return null;
-    }
-
-    return eoaParams.account;
+    return eoaParams?.account;
   } catch (error) {
     console.error(`Error fetching EOA details for ${eoaAddress}:`, error);
     return null;
