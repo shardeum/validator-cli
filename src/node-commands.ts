@@ -432,14 +432,20 @@ export function registerNodeCommands(program: Command) {
       }
 
       try {
-        const eoaData = await fetchEOADetails(config, address)
-
-        // Case where query does not error and no stake info is found
-        if (eoaData == null) {
-          const error = new Error(`No stake information found due to no previous stake or never funded`)
-          throw error;
+        const result = await fetchEOADetails(config, address);
+  
+        // Check if the result is a specific error
+        if (result instanceof Error && result.message.includes('account not found')) {
+          console.log(yaml.dump({
+            message: `fetching stake details for ${address}`,
+            result: result instanceof Error ? result.message : String(result),
+            stake: '',
+            nominee: ''
+          }));
+          return;
         }
-
+  
+        const eoaData = result as {operatorAccountInfo: {stake: {value: string}, nominee: string}};
         const stakeValue = eoaData?.operatorAccountInfo?.stake?.value
         const nominee = eoaData?.operatorAccountInfo?.nominee ?? ''
 
@@ -701,7 +707,7 @@ export function registerNodeCommands(program: Command) {
 
       const walletWithProvider = new ethers.Wallet(privateKey, provider);
 
-      const eoaData = await fetchEOADetails(config, walletWithProvider.address);
+      const eoaData = await fetchEOADetails(config, walletWithProvider.address) as {operatorAccountInfo: {stake: {value: string}, nominee: string}};
       if (!eoaData) {
         console.error("Couldn't unstake (`eoaData` is null)");
         return;

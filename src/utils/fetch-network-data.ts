@@ -349,8 +349,8 @@ export async function fetchEOADetails(
 
     return eoaParams?.account;
   } catch (error) {
-    console.error(`Error fetching EOA details for ${eoaAddress}:`, error);
-    return null;
+    console.error(error);
+    return error instanceof Error ? error : new Error(String(error));
   }
 }
 
