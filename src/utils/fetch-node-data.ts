@@ -120,3 +120,33 @@ function convertMsToDHM(ms: number): string {
 
   return `${daysString}${hoursString}${minutesString}`;
 }
+
+export function canUnstake(
+  lastStakeTimestamp: number,
+  stakeLockTime: number,
+  nodeStatus: string
+): {canUnstake: boolean; reason: string; remaingTime: number} {
+  const res = {canUnstake: true, reason: '', remaingTime: -1};
+
+  const disallowedStates = [
+    'standby',
+    'selected',
+    'syncing',
+    'ready',
+    'active',
+  ];
+
+  if (disallowedStates.includes(nodeStatus)) {
+    res.canUnstake = false;
+    res.reason = `Cannot unstake while in ${nodeStatus} state`;
+    return res;
+  } else if (new Date().getTime() - lastStakeTimestamp < stakeLockTime) {
+    res.canUnstake = false;
+    res.reason = 'Node is still in stake lock period.';
+    res.remaingTime =
+      stakeLockTime - (new Date().getTime() - lastStakeTimestamp);
+    return res;
+  }
+
+  return res;
+}

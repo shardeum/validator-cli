@@ -147,6 +147,7 @@ type InitialParameters = {
       current: {
         nodeRewardAmountUsd: string;
         nodeRewardInterval: string;
+        stakeLockTime: string;
       };
     };
   };
@@ -154,12 +155,20 @@ type InitialParameters = {
 
 export async function fetchInitialParameters(
   config: networkConfigType
-): Promise<{nodeRewardAmount: BN; nodeRewardInterval: BN}> {
+): Promise<{
+  nodeRewardAmount: BN;
+  nodeRewardInterval: BN;
+  stakeLockTime: number;
+}> {
   const value = cache.get('initialParameters');
 
   if (value) {
     const parsedValue = JSON.parse(value);
-    if (parsedValue.nodeRewardAmount && parsedValue.nodeRewardInterval) {
+    if (
+      parsedValue.nodeRewardAmount &&
+      parsedValue.nodeRewardInterval &&
+      parsedValue.stakeLockTime
+    ) {
       return {
         nodeRewardAmount: new BN(
           stripHexPrefix(parsedValue.nodeRewardAmount),
@@ -169,6 +178,7 @@ export async function fetchInitialParameters(
           stripHexPrefix(parsedValue.nodeRewardInterval),
           16
         ),
+        stakeLockTime: Number(parsedValue.stakeLockTime),
       };
     }
   }
@@ -189,8 +199,12 @@ export async function fetchInitialParameters(
   );
   const nodeRewardInterval = new BN(response.nodeRewardInterval);
 
-  if (!nodeRewardAmount || !nodeRewardInterval) {
-    throw new Error('Fetched initial parameters, but nodeRewardAmount and nodeRewardInterval are not found');
+  const stakeLockTime = Number(response.stakeLockTime);
+
+  if (!nodeRewardAmount || !nodeRewardInterval || !stakeLockTime) {
+    throw new Error(
+      'Fetched initial parameters, but nodeRewardAmount, nodeRewardInterval or stakeLockTime were not found'
+    );
   }
 
   const cycleDuration = await fetchCycleDuration(config);
@@ -199,7 +213,7 @@ export async function fetchInitialParameters(
     JSON.stringify({nodeRewardAmount, nodeRewardInterval}),
     cycleDuration * 1000
   );
-  return {nodeRewardAmount, nodeRewardInterval};
+  return {nodeRewardAmount, nodeRewardInterval, stakeLockTime};
 }
 
 type NodeData = {
@@ -211,6 +225,7 @@ type NodeData = {
   nodeAccountStats: {
     totalPenalty: string;
   };
+  lastStakedTimestamp: number;
 };
 
 async function fetchNodeParameters(
@@ -348,6 +363,8 @@ export async function getAccountInfoParams(
     nominator: '',
     accumulatedRewards: new BN(0),
     totalPenalty: '',
+    lastStakeTimestamp: 0,
+    stakeLockTime: 0,
   };
   if (nodePubKey === '') {
     // Public key not found. This can happen in the primitive case when
@@ -356,10 +373,8 @@ export async function getAccountInfoParams(
   }
 
   // prettier-ignore
-  const {
-    nodeRewardAmount,
-    nodeRewardInterval
-  } = await fetchInitialParameters(config);
+  const {nodeRewardAmount, nodeRewardInterval, stakeLockTime} =
+    await fetchInitialParameters(config);
 
   let nodeActiveDuration, previousRewards;
 
@@ -370,11 +385,8 @@ export async function getAccountInfoParams(
     }
 
     params.lockedStake = nodeData.stakeLock
-      ? new BN(
-          stripHexPrefix(nodeData.stakeLock),
-          16
-        ).toString()
-    : ''
+      ? new BN(stripHexPrefix(nodeData.stakeLock), 16).toString()
+      : '';
     previousRewards = new BN(stripHexPrefix(nodeData.reward), 16);
     const startTime = nodeData.rewardStartTime * 1000;
     const endTime = nodeData.rewardEndTime * 1000;
@@ -398,12 +410,16 @@ export async function getAccountInfoParams(
       stripHexPrefix(nodeData.nodeAccountStats.totalPenalty),
       16
     ).toString();
+    params.lastStakeTimestamp = nodeData.lastStakedTimestamp;
+    params.stakeLockTime = stakeLockTime;
   } catch (err) {
     params.lockedStake = new BN(0).toString();
     nodeActiveDuration = 0;
     params.nominator = '';
     previousRewards = new BN(0);
     params.totalPenalty = new BN(0).toString();
+    params.lastStakeTimestamp = 0;
+    params.stakeLockTime = stakeLockTime;
   }
 
   return params;

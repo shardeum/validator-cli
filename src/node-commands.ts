@@ -45,6 +45,7 @@ import {
   getCommitHashForCLI,
   getCommitHashForGUI,
   getCommitHashForValidator,
+  canUnstake,
 } from './utils';
 import {isValidPrivate} from 'ethereumjs-util';
 import logger from './utils/logger';
@@ -360,6 +361,12 @@ export function registerNodeCommands(program: Command) {
             nodeStatus =
               lockedStakeStr === '0.0' ? 'need-stake' : 'waiting-for-network';
 
+          const unstakable = canUnstake(
+            accountInfo?.lastStakeTimestamp,
+            accountInfo?.stakeLockTime,
+            nodeStatus
+          );
+
           console.log(
             yaml.dump({
               state: nodeStatus,
@@ -384,6 +391,7 @@ export function registerNodeCommands(program: Command) {
                 : '',
               autorestart: nodeConfig.autoRestart,
               nodeInfo: nodeInfo,
+              unstakable: unstakable,
               // TODO: Add fetching node info when in standby
             })
           );
@@ -1002,7 +1010,6 @@ export function registerNodeCommands(program: Command) {
       }
     );
   }
-
 
   // setCommand
   //   .command('archiver')
