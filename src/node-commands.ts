@@ -316,6 +316,26 @@ export function registerNodeCommands(program: Command) {
         ]);
         // TODO: Use Promise.allSettled. Need to update nodeJs to 12.9
 
+        let nodeInfo;
+        try {
+          nodeInfo = await fetchNodeInfo(config);
+        } catch (e) {
+          logger.error('Unable to fetch node info: ' + e);
+          nodeInfo = null;
+        }
+        const eoaData = await fetchEOADetails(config, accountInfo.nominator);
+        let unstakable = {
+          canUnstake: false,
+          reason: 'Could not fetch data',
+          remainingTime: -1,
+        };
+        if (eoaData) {
+          unstakable = canUnstake(
+            eoaData.operatorAccountInfo?.lastStakeTimestamp,
+            accountInfo?.stakeLockTime,
+            nodeInfo?.status
+          );
+        }
         if (descriptions.length === 0) {
           // Node process not started
           console.log(
@@ -334,6 +354,7 @@ export function registerNodeCommands(program: Command) {
                 ? ethers.utils.formatEther(accountInfo.totalPenalty)
                 : '',
               autorestart: nodeConfig.autoRestart,
+              unstakable: unstakable,
             })
           );
           cache.writeMaps();
@@ -345,14 +366,6 @@ export function registerNodeCommands(program: Command) {
         if (status.status !== 'stopped') {
           // Node is started and active
 
-          let nodeInfo;
-          try {
-            nodeInfo = await fetchNodeInfo(config);
-          } catch (e) {
-            logger.error('Unable to fetch node info: ' + e);
-            nodeInfo = null;
-          }
-
           const lockedStakeStr = accountInfo.lockedStake
             ? ethers.utils.formatEther(accountInfo.lockedStake)
             : '';
@@ -360,12 +373,6 @@ export function registerNodeCommands(program: Command) {
           if (nodeStatus === 'initializing')
             nodeStatus =
               lockedStakeStr === '0.0' ? 'need-stake' : 'waiting-for-network';
-
-          const unstakable = canUnstake(
-            accountInfo?.lastStakeTimestamp,
-            accountInfo?.stakeLockTime,
-            nodeStatus
-          );
 
           console.log(
             yaml.dump({
@@ -422,6 +429,7 @@ export function registerNodeCommands(program: Command) {
               ? ethers.utils.formatEther(accountInfo.totalPenalty)
               : '',
             autorestart: nodeConfig.autoRestart,
+            unstakable: unstakable,
           })
         );
         cache.writeMaps();

@@ -280,8 +280,12 @@ async function fetchNodeTxStats(config: networkConfigType) {
 export async function fetchNodeInfo(config: networkConfigType) {
   const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo?reportIntermediateStatus=true`;
   // const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo`;
-  const response = await axios.get(url, {timeout: 2000});
-  return response.data.nodeInfo;
+  try {
+    const response = await axios.get(url, {timeout: 2000});
+    return response.data.nodeInfo;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function fetchNetworkStats(config: networkConfigType) {
@@ -334,6 +338,7 @@ export async function fetchEOADetails(
       operatorAccountInfo: {
         stake: {value: string};
         nominee: string;
+        lastStakeTimestamp: number;
       };
     };
   }>(config, `/account/${eoaAddress}`, data => data?.account == null);
